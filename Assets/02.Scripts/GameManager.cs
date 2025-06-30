@@ -115,7 +115,7 @@ public class GameManager : Singleton<GameManager>
         Straight = 4,
         Flush = 3,
         Pair = 2,
-        HighCard = 1
+        CardSum = 1
     }
 
     private HandRank EvaluateHand(List<Card> cards)
@@ -137,7 +137,7 @@ public class GameManager : Singleton<GameManager>
         if (isPair) 
             return HandRank.Pair;
 
-        return HandRank.HighCard;
+        return HandRank.CardSum;
     }
 
     // 족보 비교
@@ -151,16 +151,25 @@ public class GameManager : Singleton<GameManager>
         if (rank2 > rank1) 
             return -1;
 
-        var sorted1 = hand1.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
-        var sorted2 = hand2.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
-        for (int i = 0; i < 3; i++)
+        if (rank1 == HandRank.CardSum)
         {
-            if (sorted1[i] > sorted2[i]) 
-                return 1;
-            if (sorted2[i] > sorted1[i])
-                return -1;
+            int sum1 = hand1.Sum(c => c.CardNumber);
+            int sum2 = hand2.Sum(c => c.CardNumber);
+            if (sum1 > sum2) return 1;
+            if (sum2 > sum1) return -1;
+            return 0;
         }
-        return 0;
+        else
+        {
+            var sorted1 = hand1.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
+            var sorted2 = hand2.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
+            for (int i = 0; i < 3; i++)
+            {
+                if (sorted1[i] > sorted2[i]) return 1;
+                if (sorted2[i] > sorted1[i]) return -1;
+            }
+            return 0;
+        }
     }
 
     // 명확한 승리 판정
@@ -174,13 +183,40 @@ public class GameManager : Singleton<GameManager>
             var fullOpp = new List<Card>(opponentCards);
             fullOpp.AddRange(oppAdd);
 
-            int result = CompareHands(myCards, fullOpp);
+            var myRank = EvaluateHand(myCards);
+            var oppRank = EvaluateHand(fullOpp);
 
-            if (result <= 0)
+            if (oppRank > myRank)
                 return false;
+            if (oppRank == myRank)
+            {
+                if (myRank == HandRank.CardSum)
+                {
+                    int mySum = myCards.Sum(c => c.CardNumber);
+                    int oppSum = fullOpp.Sum(c => c.CardNumber);
+                    if (oppSum > mySum)
+                        return false;
+                    if (mySum > oppSum)
+                        continue;
+                    // 합이 같으면 무승부, 계속 비교
+                }
+                else
+                {
+                    var myNums = myCards.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
+                    var oppNums = fullOpp.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (oppNums[i] > myNums[i])
+                            return false;
+                        if (myNums[i] > oppNums[i])
+                            break;
+                    }
+                }
+            }
         }
         return true;
     }
+
 
     // 조합 구하기
     private IEnumerable<List<Card>> GetCombinations(List<Card> list, int count)

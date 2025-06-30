@@ -91,7 +91,34 @@ public class VerificationTool : EditorWindow
             else if (rank2 > rank1)
                 return $"플레이어 2가 경계석을 점령합니다. (족보: {rank1} vs {rank2})";
             else
-                return $"무승부입니다. (족보: {rank1} vs {rank2})";
+            {
+                // 둘 다 HighCard면 숫자 합 비교
+                if (rank1 == HandRank.CardSum)
+                {
+                    int sum1 = player1Cards.Sum(c => c.CardNumber);
+                    int sum2 = player2Cards.Sum(c => c.CardNumber);
+                    if (sum1 > sum2)
+                        return $"플레이어 1이 경계석을 점령합니다. (HighCard, 합: {sum1} vs {sum2})";
+                    else if (sum2 > sum1)
+                        return $"플레이어 2가 경계석을 점령합니다. (HighCard, 합: {sum1} vs {sum2})";
+                    else
+                        return $"무승부입니다. (HighCard, 합: {sum1} vs {sum2})";
+                }
+                else
+                {
+                    // 기존 숫자 비교(내림차순) 유지
+                    var nums1 = player1Cards.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
+                    var nums2 = player2Cards.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (nums1[i] > nums2[i])
+                            return $"플레이어 1이 경계석을 점령합니다. (족보: {rank1}, 숫자: {nums1[i]} vs {nums2[i]})";
+                        if (nums2[i] > nums1[i])
+                            return $"플레이어 2가 경계석을 점령합니다. (족보: {rank1}, 숫자: {nums1[i]} vs {nums2[i]})";
+                    }
+                    return $"무승부입니다. (족보: {rank1}, 숫자 동일)";
+                }
+            }
         }
         else if (player1Cards.Count == 3 && player2Cards.Count < 3)
         {
@@ -111,9 +138,6 @@ public class VerificationTool : EditorWindow
         }
     }
 
-    // 이하 기존 EvaluateHand, ContainsCard, GetAllPossibleCards, IsProvenWin, GetCombinations 메서드 동일
-    // ...
-
     // 족보 판정 (간단 버전)
     private enum HandRank
     {
@@ -122,7 +146,7 @@ public class VerificationTool : EditorWindow
         Straight = 4,
         Flush = 3,
         Pair = 2,
-        HighCard = 1
+        CardSum = 1
     }
 
     private HandRank EvaluateHand(List<Card> cards)
@@ -138,7 +162,7 @@ public class VerificationTool : EditorWindow
         if (isStraight) return HandRank.Straight;
         if (isFlush) return HandRank.Flush;
         if (isPair) return HandRank.Pair;
-        return HandRank.HighCard;
+        return HandRank.CardSum;
     }
 
     // 카드 동등성 비교 (색상+숫자)
@@ -179,15 +203,28 @@ public class VerificationTool : EditorWindow
                 return false;
             if (oppRank == myRank)
             {
-                // 숫자 비교 (내림차순)
-                var myNums = myCards.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
-                var oppNums = fullOpp.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
-                for (int i = 0; i < 3; i++)
+                if (myRank == HandRank.CardSum)
                 {
-                    if (oppNums[i] > myNums[i])
+                    int mySum = myCards.Sum(c => c.CardNumber);
+                    int oppSum = fullOpp.Sum(c => c.CardNumber);
+                    if (oppSum > mySum)
                         return false;
-                    if (myNums[i] > oppNums[i])
-                        break;
+                    if (mySum > oppSum)
+                        continue;
+                    // 합이 같으면 무승부, 계속 비교
+                }
+                else
+                {
+                    // 기존 숫자 비교(내림차순)
+                    var myNums = myCards.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
+                    var oppNums = fullOpp.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (oppNums[i] > myNums[i])
+                            return false;
+                        if (myNums[i] > oppNums[i])
+                            break;
+                    }
                 }
             }
         }
