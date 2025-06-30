@@ -45,6 +45,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 854c64a4c431ba843b36bec277e46054
+    m_Address: Field
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: da464e988c3aa4fe7923e9fd66fad712
     m_Address: Card_4
     m_ReadOnly: 0

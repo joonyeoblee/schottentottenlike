@@ -1051,6 +1051,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   initializeOn: 0
+  _stoneCount: 9
 --- !u!114 &1145073392
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1637,6 +1638,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d05fedcd48221094594b073bd1585f87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initializeOn: 0
 --- !u!1 &1775855352
 GameObject:
   m_ObjectHideFlags: 0
