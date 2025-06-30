@@ -11,9 +11,10 @@ public enum ECardColor
     None
 }
 [Serializable]
-public class Card 
+public class Card
 {
     public int CardNumber;
+    private int _cardNumber;
     public ECardColor Color;
     // public string CardImageAddress => $"{Color.ToString()}_{CardNumber}";
     public string CardImageAddress => $"Card_{CardNumber}";

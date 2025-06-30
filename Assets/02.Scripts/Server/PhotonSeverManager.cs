@@ -1,6 +1,8 @@
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.SceneManagement;
 
 // Photon API 네임스페이
 
@@ -9,6 +11,8 @@ public class PhotonSeverManager : Singleton<PhotonSeverManager>
 {
     // MonoBehaviourPunCallbacks : 유니티 이벤트 말고도 Pun 서버 이벤트를 받을 수 있다.
     private readonly string _gameVersion = "0.0.1";
+    private AddressablesPool _pool = new  AddressablesPool();
+    private bool _shouldSpawnField = false;
     private void Start()
     {
         // 설정
@@ -24,6 +28,8 @@ public class PhotonSeverManager : Singleton<PhotonSeverManager>
         //방장이 로드한 씬으로 다른 참여자가 똑같이 이동하게끔 동기화 해주는 옵션
         //방장 : 방을 만든 소유자이자 "마스터 클라이언트" (방마다 한명의 마스터 클라이언트가 존재)
         PhotonNetwork.AutomaticallySyncScene = true;
+        PhotonNetwork.PrefabPool = _pool;
+        _pool.Preload("Field");
     }
     public override void OnJoinedRoom()
     {
@@ -35,10 +41,22 @@ public class PhotonSeverManager : Singleton<PhotonSeverManager>
         {
             Debug.Log($"플레이어: {player.NickName}, ActorNumber: {player.ActorNumber}");
         }
-
+        _shouldSpawnField = true; 
+        SceneManager.sceneLoaded += OnSceneLoaded;
         PhotonNetwork.LoadLevel(2);
+    
     }
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (_shouldSpawnField && scene.buildIndex == 2)
+        {
+            PhotonNetwork.Instantiate("Field", new Vector3(0,5,0), Quaternion.identity);
+            Debug.Log("Field 생성됨");
+            _shouldSpawnField = false;
+        }
 
+        SceneManager.sceneLoaded -= OnSceneLoaded; // 리스너 해제
+    }
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
         Debug.LogError($"방 생성 실패: {returnCode} - {message}");
@@ -96,26 +114,6 @@ public class PhotonSeverManager : Singleton<PhotonSeverManager>
 //     }
 
 //     // 룸에 입장한 후 호출되는 콜백 함수
-//     public override void OnJoinedRoom()
-//     {
-//         Debug.Log("룸 입장 완료!");
-//         Debug.Log($"PhotonNetwork.InRoom = {PhotonNetwork.InRoom}");
-//         Debug.Log($"Player Count = {PhotonNetwork.CurrentRoom.PlayerCount}");
-
-//         // 룸에 접속한 사용자 정보
-//         Dictionary<int, Photon.Realtime.Player> roomPlayers = PhotonNetwork.CurrentRoom.Players;
-//         foreach (KeyValuePair<int, Photon.Realtime.Player> player in roomPlayers)
-//         {
-//             Debug.Log($"{player.Value.NickName} : {player.Value.ActorNumber}");
-
-//             // 진짜 고유 아이디
-//             Debug.Log(player.Value.UserId); // 친구 기능, 귓속말 등등에 쓰이지만... 알아서...
-//         }
-
-//         // 방에 입장 완료가 되면 플레이어를 생성한다.
-//         // 포톤에서는 게임 오브젝트 생성후 포톤 서버에 등록까지 해야 한다.
-//         // PhotonNetwork.Instantiate("Player", Vector3.zero, Quaternion.identity);
-//     }
 
 //     // 룸 생성에 실패하면 호출되는 콜백 함수
 //     public override void OnCreateRoomFailed(short returnCode, string message)

@@ -19,11 +19,11 @@ public class VerificationTool : EditorWindow
     private void OnGUI()
     {
         EditorGUILayout.BeginVertical("box");
-        GUILayout.Label("ÇÃ·¹ÀÌ¾î 1 Ä«µå", EditorStyles.boldLabel);
+        GUILayout.Label("í”Œë ˆì´ì–´ 1 ì¹´ë“œ", EditorStyles.boldLabel);
         DrawCardInputs(player1Cards);
         if (player1Cards.Count < 3)
         {
-            if (GUILayout.Button("Ä«µå Ãß°¡ (ÇÃ·¹ÀÌ¾î 1)"))
+            if (GUILayout.Button("ì¹´ë“œ ì¶”ê°€ (í”Œë ˆì´ì–´ 1)"))
                 player1Cards.Add(new Card());
         }
         EditorGUILayout.EndVertical();
@@ -31,11 +31,11 @@ public class VerificationTool : EditorWindow
         GUILayout.Space(10);
 
         EditorGUILayout.BeginVertical("box");
-        GUILayout.Label("ÇÃ·¹ÀÌ¾î 2 Ä«µå", EditorStyles.boldLabel);
+        GUILayout.Label("í”Œë ˆì´ì–´ 2 ì¹´ë“œ", EditorStyles.boldLabel);
         DrawCardInputs(player2Cards);
         if (player2Cards.Count < 3)
         {
-            if (GUILayout.Button("Ä«µå Ãß°¡ (ÇÃ·¹ÀÌ¾î 2)"))
+            if (GUILayout.Button("ì¹´ë“œ ì¶”ê°€ (í”Œë ˆì´ì–´ 2)"))
                 player2Cards.Add(new Card());
         }
         EditorGUILayout.EndVertical();
@@ -43,11 +43,11 @@ public class VerificationTool : EditorWindow
         GUILayout.Space(20);
 
         EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("Á¡·É Á¶°Ç Å×½ºÆ®"))
+        if (GUILayout.Button("ì ë ¹ ì¡°ê±´ í…ŒìŠ¤íŠ¸"))
         {
             resultMessage = TestOccupation();
         }
-        if (GUILayout.Button("ÀÔ·Â ÃÊ±âÈ­"))
+        if (GUILayout.Button("ì…ë ¥ ì´ˆê¸°í™”"))
         {
             player1Cards.Clear();
             player2Cards.Clear();
@@ -70,7 +70,7 @@ public class VerificationTool : EditorWindow
             GUILayout.BeginHorizontal();
             cards[i].Color = (ECardColor)EditorGUILayout.EnumPopup(cards[i].Color, GUILayout.Width(80));
             cards[i].CardNumber = EditorGUILayout.IntSlider(cards[i].CardNumber, 1, 9, GUILayout.Width(200));
-            if (GUILayout.Button("Á¦°Å", GUILayout.Width(50)))
+            if (GUILayout.Button("ì œê±°", GUILayout.Width(50)))
             {
                 cards.RemoveAt(i);
                 break;
@@ -87,36 +87,36 @@ public class VerificationTool : EditorWindow
             var rank2 = EvaluateHand(player2Cards);
 
             if (rank1 > rank2)
-                return $"ÇÃ·¹ÀÌ¾î 1ÀÌ °æ°è¼®À» Á¡·ÉÇÕ´Ï´Ù. (Á·º¸: {rank1} vs {rank2})";
+                return $"í”Œë ˆì´ì–´ 1ì´ ê²½ê³„ì„ì„ ì ë ¹í•©ë‹ˆë‹¤. (ì¡±ë³´: {rank1} vs {rank2})";
             else if (rank2 > rank1)
-                return $"ÇÃ·¹ÀÌ¾î 2°¡ °æ°è¼®À» Á¡·ÉÇÕ´Ï´Ù. (Á·º¸: {rank1} vs {rank2})";
+                return $"í”Œë ˆì´ì–´ 2ê°€ ê²½ê³„ì„ì„ ì ë ¹í•©ë‹ˆë‹¤. (ì¡±ë³´: {rank1} vs {rank2})";
             else
             {
-                // µÑ ´Ù HighCard¸é ¼ıÀÚ ÇÕ ºñ±³
+                // ë‘˜ ë‹¤ HighCardë©´ ìˆ«ì í•© ë¹„êµ
                 if (rank1 == HandRank.CardSum)
                 {
                     int sum1 = player1Cards.Sum(c => c.CardNumber);
                     int sum2 = player2Cards.Sum(c => c.CardNumber);
                     if (sum1 > sum2)
-                        return $"ÇÃ·¹ÀÌ¾î 1ÀÌ °æ°è¼®À» Á¡·ÉÇÕ´Ï´Ù. (HighCard, ÇÕ: {sum1} vs {sum2})";
+                        return $"í”Œë ˆì´ì–´ 1ì´ ê²½ê³„ì„ì„ ì ë ¹í•©ë‹ˆë‹¤. (HighCard, í•©: {sum1} vs {sum2})";
                     else if (sum2 > sum1)
-                        return $"ÇÃ·¹ÀÌ¾î 2°¡ °æ°è¼®À» Á¡·ÉÇÕ´Ï´Ù. (HighCard, ÇÕ: {sum1} vs {sum2})";
+                        return $"í”Œë ˆì´ì–´ 2ê°€ ê²½ê³„ì„ì„ ì ë ¹í•©ë‹ˆë‹¤. (HighCard, í•©: {sum1} vs {sum2})";
                     else
-                        return $"¹«½ÂºÎÀÔ´Ï´Ù. (HighCard, ÇÕ: {sum1} vs {sum2})";
+                        return $"ë¬´ìŠ¹ë¶€ì…ë‹ˆë‹¤. (HighCard, í•©: {sum1} vs {sum2})";
                 }
                 else
                 {
-                    // ±âÁ¸ ¼ıÀÚ ºñ±³(³»¸²Â÷¼ø) À¯Áö
+                    // ê¸°ì¡´ ìˆ«ì ë¹„êµ(ë‚´ë¦¼ì°¨ìˆœ) ìœ ì§€
                     var nums1 = player1Cards.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
                     var nums2 = player2Cards.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
                     for (int i = 0; i < 3; i++)
                     {
                         if (nums1[i] > nums2[i])
-                            return $"ÇÃ·¹ÀÌ¾î 1ÀÌ °æ°è¼®À» Á¡·ÉÇÕ´Ï´Ù. (Á·º¸: {rank1}, ¼ıÀÚ: {nums1[i]} vs {nums2[i]})";
+                            return $"í”Œë ˆì´ì–´ 1ì´ ê²½ê³„ì„ì„ ì ë ¹í•©ë‹ˆë‹¤. (ì¡±ë³´: {rank1}, ìˆ«ì: {nums1[i]} vs {nums2[i]})";
                         if (nums2[i] > nums1[i])
-                            return $"ÇÃ·¹ÀÌ¾î 2°¡ °æ°è¼®À» Á¡·ÉÇÕ´Ï´Ù. (Á·º¸: {rank1}, ¼ıÀÚ: {nums1[i]} vs {nums2[i]})";
+                            return $"í”Œë ˆì´ì–´ 2ê°€ ê²½ê³„ì„ì„ ì ë ¹í•©ë‹ˆë‹¤. (ì¡±ë³´: {rank1}, ìˆ«ì: {nums1[i]} vs {nums2[i]})";
                     }
-                    return $"¹«½ÂºÎÀÔ´Ï´Ù. (Á·º¸: {rank1}, ¼ıÀÚ µ¿ÀÏ)";
+                    return $"ë¬´ìŠ¹ë¶€ì…ë‹ˆë‹¤. (ì¡±ë³´: {rank1}, ìˆ«ì ë™ì¼)";
                 }
             }
         }
@@ -129,16 +129,16 @@ public class VerificationTool : EditorWindow
             bool provenWin = IsProvenWin(player1Cards, player2Cards, unused);
 
             return provenWin
-                ? "ÇÃ·¹ÀÌ¾î 1ÀÌ ¾î¶² °æ¿ì¿¡µµ °æ°è¼®À» Á¡·ÉÇÒ ¼ö ÀÖ½À´Ï´Ù! (¸íÈ®ÇÑ ½Â¸®)"
-                : "¾ÆÁ÷ ¸íÈ®ÇÑ ½Â¸®°¡ ¾Æ´Õ´Ï´Ù. »ó´ë°¡ ÀÌ±æ ¼ö ÀÖ´Â °æ¿ì°¡ Á¸ÀçÇÕ´Ï´Ù.";
+                ? "í”Œë ˆì´ì–´ 1ì´ ì–´ë–¤ ê²½ìš°ì—ë„ ê²½ê³„ì„ì„ ì ë ¹í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤! (ëª…í™•í•œ ìŠ¹ë¦¬)"
+                : "ì•„ì§ ëª…í™•í•œ ìŠ¹ë¦¬ê°€ ì•„ë‹™ë‹ˆë‹¤. ìƒëŒ€ê°€ ì´ê¸¸ ìˆ˜ ìˆëŠ” ê²½ìš°ê°€ ì¡´ì¬í•©ë‹ˆë‹¤.";
         }
         else
         {
-            return "°¢ ÇÃ·¹ÀÌ¾îÀÇ Ä«µå°¡ 3ÀåÀÌ¾î¾ß ÇÏ°Å³ª, ÇÃ·¹ÀÌ¾î 1¸¸ 3ÀåÀÏ ¶§¸¸ ¸íÈ®ÇÑ ½Â¸® ÆÇÁ¤ÀÌ °¡´ÉÇÕ´Ï´Ù.";
+            return "ê° í”Œë ˆì´ì–´ì˜ ì¹´ë“œê°€ 3ì¥ì´ì–´ì•¼ í•˜ê±°ë‚˜, í”Œë ˆì´ì–´ 1ë§Œ 3ì¥ì¼ ë•Œë§Œ ëª…í™•í•œ ìŠ¹ë¦¬ íŒì •ì´ ê°€ëŠ¥í•©ë‹ˆë‹¤.";
         }
     }
 
-    // Á·º¸ ÆÇÁ¤ (°£´Ü ¹öÀü)
+    // ì¡±ë³´ íŒì • (ê°„ë‹¨ ë²„ì „)
     private enum HandRank
     {
         StraightFlush = 6,
@@ -165,13 +165,13 @@ public class VerificationTool : EditorWindow
         return HandRank.CardSum;
     }
 
-    // Ä«µå µ¿µî¼º ºñ±³ (»ö»ó+¼ıÀÚ)
+    // ì¹´ë“œ ë™ë“±ì„± ë¹„êµ (ìƒ‰ìƒ+ìˆ«ì)
     private static bool ContainsCard(List<Card> list, Card card)
     {
         return list.Any(c => c.CardNumber == card.CardNumber && c.Color == card.Color);
     }
 
-    // ¸ğµç °¡´ÉÇÑ Ä«µå »ı¼º (»ö»ó 6Á¾, ¼ıÀÚ 1~9)
+    // ëª¨ë“  ê°€ëŠ¥í•œ ì¹´ë“œ ìƒì„± (ìƒ‰ìƒ 6ì¢…, ìˆ«ì 1~9)
     private List<Card> GetAllPossibleCards()
     {
         var all = new List<Card>();
@@ -185,7 +185,7 @@ public class VerificationTool : EditorWindow
         return all;
     }
 
-    // ¸íÈ®ÇÑ ½Â¸® ÆÇÁ¤
+    // ëª…í™•í•œ ìŠ¹ë¦¬ íŒì •
     private bool IsProvenWin(List<Card> myCards, List<Card> opponentCards, List<Card> unusedCards)
     {
         int needed = 3 - opponentCards.Count;
@@ -211,11 +211,11 @@ public class VerificationTool : EditorWindow
                         return false;
                     if (mySum > oppSum)
                         continue;
-                    // ÇÕÀÌ °°À¸¸é ¹«½ÂºÎ, °è¼Ó ºñ±³
+                    // í•©ì´ ê°™ìœ¼ë©´ ë¬´ìŠ¹ë¶€, ê³„ì† ë¹„êµ
                 }
                 else
                 {
-                    // ±âÁ¸ ¼ıÀÚ ºñ±³(³»¸²Â÷¼ø)
+                    // ê¸°ì¡´ ìˆ«ì ë¹„êµ(ë‚´ë¦¼ì°¨ìˆœ)
                     var myNums = myCards.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
                     var oppNums = fullOpp.Select(c => c.CardNumber).OrderByDescending(n => n).ToArray();
                     for (int i = 0; i < 3; i++)
@@ -231,7 +231,7 @@ public class VerificationTool : EditorWindow
         return true;
     }
 
-    // Á¶ÇÕ ±¸ÇÏ±â
+    // ì¡°í•© êµ¬í•˜ê¸°
     private IEnumerable<List<Card>> GetCombinations(List<Card> list, int count)
     {
         if (count == 0)
