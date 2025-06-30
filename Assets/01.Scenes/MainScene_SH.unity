@@ -1605,7 +1605,7 @@ GameObject:
   - component: {fileID: 1755554100}
   - component: {fileID: 1755554101}
   m_Layer: 0
-  m_Name: PhotonSeverManager
+  m_Name: PhotonServerManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

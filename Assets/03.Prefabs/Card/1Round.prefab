@@ -100,7 +100,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CardSprite: {fileID: 0}
+  IsMine: 0
+  BattleField: {fileID: 0}
 --- !u!1 &1906974304754311067
 GameObject:
   m_ObjectHideFlags: 0
@@ -206,7 +207,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CardSprite: {fileID: 0}
+  IsMine: 0
+  BattleField: {fileID: 0}
 --- !u!114 &2735803156354339550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -451,7 +453,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CardSprite: {fileID: 0}
+  IsMine: 0
+  BattleField: {fileID: 0}
 --- !u!1 &2764538343063914111
 GameObject:
   m_ObjectHideFlags: 0
@@ -552,7 +555,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CardSprite: {fileID: 0}
+  IsMine: 0
+  BattleField: {fileID: 0}
 --- !u!1 &6961514819736262747
 GameObject:
   m_ObjectHideFlags: 0
@@ -653,7 +657,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CardSprite: {fileID: 0}
+  IsMine: 0
+  BattleField: {fileID: 0}
 --- !u!1 &7023269612962649103
 GameObject:
   m_ObjectHideFlags: 0
@@ -754,7 +759,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CardSprite: {fileID: 0}
+  IsMine: 0
+  BattleField: {fileID: 0}
 --- !u!1 &8203375538915393654
 GameObject:
   m_ObjectHideFlags: 0
@@ -764,6 +770,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7503110420191894897}
+  - component: {fileID: 565097095440298376}
   m_Layer: 0
   m_Name: 1Round
   m_TagString: Untagged
@@ -793,6 +800,26 @@ Transform:
   - {fileID: 3604987488153164591}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &565097095440298376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8203375538915393654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59dc741a9b19b5c43a4e6c434ab1cfad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PlayerCardSlots:
+  - {fileID: 238934906802491391}
+  - {fileID: 8578888189309526399}
+  - {fileID: 8553322621783318533}
+  EnemyCardSlots:
+  - {fileID: 7859921320716256584}
+  - {fileID: 4727133584013296589}
+  - {fileID: 5571407320960853015}
 --- !u!1001 &4435191406897400266
 PrefabInstance:
   m_ObjectHideFlags: 0

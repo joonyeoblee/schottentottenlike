@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 // Photon API 네임스페이
 
 // 역할: 포톤 서버 관리자(서버 연결, 로비 입장, 방 입장, 게임 입장)
-public class PhotonSeverManager : Singleton<PhotonSeverManager>
+public class PhotonServerManager : Singleton<PhotonServerManager>
 {
     // MonoBehaviourPunCallbacks : 유니티 이벤트 말고도 Pun 서버 이벤트를 받을 수 있다.
     private readonly string _gameVersion = "0.0.1";
@@ -50,8 +50,15 @@ public class PhotonSeverManager : Singleton<PhotonSeverManager>
     {
         if (_shouldSpawnField && scene.buildIndex == 2)
         {
-            PhotonNetwork.Instantiate("Field", new Vector3(0,5,0), Quaternion.identity);
-            Debug.Log("Field 생성됨");
+            if(PhotonNetwork.IsMasterClient)
+            {
+                PhotonNetwork.Instantiate("Field", new Vector3(0,5,0), Quaternion.identity);
+                Debug.Log("방장이므로 Field 생성됨.");
+            }
+            else
+            {
+                Debug.Log("방장 아니므로 Field 미생성됨.");
+            }
             _shouldSpawnField = false;
         }
 
