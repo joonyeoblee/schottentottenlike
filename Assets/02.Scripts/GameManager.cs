@@ -16,7 +16,7 @@ public class GameManager : Singleton<GameManager>
     protected override void Awake()
     {
         base.Awake();
-        InitializeGame();
+        // InitializeGame();
     }
 
     protected override void Start()
@@ -35,22 +35,6 @@ public class GameManager : Singleton<GameManager>
             _player2Stones.Add(new Stack<Card>());
         }
         _deck = GetAllPossibleCards();
-    }
-
-    // 경계석에 카드 배치
-    public bool PlaceCard(int player, int stoneIndex, Card card)
-    {
-        if (!ContainsCard(_deck, card)) 
-            return false;
-
-        if (player == 1 && _player1Stones[stoneIndex].Count < 3)
-            _player1Stones[stoneIndex].Push(card);
-        else if (player == 2 && _player2Stones[stoneIndex].Count < 3)
-            _player2Stones[stoneIndex].Push(card);
-        else
-            return false;
-
-        return true;
     }
 
     // 경계석 점령 판정
@@ -101,7 +85,6 @@ public class GameManager : Singleton<GameManager>
                 Card card = new Card(num, color);
                 Debug.Log($"{card.Color}");
                 all.Push(card);
-                
             }
         }
         return all;

@@ -1,6 +1,25 @@
 <linker>
   <assembly fullname="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="BattleField" preserve="all" />
+    <type fullname="CardDeck" preserve="all" />
+    <type fullname="CardDragger" preserve="all" />
+    <type fullname="CardSlot" preserve="all" />
+    <type fullname="HandCardManager" preserve="all" />
+    <type fullname="HandCardSlot" preserve="all" />
+    <type fullname="RoundSlot" preserve="all" />
+    <type fullname="TargetSelector" preserve="all" />
     <type fullname="UI_Room" preserve="all" />
+    <type fullname="Card" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="EPO, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="EPOOutline.Outlinable" preserve="all" />
+    <type fullname="EPOOutline.TargetStateListener" preserve="all" />
+    <type fullname="EPOOutline.Outlinable/OutlineProperties" preserve="nothing" serialized="true" />
+    <type fullname="EPOOutline.OutlineTarget" preserve="nothing" serialized="true" />
+    <type fullname="EPOOutline.SerializedPass" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="PhotonUnityNetworking, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="Photon.Pun.PhotonView" preserve="all" />
   </assembly>
   <assembly fullname="Unity.Addressables, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" preserve="all">
     <type fullname="UnityEngine.AddressableAssets.Addressables" preserve="all" />
@@ -33,10 +52,15 @@
     <type fullname="UnityEngine.RectTransform" preserve="all" />
     <type fullname="UnityEngine.Shader" preserve="all" />
     <type fullname="UnityEngine.Sprite" preserve="all" />
+    <type fullname="UnityEngine.SpriteRenderer" preserve="all" />
     <type fullname="UnityEngine.Texture2D" preserve="all" />
+    <type fullname="UnityEngine.Transform" preserve="all" />
     <type fullname="UnityEngine.Events.ArgumentCache" preserve="nothing" serialized="true" />
     <type fullname="UnityEngine.Events.PersistentCallGroup" preserve="nothing" serialized="true" />
     <type fullname="UnityEngine.Events.PersistentListenerMode" preserve="nothing" serialized="true" />
+  </assembly>
+  <assembly fullname="UnityEngine.Physics2DModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <type fullname="UnityEngine.BoxCollider2D" preserve="all" />
   </assembly>
   <assembly fullname="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
     <type fullname="UnityEngine.Font" preserve="all" />

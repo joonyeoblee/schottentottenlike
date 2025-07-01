@@ -26,17 +26,36 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
         }
     }
 
-    public void Refresh(int handIndex , Card card)
+    public void Refresh(int handIndex, Card card, bool isMine)
     {
         HandCardIndex = handIndex;
         Card = card;
-        Debug.Log(Card.CardImageAddress + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        Addressables.LoadAssetAsync<Sprite>(Card.CardImageAddress).Completed += handle =>
+
+        if (card == null)
         {
-            _cardSprite.color = Color.white;
-            _cardSprite.sprite = handle.Result;
-        };
+            _cardSprite.sprite = null;
+            return;
+        }
+
+        _cardSprite.color = Color.white;
+
+        if (isMine)
+        {
+            Addressables.LoadAssetAsync<Sprite>(card.CardImageAddress).Completed += handle =>
+            {
+                _cardSprite.sprite = handle.Result;
+            };
+        }
+        else
+        {
+            // 상대 카드용 뒷면 로딩
+            Addressables.LoadAssetAsync<Sprite>("black").Completed += handle =>
+            {
+                _cardSprite.sprite = handle.Result;
+            };
+        }
     }
+
 
     public void Clear()
     {

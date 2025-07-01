@@ -1,12 +1,14 @@
+using System;
+using System.Collections;
 using Photon.Pun;
 using UnityEngine;
-public class BattleField : MonoBehaviour
+public class BattleField : Singleton<BattleField>
 {
     public HandCardManager[] HandCardManagers; // 카드 각각 넣어야 함
     public RoundSlot[] Rounds;
     public PhotonView PhotonView;
     public CardDeck CardDeck;
-    
+
     private void Start()
     {
         int i = 0;
@@ -48,13 +50,54 @@ public class BattleField : MonoBehaviour
 
     public void GameStart()
     {
+        Debug.Log("GameStart 호출됨 - 덱 셔플 시작");
+        StartCoroutine(GameStartSequence());
+    }
+
+    private IEnumerator GameStartSequence()
+    {
+        // 1. 셔플 시작
+        CardDeck.StartDeckSuffle();
+
+        // 2. 셔플 완료까지 대기 (이벤트로 처리됨)
+        bool isShuffled = false;
+        void OnShuffled() => isShuffled = true;
+        CardDeck.OnCardSuffle += OnShuffled;
+
+        // 대기
+        yield return new WaitUntil(() => isShuffled);
+        CardDeck.OnCardSuffle -= OnShuffled;
+
+        Debug.Log("덱 셔플 완료됨, 카드 배분 시작");
+
+        // 3. 셔플 후 애니메이션 대기 시간 (ex. 딜레이)
+        yield return new WaitForSeconds(0.5f);
+
+        // 4. 손패 배분
+        yield return DealFirstTurnCardsCoroutine();
+
+        Debug.Log("첫 손패 배분 완료, 게임 시작 준비됨");
+    }
+
+    private IEnumerator DealFirstTurnCardsCoroutine()
+    {
         int i = 0;
-        foreach (HandCardManager handCardManager in HandCardManagers)
+    
+        // 내 카드
+        foreach (var slot in HandCardManagers[0].HandCardSlots)
         {
-            foreach (var HandCardSlot in handCardManager.HandCardSlots)
-            {
-                HandCardSlot.Refresh(i++,CardDeck.GetCard());
-            }
+            var card = CardDeck.GetCard();
+            slot.Refresh(i++, card, true); // 내 카드
+            yield return new WaitForSeconds(0.2f);
+        }
+
+        // 상대 카드
+        i = 0;
+        foreach (var slot in HandCardManagers[1].HandCardSlots)
+        {
+            var card = CardDeck.GetCard();
+            slot.Refresh(i++, card, false); // 상대 카드
+            yield return new WaitForSeconds(0.2f);
         }
     }
 
@@ -65,26 +108,12 @@ public class BattleField : MonoBehaviour
         // 상대방 입장에서 Enemy 슬롯에 추가
         Rounds[roundIndex].EnemyCardSlots[slotIndex].Refresh(card);
     }
-
+    
+    // 덱 데이터 수신 RPC
     [PunRPC]
-    public void RemoveHandCard(int handCardManagerIndex, int handCardIndex)
+    public void RPC_SyncDeck(int[] nums, int[] colors)
     {
-        //HandCardSlots[handCardIndex].IsMine = false;
-        // HandCardManagers[handCardIndex].EnemyHandSlots[handCardIndex].Refresh(handCardIndex);
-        // HandCardManagers[handCardMnagerIndex].EnemyHandSlots[handCardIndex].Refresh(handCardIndex);
-        // 상대방 입장에서 EnemyHandSlots 배열에서 카드 제거
-        if (handCardManagerIndex < HandCardManagers.Length)
-        {
-            HandCardManagers[handCardManagerIndex].HandCardSlots[handCardIndex].Refresh(handCardIndex,null);
-            // if (targetSlot != null)
-            // {
-            //     targetSlot.RemoveCard(); // 카드 제거
-            //     Debug.Log($"[BattleField] 상대방 {handCardManagerIndex}-{handCardIndex} 카드 제거 RPC 수신 완료");
-            // }
-            // else
-            // {
-            //     Debug.LogWarning($"[BattleField] 대상 슬롯이 null임");
-            // }
-        }
+        CardDeck.SyncDeckFromData(nums, colors);
     }
+    
 }

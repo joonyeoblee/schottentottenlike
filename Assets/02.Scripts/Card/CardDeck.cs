@@ -1,19 +1,57 @@
 using System;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 public class CardDeck : MonoBehaviour
 {
     public Stack<Card> cards = new Stack<Card>();
-    public event Action OnCardSuffle; // 임시코드
-    private void Start()
+    public event Action OnCardSuffle;
+
+    public void StartDeckSuffle()
     {
-        DeckSuffle();
+        if (!PhotonNetwork.IsMasterClient)
+            return;
+
+        List<Card> cardList = new List<Card>(GameManager.Instance.GetAllPossibleCards());
+
+        // 셔플
+        System.Random rng = new System.Random();
+        int n = cardList.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rng.Next(n + 1);
+            (cardList[k], cardList[n]) = (cardList[n], cardList[k]);
+        }
+
+        cards = new Stack<Card>(cardList);
+
+        // 덱을 int[]로 변환
+        int[] nums = new int[cardList.Count];
+        int[] colors = new int[cardList.Count];
+
+        for (int i = 0; i < cardList.Count; i++)
+        {
+            nums[i] = cardList[i].CardNumber;
+            colors[i] = (int)cardList[i].Color;
+        }
+
+        // 동기화 RPC 호출
+        BattleField.Instance.PhotonView.RPC(nameof(BattleField.RPC_SyncDeck), RpcTarget.Others, nums, colors);
+
+        OnCardSuffle?.Invoke();
     }
 
-    private void DeckSuffle()
+    public void SyncDeckFromData(int[] nums, int[] colors)
     {
-        cards = GameManager.Instance.GetAllPossibleCards();
+        Stack<Card> syncedDeck = new Stack<Card>();
+        for (int i = nums.Length - 1; i >= 0; i--)
+        {
+            syncedDeck.Push(new Card(nums[i], (ECardColor)colors[i]));
+        }
+
+        cards = syncedDeck;
         OnCardSuffle?.Invoke();
     }
 
