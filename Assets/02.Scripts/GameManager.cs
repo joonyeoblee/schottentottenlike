@@ -5,13 +5,13 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : Singleton<GameManager>
 {
-    [Header("¼îÅÙÅäÅÙ ·ê")]
+    [Header("ì‡¼í…í† í… ë£°")]
     [SerializeField] 
     private int _stoneCount = 9;
 
-    private List<List<Card>> _player1Stones;
-    private List<List<Card>> _player2Stones;
-    private List<Card> _deck;
+    private List<Stack<Card>> _player1Stones;
+    private List<Stack<Card>> _player2Stones;
+    private Stack<Card> _deck;
 
     protected override void Awake()
     {
@@ -27,39 +27,37 @@ public class GameManager : Singleton<GameManager>
 
     private void InitializeGame()
     {
-        _player1Stones = new List<List<Card>>();
-        _player2Stones = new List<List<Card>>();
+        _player1Stones = new List<Stack<Card>>();
+        _player2Stones = new List<Stack<Card>>();
         for (int i = 0; i < _stoneCount; i++)
         {
-            _player1Stones.Add(new List<Card>());
-            _player2Stones.Add(new List<Card>());
+            _player1Stones.Add(new Stack<Card>());
+            _player2Stones.Add(new Stack<Card>());
         }
         _deck = GetAllPossibleCards();
     }
 
-    // °æ°è¼®¿¡ Ä«µå ¹èÄ¡
+    // ê²½ê³„ì„ì— ì¹´ë“œ ë°°ì¹˜
     public bool PlaceCard(int player, int stoneIndex, Card card)
     {
         if (!ContainsCard(_deck, card)) 
             return false;
 
         if (player == 1 && _player1Stones[stoneIndex].Count < 3)
-            _player1Stones[stoneIndex].Add(card);
+            _player1Stones[stoneIndex].Push(card);
         else if (player == 2 && _player2Stones[stoneIndex].Count < 3)
-            _player2Stones[stoneIndex].Add(card);
+            _player2Stones[stoneIndex].Push(card);
         else
             return false;
 
-        _deck.RemoveAll(c => c.CardNumber == card.CardNumber && c.Color == card.Color);
         return true;
     }
 
-    // °æ°è¼® Á¡·É ÆÇÁ¤
-    // 1: ÇÃ·¹ÀÌ¾î1 Á¡·É, -1: ÇÃ·¹ÀÌ¾î2 Á¡·É, 0: ¹ÌÁ¡·É/¹«½ÂºÎ
+    // ê²½ê³„ì„ ì ë ¹ íŒì •
     public int JudgeStone(int stoneIndex)
     {
-        var p1 = _player1Stones[stoneIndex];
-        var p2 = _player2Stones[stoneIndex];
+        var p1 = _player1Stones[stoneIndex].ToList();
+        var p2 = _player2Stones[stoneIndex].ToList();
 
         if (p1.Count == 3 && p2.Count == 3)
         {
@@ -67,47 +65,55 @@ public class GameManager : Singleton<GameManager>
         }
         else if (p1.Count == 3 && p2.Count < 3)
         {
-            var unused = GetUnusedCards();
-            bool provenWin = IsProvenWin(p1, p2, unused);
-            return provenWin ? 1 : 0;
+            var unused = GetUnusedCards().ToList();
+            return IsProvenWin(p1, p2, unused) ? 1 : 0;
         }
         else if (p2.Count == 3 && p1.Count < 3)
         {
-            var unused = GetUnusedCards();
-            bool provenWin = IsProvenWin(p2, p1, unused);
-            return provenWin ? -1 : 0;
+            var unused = GetUnusedCards().ToList();
+            return IsProvenWin(p2, p1, unused) ? -1 : 0;
         }
         return 0;
     }
 
-    // ÀüÃ¼ ¹Ì»ç¿ë Ä«µå ¹İÈ¯
-    public List<Card> GetUnusedCards()
+    // ì „ì²´ ë¯¸ì‚¬ìš© ì¹´ë“œ ë°˜í™˜ (Stack ë²„ì „)
+    public Stack<Card> GetUnusedCards()
     {
-        var used = _player1Stones.SelectMany(x => x).Concat(_player2Stones.SelectMany(x => x)).ToList();
-        return GetAllPossibleCards().Where(c => !ContainsCard(used, c)).ToList();
+        List<Card> used = _player1Stones.SelectMany(x => x)
+                                        .Concat(_player2Stones.SelectMany(x => x))
+                                        .ToList();
+
+        List<Card> unused = GetAllPossibleCards()
+                            .Where(c => !ContainsCard(used, c))
+                            .ToList();
+
+        return new Stack<Card>(unused);
     }
 
-    // ¸ğµç Ä«µå »ı¼º (»ö»ó 6Á¾, ¼ıÀÚ 1~9)
-    private List<Card> GetAllPossibleCards()
+    // ì „ì²´ ì¹´ë“œ ìƒì„± (ìƒ‰ìƒ 6ì¢…, ìˆ«ì 1~9)
+    public Stack<Card> GetAllPossibleCards()
     {
-        var all = new List<Card>();
+        Stack<Card> all = new Stack<Card>();
         foreach (ECardColor color in System.Enum.GetValues(typeof(ECardColor)))
         {
             for (int num = 1; num <= 9; num++)
             {
-                all.Add(new Card(num, color));
+                Card card = new Card(num, color);
+                Debug.Log($"{card.Color}");
+                all.Push(card);
+                
             }
         }
         return all;
     }
 
-    // Ä«µå µ¿µî¼º ºñ±³ (»ö»ó+¼ıÀÚ)
-    private static bool ContainsCard(List<Card> list, Card card)
+    // ì¹´ë“œ ë™ë“±ì„± ë¹„êµ
+    private static bool ContainsCard(IEnumerable<Card> list, Card card)
     {
         return list.Any(c => c.CardNumber == card.CardNumber && c.Color == card.Color);
     }
 
-    // Á·º¸ ÆÇÁ¤
+    // ì¡±ë³´ íŒì •
     private enum HandRank
     {
         StraightFlush = 6,
@@ -126,30 +132,22 @@ public class GameManager : Singleton<GameManager>
         bool isThree = cards.GroupBy(c => c.CardNumber).Any(g => g.Count() == 3);
         bool isPair = cards.GroupBy(c => c.CardNumber).Any(g => g.Count() == 2);
 
-        if (isFlush && isStraight) 
-            return HandRank.StraightFlush;
-        if (isThree) 
-            return HandRank.ThreeOfAKind;
-        if (isStraight) 
-            return HandRank.Straight;
-        if (isFlush) 
-            return HandRank.Flush;
-        if (isPair) 
-            return HandRank.Pair;
+        if (isFlush && isStraight) return HandRank.StraightFlush;
+        if (isThree) return HandRank.ThreeOfAKind;
+        if (isStraight) return HandRank.Straight;
+        if (isFlush) return HandRank.Flush;
+        if (isPair) return HandRank.Pair;
 
         return HandRank.CardSum;
     }
 
-    // Á·º¸ ºñ±³
     private int CompareHands(List<Card> hand1, List<Card> hand2)
     {
         var rank1 = EvaluateHand(hand1);
         var rank2 = EvaluateHand(hand2);
 
-        if (rank1 > rank2) 
-            return 1;
-        if (rank2 > rank1) 
-            return -1;
+        if (rank1 > rank2) return 1;
+        if (rank2 > rank1) return -1;
 
         if (rank1 == HandRank.CardSum)
         {
@@ -172,7 +170,6 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
-    // ¸íÈ®ÇÑ ½Â¸® ÆÇÁ¤
     private bool IsProvenWin(List<Card> myCards, List<Card> opponentCards, List<Card> unusedCards)
     {
         int needed = 3 - opponentCards.Count;
@@ -196,9 +193,6 @@ public class GameManager : Singleton<GameManager>
                     int oppSum = fullOpp.Sum(c => c.CardNumber);
                     if (oppSum > mySum)
                         return false;
-                    if (mySum > oppSum)
-                        continue;
-                    // ÇÕÀÌ °°À¸¸é ¹«½ÂºÎ, °è¼Ó ºñ±³
                 }
                 else
                 {
@@ -217,8 +211,6 @@ public class GameManager : Singleton<GameManager>
         return true;
     }
 
-
-    // Á¶ÇÕ ±¸ÇÏ±â
     private IEnumerable<List<Card>> GetCombinations(List<Card> list, int count)
     {
         if (count == 0)
@@ -226,6 +218,7 @@ public class GameManager : Singleton<GameManager>
             yield return new List<Card>();
             yield break;
         }
+
         for (int i = 0; i < list.Count; i++)
         {
             var head = list[i];
