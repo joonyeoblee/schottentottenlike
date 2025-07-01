@@ -41,6 +41,8 @@ MonoBehaviour:
   - RespawnSpaceship
   - RPC_UpdateCardInSlot
   - SetCard
+  - RemoveHandCard
+  - RPC_SyncDeck
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

@@ -9,12 +9,13 @@ public class CardDragger : BaseSelectable, IPointerDownHandler, IPointerUpHandle
     private Vector3 _originPosition;
     private Camera _mainCamera;
     private CardController _cardController;
-
+    private HandCardSlot _handCardSlot;
     private void Start()
     {
         _originPosition = transform.position;
         _mainCamera = Camera.main;
         _cardController = GetComponent<CardController>();
+        _handCardSlot = GetComponent<HandCardSlot>();
     }
 
     // 카드 드래그 시작
@@ -71,12 +72,12 @@ public class CardDragger : BaseSelectable, IPointerDownHandler, IPointerUpHandle
                 //     _cardController.Card.CardImageAddress);
 
                 // 카드 배치
-                if (slotCollider.OverlapPoint(transform.position))
-                {
-                    cardSlot.Refresh(_cardController.Card);
-                    transform.position = hit.transform.position;
-                    return;
-                }
+ 
+                cardSlot.Refresh(_handCardSlot.Card);
+                _handCardSlot.Clear();
+                // 원위치로 되돌리기
+                transform.position = _originPosition;
+                return;
             }
         }
 

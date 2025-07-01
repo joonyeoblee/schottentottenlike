@@ -27,7 +27,7 @@ public class CardDataLoader : MonoBehaviour
 
             if (values.Length < 4) continue;
 
-            var data = new CardData
+            CardData data = new CardData
             {
                 ID = values[0].Trim(),
                 Color = values[1].Trim(),

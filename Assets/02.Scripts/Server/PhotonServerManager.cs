@@ -13,6 +13,8 @@ public class PhotonServerManager : Singleton<PhotonServerManager>
     private readonly string _gameVersion = "0.0.1";
     private AddressablesPool _pool = new  AddressablesPool();
     private bool _shouldSpawnField = false;
+
+    private GameObject _field;
     private void Start()
     {
         // 설정
@@ -52,12 +54,12 @@ public class PhotonServerManager : Singleton<PhotonServerManager>
         {
             if(PhotonNetwork.IsMasterClient)
             {
-                PhotonNetwork.Instantiate("Field", new Vector3(0,5,0), Quaternion.identity);
+                _field = PhotonNetwork.Instantiate("Field", new Vector3(0,5,0), Quaternion.identity);
                 Debug.Log("방장이므로 Field 생성됨.");
             }
             else
             {
-                Debug.Log("방장 아니므로 Field 미생성됨.");
+                _field.GetComponent<BattleField>().GameStart();
             }
             _shouldSpawnField = false;
         }

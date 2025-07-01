@@ -24,7 +24,7 @@ public class VerificationTool : EditorWindow
         if (player1Cards.Count < 3)
         {
             if (GUILayout.Button("카드 추가 (플레이어 1)"))
-                player1Cards.Add(new Card());
+                player1Cards.Add(new Card(1,ECardColor.Red));
         }
         EditorGUILayout.EndVertical();
 
@@ -36,7 +36,7 @@ public class VerificationTool : EditorWindow
         if (player2Cards.Count < 3)
         {
             if (GUILayout.Button("카드 추가 (플레이어 2)"))
-                player2Cards.Add(new Card());
+                player2Cards.Add(new Card(1,ECardColor.Red));
         }
         EditorGUILayout.EndVertical();
 
@@ -179,7 +179,7 @@ public class VerificationTool : EditorWindow
         {
             for (int num = 1; num <= 9; num++)
             {
-                all.Add(new Card { CardNumber = num, Color = color });
+                all.Add(new Card (num, color));
             }
         }
         return all;
