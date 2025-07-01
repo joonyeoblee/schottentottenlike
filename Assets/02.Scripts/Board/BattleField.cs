@@ -1,4 +1,3 @@
-using System;
 using Photon.Pun;
 using UnityEngine;
 public class BattleField : MonoBehaviour
@@ -8,15 +7,25 @@ public class BattleField : MonoBehaviour
 
     private void Start()
     {
-        foreach (var round in Rounds)
+        int i = 0;
+        foreach (RoundSlot round in Rounds)
         {
-            foreach (var playerSlot in round.PlayerCardSlots)
+            round.index = i++;
+
+            int j = 0;
+            foreach (CardSlot playerSlot in round.PlayerCardSlots)
             {
                 playerSlot.IsMine = true;
+                playerSlot.Index = j++;
+                playerSlot.RoundIndex = round.index;
             }
-            foreach (var enemySlot in round.EnemyCardSlots)
+
+            j = 0;
+            foreach (CardSlot enemySlot in round.EnemyCardSlots)
             {
                 enemySlot.IsMine = false;
+                enemySlot.Index = j++;
+                enemySlot.RoundIndex = round.index;
             }
         }    
     }
