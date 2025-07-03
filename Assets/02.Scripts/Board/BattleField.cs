@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Photon.Pun;
 using UnityEngine;
@@ -44,8 +43,6 @@ public class BattleField : Singleton<BattleField>
                 playerHandCardSlot.HandCardIndex = handCardManager.Index;
             }
         }
-
-        CardDeck.OnCardSuffle += GameStart;
     }
 
     public void GameStart()
@@ -82,13 +79,13 @@ public class BattleField : Singleton<BattleField>
     private IEnumerator DealFirstTurnCardsCoroutine()
     {
         int i = 0;
-    
+
         // 내 카드
         foreach (var slot in HandCardManagers[0].HandCardSlots)
         {
             var card = CardDeck.GetCard();
             slot.Refresh(i++, card, true); // 내 카드
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(0.2f); // 애니메이션을 위한 대기
         }
 
         // 상대 카드
@@ -97,7 +94,7 @@ public class BattleField : Singleton<BattleField>
         {
             var card = CardDeck.GetCard();
             slot.Refresh(i++, card, false); // 상대 카드
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(0.2f); // 애니메이션을 위한 대기
         }
     }
 
@@ -108,12 +105,12 @@ public class BattleField : Singleton<BattleField>
         // 상대방 입장에서 Enemy 슬롯에 추가
         Rounds[roundIndex].EnemyCardSlots[slotIndex].Refresh(card);
     }
-    
+
     // 덱 데이터 수신 RPC
     [PunRPC]
     public void RPC_SyncDeck(int[] nums, int[] colors)
     {
         CardDeck.SyncDeckFromData(nums, colors);
     }
-    
+
 }

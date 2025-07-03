@@ -1,12 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-
 public class GameManager : Singleton<GameManager>
 {
     [Header("쇼텐토텐 룰")]
-    [SerializeField] 
+    [SerializeField]
     private int _stoneCount = 9;
 
     private List<Stack<Card>> _player1Stones;
@@ -78,12 +77,11 @@ public class GameManager : Singleton<GameManager>
     public Stack<Card> GetAllPossibleCards()
     {
         Stack<Card> all = new Stack<Card>();
-        foreach (ECardColor color in System.Enum.GetValues(typeof(ECardColor)))
+        foreach (ECardColor color in Enum.GetValues(typeof(ECardColor)))
         {
             for (int num = 1; num <= 9; num++)
             {
                 Card card = new Card(num, color);
-                Debug.Log($"{card.Color}");
                 all.Push(card);
             }
         }

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Photon.Pun;
 using UnityEngine;
-
+using Random = System.Random;
 public class CardDeck : MonoBehaviour
 {
     public Stack<Card> cards = new Stack<Card>();
@@ -15,14 +15,16 @@ public class CardDeck : MonoBehaviour
 
         List<Card> cardList = new List<Card>(GameManager.Instance.GetAllPossibleCards());
 
-        // 셔플
-        System.Random rng = new System.Random();
+        // 셔플 Fisher-Yates shuffle algorithm
+        Random rng = new Random();
         int n = cardList.Count;
         while (n > 1)
         {
             n--;
             int k = rng.Next(n + 1);
-            (cardList[k], cardList[n]) = (cardList[n], cardList[k]);
+            Card temp = cardList[k];
+            cardList[k] = cardList[n];
+            cardList[n] = temp;
         }
 
         cards = new Stack<Card>(cardList);
