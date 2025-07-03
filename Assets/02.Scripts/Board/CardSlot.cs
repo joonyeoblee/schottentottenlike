@@ -36,7 +36,7 @@ public class CardSlot : MonoBehaviourPunCallbacks
         // 내 카드일 때만 상대에게 알림
         if (IsMine && PhotonNetwork.IsConnected)
         {
-            BattleField.PhotonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
+            BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
         }
     }
 

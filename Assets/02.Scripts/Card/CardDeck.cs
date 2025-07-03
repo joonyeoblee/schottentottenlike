@@ -40,7 +40,7 @@ public class CardDeck : MonoBehaviour
         }
 
         // 동기화 RPC 호출
-        BattleField.Instance.PhotonView.RPC(nameof(BattleField.RPC_SyncDeck), RpcTarget.Others, nums, colors);
+        BattleField.Instance.photonView.RPC(nameof(BattleField.RPC_SyncDeck), RpcTarget.Others, nums, colors);
 
         OnCardSuffle?.Invoke();
     }
