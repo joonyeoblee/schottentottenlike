@@ -13,9 +13,9 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
     public int Index;
     public int HandCardIndex { get;  set; }
     private SpriteRenderer _cardSprite;
-    
+
     public Card Card;
-    
+
     private void Start()
     {
         BattleField = GetComponentInParent<BattleField>();
@@ -49,7 +49,7 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
         else
         {
             // 상대 카드용 뒷면 로딩
-            Addressables.LoadAssetAsync<Sprite>("black").Completed += handle =>
+            Addressables.LoadAssetAsync<Sprite>("Black").Completed += handle =>
             {
                 _cardSprite.sprite = handle.Result;
             };
