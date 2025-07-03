@@ -8,6 +8,7 @@ public class BattleField : Singleton<BattleField>
     public PhotonView PhotonView;
     public CardDeck CardDeck;
 
+    private bool _isShuffled;
     private void Start()
     {
         int i = 0;
@@ -43,6 +44,8 @@ public class BattleField : Singleton<BattleField>
                 playerHandCardSlot.HandCardIndex = handCardManager.Index;
             }
         }
+        CardDeck.OnCardSuffle += OnShuffled;
+
     }
 
     public void GameStart()
@@ -57,13 +60,9 @@ public class BattleField : Singleton<BattleField>
         CardDeck.StartDeckSuffle();
 
         // 2. 셔플 완료까지 대기 (이벤트로 처리됨)
-        bool isShuffled = false;
-        void OnShuffled() => isShuffled = true;
-        CardDeck.OnCardSuffle += OnShuffled;
 
         // 대기
-        yield return new WaitUntil(() => isShuffled);
-        CardDeck.OnCardSuffle -= OnShuffled;
+        yield return new WaitUntil(() => _isShuffled);
 
         Debug.Log("덱 셔플 완료됨, 카드 배분 시작");
 
@@ -75,7 +74,10 @@ public class BattleField : Singleton<BattleField>
 
         Debug.Log("첫 손패 배분 완료, 게임 시작 준비됨");
     }
-
+    private void OnShuffled()
+    {
+        _isShuffled = true;
+    }
     private IEnumerator DealFirstTurnCardsCoroutine()
     {
         int i = 0;
