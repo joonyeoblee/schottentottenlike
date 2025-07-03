@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class CardDrawTestScripts : MonoBehaviour
@@ -7,5 +8,13 @@ public class CardDrawTestScripts : MonoBehaviour
     public void Draw()
     {
         Instantiate(CardPrefab, DrawPoint);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            Draw();
+        }
     }
 }

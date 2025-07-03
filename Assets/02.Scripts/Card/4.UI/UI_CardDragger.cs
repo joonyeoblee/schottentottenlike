@@ -1,3 +1,4 @@
+using System;
 using EPOOutline;
 using Photon.Pun;
 using UnityEngine;
@@ -15,10 +16,15 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     private Camera _mainCamera;
     private HandCardSlot _handCardSlot;
     private CardHandArranger _handArranger;
-    private Vector3 _originalScale;
+    [SerializeField]private Vector3 _originalScale;
 
     // <<< 추가: Outlinable 컴포넌트를 저장할 변수
     private Outlinable _outlinable;
+
+    private void Awake()
+    {
+
+    }
 
     void Start()
     {
@@ -84,7 +90,6 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
             _handArranger.ArrangeCards();
         }
 
-        // ★ 바로 원위치
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
     }

@@ -1,3 +1,4 @@
+using System;
 using DG.Tweening;
 using UnityEngine;
 using System.Collections; // 코루틴 사용을 위해 추가
@@ -16,11 +17,21 @@ public class UI_CardDrawShow : MonoBehaviour
     public float durationToMid = 0.5f;
     public float durationToEnd = 0.5f;
     public Ease easeType = Ease.OutQuad;
-
+private UI_CardDragger _uiCardDragger;
     [SerializeField]private Transform _originalParent;
+
+    private void Awake()
+    {
+        _uiCardDragger = GetComponent<UI_CardDragger>();
+
+    }
 
     void Start()
     {
+        HandPoint = GameObject.FindWithTag("MyHand").transform;
+        startPoint = GameObject.FindWithTag("DeckPoint").transform;
+        midPoint = GameObject.FindWithTag("MiddleShowPoint").transform;
+
         if (objectToMove == null || startPoint == null || midPoint == null || HandPoint == null)
         {
             Debug.LogError("필수 Transform이 할당되지 않았습니다.");
@@ -39,6 +50,7 @@ public class UI_CardDrawShow : MonoBehaviour
         // --- 1단계: 준비 ---
         // 카드(UI)를 슬롯에서 분리하고 시작점으로 이동
         Debug.Log("0. 시퀀스 준비");
+        _uiCardDragger.enabled = false;
         if (_originalParent == null)
         {
             _originalParent = objectToMove.parent;
@@ -102,6 +114,8 @@ public class UI_CardDrawShow : MonoBehaviour
             objectToMove.SetParent(_originalParent);
             objectToMove.localPosition = Vector3.zero;
             objectToMove.localRotation = Quaternion.identity;
+            _uiCardDragger.enabled = true;
+
         });
 
         return mySequence;

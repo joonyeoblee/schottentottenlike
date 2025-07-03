@@ -6,6 +6,9 @@ TagManager:
   tags:
   - PlayerSlot
   - EnemySlot
+  - MyHand
+  - DeckPoint
+  - MiddleShowPoint
   layers:
   - Default
   - TransparentFX
