@@ -11,11 +11,13 @@ GameObject:
   - component: {fileID: 3788556802659135735}
   - component: {fileID: 1064613102788513832}
   - component: {fileID: 6852024227215421478}
+  - component: {fileID: 8284308571726655097}
   - component: {fileID: 1976770885247982384}
   - component: {fileID: 8414408717049882651}
   - component: {fileID: 7098496160952907805}
   - component: {fileID: 8857890862244156984}
   - component: {fileID: 1640204607337734434}
+  - component: {fileID: 1642897510664312116}
   m_Layer: 0
   m_Name: CardUI
   m_TagString: Untagged
@@ -61,7 +63,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 8af737612995934469fa8cf679ae5041, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -105,6 +107,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56f70df0de2f244b5bee7bcdaca35ec6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &8284308571726655097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6856200020086575882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b13e5b4733475849b11733be6d80eb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  frontTexture: {fileID: 2800000, guid: 9f3f3ce8f04c8f54982314eb1305c758, type: 3}
+  backTexture: {fileID: 2800000, guid: 600895ab38839654095768af1fd6ab1d, type: 3}
 --- !u!61 &1976770885247982384
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -239,6 +255,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7811a7708030fe64abf063a5b2c3150c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1642897510664312116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6856200020086575882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb6a613561c56834594509fae689800d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RotateSensitivity: 1
+  MaxRotationY: 90
+  RotationSmoothTime: 0.1
 --- !u!1 &6941695836756250442
 GameObject:
   m_ObjectHideFlags: 0
@@ -250,6 +281,7 @@ GameObject:
   - component: {fileID: 1050074119267441413}
   - component: {fileID: 6630323102997489454}
   - component: {fileID: 3338593547740343192}
+  - component: {fileID: 9167152091690410109}
   m_Layer: 0
   m_Name: CardUIHas
   m_TagString: Untagged
@@ -267,7 +299,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.4172, y: 1.4172, z: 1.4172}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3788556802659135735}
@@ -340,3 +372,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034bc47afcbf5e141a58d5c20b7808e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &9167152091690410109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6941695836756250442}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb6a613561c56834594509fae689800d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RotateSensitivity: 1
+  MaxRotationY: 90
+  RotationSmoothTime: 0.1
