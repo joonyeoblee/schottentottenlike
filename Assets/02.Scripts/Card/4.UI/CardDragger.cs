@@ -66,13 +66,13 @@ public class CardDragger : BaseSelectable, IPointerDownHandler, IPointerUpHandle
                 //     transform.position = hit.transform.position;
                 //     return;
                 // }
-                // slotview.RPC("RPC_UpdateCardInSlot", RpcTarget.Others, 
-                //     _cardController.Card.CardNumber, 
-                //     (int)_cardController.Card.Color, 
+                // slotview.RPC("RPC_UpdateCardInSlot", RpcTarget.Others,
+                //     _cardController.Card.CardNumber,
+                //     (int)_cardController.Card.Color,
                 //     _cardController.Card.CardImageAddress);
 
                 // 카드 배치
- 
+
                 cardSlot.Refresh(_handCardSlot.Card);
                 _handCardSlot.Clear();
                 // 원위치로 되돌리기
