@@ -97,11 +97,10 @@ public class GameManager : Singleton<GameManager>
     // 족보 판정
     private enum HandRank
     {
-        StraightFlush = 6,
-        ThreeOfAKind = 5,
-        Straight = 4,
-        Flush = 3,
-        Pair = 2,
+        StraightFlush = 5,
+        ThreeOfAKind = 4,
+        Straight = 3,
+        Flush = 2,
         CardSum = 1
     }
 
@@ -117,7 +116,6 @@ public class GameManager : Singleton<GameManager>
         if (isThree) return HandRank.ThreeOfAKind;
         if (isStraight) return HandRank.Straight;
         if (isFlush) return HandRank.Flush;
-        if (isPair) return HandRank.Pair;
 
         return HandRank.CardSum;
     }
