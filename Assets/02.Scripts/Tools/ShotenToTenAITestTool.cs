@@ -395,8 +395,8 @@ public class ShotenToTenAITestTool : EditorWindow
     {
         StraightFlush = 5,
         ThreeOfAKind = 4,
-        Straight = 3,
-        Flush = 2,
+        Flush = 3,
+        Straight = 2,
         CardSum = 1
     }
 
@@ -409,8 +409,8 @@ public class ShotenToTenAITestTool : EditorWindow
 
         if (isFlush && isStraight) return HandRank.StraightFlush;
         if (isThree) return HandRank.ThreeOfAKind;
-        if (isStraight) return HandRank.Straight;
         if (isFlush) return HandRank.Flush;
+        if (isStraight) return HandRank.Straight;
         return HandRank.CardSum;
     }
 }
