@@ -16,7 +16,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - UI2
   - 
   - 
   - 
@@ -45,6 +45,9 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: UI_Meta
+    uniqueID: 3408334603
     locked: 0
   m_RenderingLayers:
   - Default
