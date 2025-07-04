@@ -5,6 +5,9 @@ public class CardDrawTestScripts : MonoBehaviour
 {
     public GameObject CardPrefab;
     public Transform DrawPoint;
+
+
+    public EnemyHandDrawAnimation EnemyHandDrawAnimation;
     public void Draw()
     {
         Instantiate(CardPrefab, DrawPoint);
@@ -15,6 +18,10 @@ public class CardDrawTestScripts : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.A))
         {
             Draw();
+        }
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            EnemyHandDrawAnimation.PlayDrawAnimation();
         }
     }
 }
