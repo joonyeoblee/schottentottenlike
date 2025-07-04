@@ -5,8 +5,9 @@ public class UI_Cards : MonoBehaviour
 {
     public Texture frontTexture;
     public Texture backTexture;
+    public Sprite SizeSprite;
 
-    private Renderer rend;
+    private SpriteRenderer rend;
     private MaterialPropertyBlock block;
 
     private void OnEnable()
@@ -22,10 +23,11 @@ public class UI_Cards : MonoBehaviour
     }
 #endif
 
-    void ApplyTextures()
+    public void ApplyTextures()
     {
-        if (rend == null) rend = GetComponent<Renderer>();
+        if (rend == null) rend = GetComponent<SpriteRenderer>();
         if (block == null) block = new MaterialPropertyBlock();
+        if(rend.sprite == null) rend.sprite = SizeSprite;
 
         rend.GetPropertyBlock(block);
         block.SetTexture("_Front", frontTexture);

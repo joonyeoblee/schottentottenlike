@@ -15,6 +15,9 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
     public Sprite DefaultCardSprite;
     public Card Card;
 
+    //UI로 쓰일 Card 이미지
+    public UI_Cards MyCard;
+
     private void Start()
     {
         BattleField = GetComponentInParent<BattleField>();
@@ -22,6 +25,11 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
         if (HandCardManager == null)
         {
             HandCardManager = GetComponentInParent<HandCardManager>();
+        }
+
+        if (MyCard == null)
+        {
+            MyCard = GetComponentInChildren<UI_Cards>();
         }
     }
 
@@ -41,9 +49,15 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
         Addressables.LoadAssetAsync<Sprite>(address).Completed += handle =>
         {
             if (handle.Status == AsyncOperationStatus.Succeeded)
-                _cardSprite.sprite = handle.Result;
+            {
+                MyCard.frontTexture = handle.Result.texture;
+                MyCard.ApplyTextures();
+
+            }
         };
     }
+
+
 
     public void Clear()
     {
