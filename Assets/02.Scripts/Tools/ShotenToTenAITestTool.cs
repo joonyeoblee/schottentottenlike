@@ -16,6 +16,8 @@ public class ShotenToTenAITestTool : EditorWindow
     private bool gameEnded = false;
     private Vector2 deckScroll;
     private Vector2 mainScroll; // 전체 스크롤
+    private int player1ControlMode = 0; // 0: 사용자, 1: AI
+
 
     [MenuItem("Tools/ShotenToTen AI Test Tool")]
     public static void ShowWindow()
@@ -37,11 +39,18 @@ public class ShotenToTenAITestTool : EditorWindow
         {
             ResetGame();
         }
-        if (GUILayout.Button("AI 자동진행", GUILayout.Height(30)))
-        {
-            while (!gameEnded)
-                PlayAITurn();
-        }
+        //if (GUILayout.Button("AI 자동진행", GUILayout.Height(30)))
+        //{
+        //    while (!gameEnded)
+        //        PlayAITurn();
+        //}
+        EditorGUILayout.EndHorizontal();
+
+        GUILayout.Space(10);
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("플레이어 2 조종:", GUILayout.Width(100));
+        player1ControlMode = GUILayout.Toolbar(player1ControlMode, new string[] { "사용자", "AI" }, GUILayout.Width(180));
         EditorGUILayout.EndHorizontal();
 
         GUILayout.Space(10);
@@ -221,11 +230,11 @@ public class ShotenToTenAITestTool : EditorWindow
     private void PlaceCard(int player, int handIdx, int fieldIdx)
     {
         if (gameEnded) return;
-        if (fieldIdx < 0 || fieldIdx >= 9) return; // 인덱스 체크 추가
+        if (fieldIdx < 0 || fieldIdx >= 9) return;
 
         if (player == 1)
         {
-            if (handIdx < 0 || handIdx >= player1Hand.Count) return; // 인덱스 체크
+            if (handIdx < 0 || handIdx >= player1Hand.Count) return; 
             var card = player1Hand[handIdx];
             player1Hand.RemoveAt(handIdx);
             player1Fields[fieldIdx].Add(card);
@@ -241,7 +250,7 @@ public class ShotenToTenAITestTool : EditorWindow
         }
         else
         {
-            if (handIdx < 0 || handIdx >= player2Hand.Count) return; // 인덱스 체크
+            if (handIdx < 0 || handIdx >= player2Hand.Count) return; 
             var card = player2Hand[handIdx];
             player2Hand.RemoveAt(handIdx);
             player2Fields[fieldIdx].Add(card);
@@ -258,27 +267,73 @@ public class ShotenToTenAITestTool : EditorWindow
 
         CheckGameEnd();
         Repaint();
+
+        if (player1ControlMode == 1 && player == 1 && !gameEnded)
+        {
+            PlayAITurn();
+        }
     }
 
     private void PlayAITurn()
     {
         if (gameEnded) return;
 
-        if (currentPlayer == 1 && player1Hand.Count > 0)
+        // 플레이어1이 AI로 설정된 경우 자동 진행
+        if (currentPlayer == 1 && player1Hand.Count > 0 && player1ControlMode == 1)
         {
-            int fieldIdx = System.Array.FindIndex(player1Fields, f => f.Count < 3);
-            if (fieldIdx != -1)
+            // AI 로직: 가장 좋은 족보/합을 만드는 카드+필드 선택
+            int bestHandIdx = -1, bestFieldIdx = -1;
+            HandRank bestRank = HandRank.CardSum;
+            int bestSum = -1;
+            for (int handIdx = 0; handIdx < player1Hand.Count; handIdx++)
             {
-                PlaceCard(1, 0, fieldIdx);
+                for (int fieldIdx = 0; fieldIdx < 9; fieldIdx++)
+                {
+                    if (player1Fields[fieldIdx].Count >= 3) continue;
+                    var tempField = new List<Card>(player1Fields[fieldIdx]);
+                    tempField.Add(player1Hand[handIdx]);
+                    if (tempField.Count > 3) continue;
+                    var rank = EvaluateHand(tempField);
+                    int sum = tempField.Sum(c => c.CardNumber);
+                    if (rank > bestRank || (rank == bestRank && sum > bestSum))
+                    {
+                        bestHandIdx = handIdx;
+                        bestFieldIdx = fieldIdx;
+                        bestRank = rank;
+                        bestSum = sum;
+                    }
+                }
             }
+            if (bestHandIdx != -1 && bestFieldIdx != -1)
+                PlaceCard(1, bestHandIdx, bestFieldIdx);
         }
         else if (currentPlayer == 2 && player2Hand.Count > 0)
         {
-            int fieldIdx = System.Array.FindIndex(player2Fields, f => f.Count < 3);
-            if (fieldIdx != -1)
+            // AI 자동 플레이 (기존과 동일)
+            int bestHandIdx = -1, bestFieldIdx = -1;
+            HandRank bestRank = HandRank.CardSum;
+            int bestSum = -1;
+            for (int handIdx = 0; handIdx < player2Hand.Count; handIdx++)
             {
-                PlaceCard(2, 0, fieldIdx);
+                for (int fieldIdx = 0; fieldIdx < 9; fieldIdx++)
+                {
+                    if (player2Fields[fieldIdx].Count >= 3) continue;
+                    var tempField = new List<Card>(player2Fields[fieldIdx]);
+                    tempField.Add(player2Hand[handIdx]);
+                    if (tempField.Count > 3) continue;
+                    var rank = EvaluateHand(tempField);
+                    int sum = tempField.Sum(c => c.CardNumber);
+                    if (rank > bestRank || (rank == bestRank && sum > bestSum))
+                    {
+                        bestHandIdx = handIdx;
+                        bestFieldIdx = fieldIdx;
+                        bestRank = rank;
+                        bestSum = sum;
+                    }
+                }
             }
+            if (bestHandIdx != -1 && bestFieldIdx != -1)
+                PlaceCard(2, bestHandIdx, bestFieldIdx);
         }
     }
 
