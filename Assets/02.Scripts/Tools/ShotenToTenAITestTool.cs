@@ -203,22 +203,25 @@ public class ShotenToTenAITestTool : EditorWindow
         GenericMenu menu = new GenericMenu();
         for (int i = 0; i < 9; i++)
         {
-            bool canPlace = (player == 1 ? player1Fields[i] : player2Fields[i]).Count < 3;
+            int fieldIndex = i; 
+            bool canPlace = (player == 1 ? player1Fields[fieldIndex] : player2Fields[fieldIndex]).Count < 3;
             if (canPlace)
             {
-                menu.AddItem(new GUIContent($"필드 {i + 1}"), false, () => PlaceCard(player, handIdx, i));
+                menu.AddItem(new GUIContent($"필드 {fieldIndex + 1}"), false, () => PlaceCard(player, handIdx, fieldIndex));
             }
             else
             {
-                menu.AddDisabledItem(new GUIContent($"필드 {i + 1} (가득참)"));
+                menu.AddDisabledItem(new GUIContent($"필드 {fieldIndex + 1} (가득참)"));
             }
         }
         menu.ShowAsContext();
     }
 
+
     private void PlaceCard(int player, int handIdx, int fieldIdx)
     {
         if (gameEnded) return;
+        if (fieldIdx < 0 || fieldIdx >= 9) return; // 인덱스 체크 추가
 
         if (player == 1)
         {
@@ -226,6 +229,14 @@ public class ShotenToTenAITestTool : EditorWindow
             var card = player1Hand[handIdx];
             player1Hand.RemoveAt(handIdx);
             player1Fields[fieldIdx].Add(card);
+
+            // 카드 제출 후 덱에서 1장 뽑기
+            if (deck.Count > 0)
+            {
+                player1Hand.Add(deck[0]);
+                deck.RemoveAt(0);
+            }
+
             currentPlayer = 2;
         }
         else
@@ -234,6 +245,14 @@ public class ShotenToTenAITestTool : EditorWindow
             var card = player2Hand[handIdx];
             player2Hand.RemoveAt(handIdx);
             player2Fields[fieldIdx].Add(card);
+
+            // 카드 제출 후 덱에서 1장 뽑기
+            if (deck.Count > 0)
+            {
+                player2Hand.Add(deck[0]);
+                deck.RemoveAt(0);
+            }
+
             currentPlayer = 1;
         }
 
