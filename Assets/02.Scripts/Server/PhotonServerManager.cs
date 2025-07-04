@@ -24,8 +24,6 @@ public class PhotonServerManager : SingletonPhoton<PhotonServerManager>
         // 1. 버전 : 버전이 다르면 다른 서버로 접속이 된다.
         PhotonNetwork.GameVersion = _gameVersion;
 
-
-
         //방장이 로드한 씬으로 다른 참여자가 똑같이 이동하게끔 동기화 해주는 옵션
         //방장 : 방을 만든 소유자이자 "마스터 클라이언트" (방마다 한명의 마스터 클라이언트가 존재)
         PhotonNetwork.AutomaticallySyncScene = true;
