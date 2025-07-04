@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [ExecuteAlways]
 public class UI_Cards : MonoBehaviour
@@ -9,12 +10,13 @@ public class UI_Cards : MonoBehaviour
     public Sprite SizeSprite;
 
     public UI_CardDrawShow ShowAnimation;
-    private SpriteRenderer rend;
+    public SpriteRenderer Rend;
     private MaterialPropertyBlock block;
 
 
     private void Awake()
     {
+        if(Rend == null) Rend = GetComponent<SpriteRenderer>();
         if (ShowAnimation == null) ShowAnimation = GetComponent<UI_CardDrawShow>();
     }
 
@@ -38,13 +40,13 @@ public class UI_Cards : MonoBehaviour
 
     public void ApplyTextures()
     {
-        if (rend == null) rend = GetComponent<SpriteRenderer>();
+        if (Rend == null) Rend = GetComponent<SpriteRenderer>();
         if (block == null) block = new MaterialPropertyBlock();
-        if(rend.sprite == null) rend.sprite = SizeSprite;
+        if(Rend.sprite == null) Rend.sprite = SizeSprite;
 
-        rend.GetPropertyBlock(block);
+        Rend.GetPropertyBlock(block);
         block.SetTexture("_Front", frontTexture);
         block.SetTexture("_Back", backTexture);
-        rend.SetPropertyBlock(block);
+        Rend.SetPropertyBlock(block);
     }
 }

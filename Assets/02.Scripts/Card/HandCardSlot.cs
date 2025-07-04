@@ -2,6 +2,8 @@ using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.Serialization;
+
 public class HandCardSlot : MonoBehaviourPunCallbacks
 {
     // 카드 각각에 들어가야 하는 코드
@@ -11,7 +13,6 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
     public HandCardManager HandCardManager;
     public int Index;
     public int HandCardIndex { get;  set; }
-    private SpriteRenderer _cardSprite;
     public Sprite DefaultCardSprite;
     public Card Card;
 
@@ -21,7 +22,6 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
     private void Start()
     {
         BattleField = GetComponentInParent<BattleField>();
-        _cardSprite = GetComponent<SpriteRenderer>();
         if (HandCardManager == null)
         {
             HandCardManager = GetComponentInParent<HandCardManager>();
@@ -38,11 +38,11 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
         HandCardIndex = handIndex;
         Card = card;
 
-        if (_cardSprite == null)
-            return;
+        // if ( CardSprite == null)
+        //     return;
 
-        _cardSprite.sprite = null;
-        _cardSprite.color = Color.white;
+        MyCard.Rend.sprite = null;
+        MyCard.Rend.color = Color.white;
 
         string address = isVisible ? card.CardImageAddress : "Black";
 
@@ -62,6 +62,6 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
     public void Clear()
     {
         Card =  null;
-        _cardSprite.sprite = DefaultCardSprite;
+        MyCard.Rend.sprite = DefaultCardSprite;
     }
 }

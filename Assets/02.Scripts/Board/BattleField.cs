@@ -49,6 +49,10 @@ public class BattleField : SingletonPhoton<BattleField>
                 HandCardManagers[i].HandCardSlots[j].IsMine = true;
                 HandCardManagers[i].HandCardSlots[j].Index = j;
                 HandCardManagers[i].HandCardSlots[j].HandCardIndex = i;
+                if(HandCardManagers[i].HandCardSlots[j].MyCard == null)Debug.LogWarning("내 가진 카드가 없소");
+                if(HandCardManagers[i].HandCardSlots[j].MyCard.Rend == null)Debug.LogWarning("내 가진 렌더러가 없소");
+
+                HandCardManagers[i].HandCardSlots[j].MyCard.Rend.enabled = false;
             }
         }
     }
@@ -120,6 +124,7 @@ public class BattleField : SingletonPhoton<BattleField>
         for (int i = 0; i < HandCardManagers[0].HandCardSlots.Length; i++)
         {
             Card card = new Card(myNumbers[i], (ECardColor)myColors[i]);
+            HandCardManagers[0].HandCardSlots[i].MyCard.Rend.enabled = true;
             HandCardManagers[0].HandCardSlots[i].Refresh(i, card, true); // 무조건 보이게
             HandCardManagers[0].HandCardSlots[i].MyCard.ShowDraw();
             HandCardManagers[0].HandCardSlots[i].MyCard.ShowAnimation.midPoint =
@@ -132,8 +137,30 @@ public class BattleField : SingletonPhoton<BattleField>
         {
             Card card = new Card(enemyNumbers[i], (ECardColor)enemyColors[i]);
             HandCardManagers[1].HandCardSlots[i].Refresh(i, card, false); // 무조건 뒷면
+
             yield return new WaitForSeconds(0.2f);
         }
+
+        var enemyAnimation = HandCardManagers[1].GetComponent<EnemyHandAnimation>();
+
+// 1. "FanIn" 애니메이션을 시작합니다.
+//    그리고 애니메이션이 끝나면 실행될 모든 작업을 람다식 안에 정의합니다.
+        enemyAnimation.PlayFanOutAnimation(() =>
+        {
+            // --- 이 중괄호 안의 코드는 PlayFanInAnimation이 완전히 끝난 후에만 실행됩니다. ---
+
+            // 2. 원하는 작업: 모든 적 카드의 렌더러를 켭니다.
+            foreach (var enemyCardSlot in HandCardManagers[1].HandCardSlots)
+            {
+                if (enemyCardSlot != null && enemyCardSlot.MyCard != null && enemyCardSlot.MyCard.Rend != null)
+                {
+                    enemyCardSlot.MyCard.Rend.enabled = true;
+                }
+            }
+
+            // 3. 이전 작업이 모두 끝났으면, "FanOut" 애니메이션을 시작합니다.
+            enemyAnimation.PlayFanInAnimation();
+        });
 
         Debug.Log("손패 배분 완료 (로컬 기준)");
     }
