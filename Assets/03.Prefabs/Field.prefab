@@ -272,6 +272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35d7385bf18f41028ce30086be616b34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initializeOn: 0
   HandCardManagers:
   - {fileID: 7086805208083631638}
   - {fileID: 6529344433907596959}
@@ -285,7 +286,6 @@ MonoBehaviour:
   - {fileID: 136271048890635794}
   - {fileID: 637693453779201092}
   - {fileID: 2647518759776380688}
-  PhotonView: {fileID: 8586909919037866899}
   CardDeck: {fileID: 746340210935965431}
 --- !u!1 &7836810801477439309
 GameObject:
@@ -402,14 +402,14 @@ PrefabInstance:
     - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
     - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_WasSpriteAssigned
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7536343650819012327, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 2.0408163
+      value: 1.9918368
       objectReference: {fileID: 0}
     - target: {fileID: 9140230545548673164, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_LocalPosition.x
@@ -480,6 +480,7 @@ MonoBehaviour:
   BattleField: {fileID: 8828849072471364866}
   HandCardManager: {fileID: 0}
   Index: 0
+  DefaultCardSprite: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
   Card:
     CardNumber: 0
     Color: 6
@@ -580,14 +581,14 @@ PrefabInstance:
     - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
     - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_WasSpriteAssigned
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7536343650819012327, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 2
+      value: 1.9918368
       objectReference: {fileID: 0}
     - target: {fileID: 9140230545548673164, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_LocalPosition.x
@@ -658,6 +659,7 @@ MonoBehaviour:
   BattleField: {fileID: 8828849072471364866}
   HandCardManager: {fileID: 0}
   Index: 0
+  DefaultCardSprite: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
   Card:
     CardNumber: 0
     Color: 6
@@ -681,7 +683,11 @@ PrefabInstance:
     - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 5000927251509650613, guid: 600895ab38839654095768af1fd6ab1d, type: 3}
+      objectReference: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
+    - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9140230545548673164, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
       propertyPath: m_LocalPosition.x
       value: -2.62
@@ -751,6 +757,7 @@ MonoBehaviour:
   BattleField: {fileID: 8828849072471364866}
   HandCardManager: {fileID: 0}
   Index: 0
+  DefaultCardSprite: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
   Card:
     CardNumber: 0
     Color: 6
@@ -1053,7 +1060,11 @@ PrefabInstance:
     - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 5000927251509650613, guid: 600895ab38839654095768af1fd6ab1d, type: 3}
+      objectReference: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
+    - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9140230545548673164, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.63999975
@@ -1128,6 +1139,7 @@ MonoBehaviour:
   BattleField: {fileID: 8828849072471364866}
   HandCardManager: {fileID: 0}
   Index: 0
+  DefaultCardSprite: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
   Card:
     CardNumber: 0
     Color: 6
@@ -1142,6 +1154,22 @@ PrefabInstance:
     - target: {fileID: 3233613911742489406, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: sceneViewId
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3381636829753999960, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
+      propertyPath: m_Size.x
+      value: 1.4510639
+      objectReference: {fileID: 0}
+    - target: {fileID: 3381636829753999960, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
+      propertyPath: m_Size.y
+      value: 2.0765958
+      objectReference: {fileID: 0}
+    - target: {fileID: 3381636829753999960, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: e7cf3dedc710a4d51ad3cc3b5362313d, type: 3}
+    - target: {fileID: 3381636829753999960, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1223,7 +1251,11 @@ PrefabInstance:
     - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 5000927251509650613, guid: 600895ab38839654095768af1fd6ab1d, type: 3}
+      objectReference: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
+    - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9140230545548673164, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.3100002
@@ -1298,6 +1330,7 @@ MonoBehaviour:
   BattleField: {fileID: 8828849072471364866}
   HandCardManager: {fileID: 0}
   Index: 0
+  DefaultCardSprite: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
   Card:
     CardNumber: 0
     Color: 6
@@ -1316,7 +1349,11 @@ PrefabInstance:
     - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 5000927251509650613, guid: 600895ab38839654095768af1fd6ab1d, type: 3}
+      objectReference: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
+    - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9140230545548673164, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.5299997
@@ -1391,6 +1428,7 @@ MonoBehaviour:
   BattleField: {fileID: 8828849072471364866}
   HandCardManager: {fileID: 0}
   Index: 0
+  DefaultCardSprite: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
   Card:
     CardNumber: 0
     Color: 6
@@ -1409,14 +1447,14 @@ PrefabInstance:
     - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
     - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_WasSpriteAssigned
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7536343650819012327, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 2.0163264
+      value: 1.9918368
       objectReference: {fileID: 0}
     - target: {fileID: 9140230545548673164, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1487,6 +1525,7 @@ MonoBehaviour:
   BattleField: {fileID: 8828849072471364866}
   HandCardManager: {fileID: 0}
   Index: 0
+  DefaultCardSprite: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
   Card:
     CardNumber: 0
     Color: 6
@@ -1639,9 +1678,21 @@ PrefabInstance:
       value: EnemyCard
       objectReference: {fileID: 0}
     - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
+      propertyPath: m_Size.x
+      value: 3.41
+      objectReference: {fileID: 0}
+    - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
+      propertyPath: m_Size.y
+      value: 4.88
+      objectReference: {fileID: 0}
+    - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 5000927251509650613, guid: 600895ab38839654095768af1fd6ab1d, type: 3}
+      objectReference: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
+    - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9140230545548673164, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
       propertyPath: m_LocalPosition.x
       value: 4.88
@@ -1711,6 +1762,7 @@ MonoBehaviour:
   BattleField: {fileID: 8828849072471364866}
   HandCardManager: {fileID: 0}
   Index: 0
+  DefaultCardSprite: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
   Card:
     CardNumber: 0
     Color: 6
@@ -1811,7 +1863,11 @@ PrefabInstance:
     - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 5000927251509650613, guid: 600895ab38839654095768af1fd6ab1d, type: 3}
+      objectReference: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
+    - target: {fileID: 7223647881501134941, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9140230545548673164, guid: 7f3f666130cce0a478f027026ff4ac11, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.0600002
@@ -1881,6 +1937,7 @@ MonoBehaviour:
   BattleField: {fileID: 8828849072471364866}
   HandCardManager: {fileID: 0}
   Index: 0
+  DefaultCardSprite: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
   Card:
     CardNumber: 0
     Color: 6
@@ -1897,17 +1954,49 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 9079625435458985765}
     m_Modifications:
+    - target: {fileID: 3275093329167622, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5810943935095295390, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_Name
       value: PlayerCard
       objectReference: {fileID: 0}
     - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
-      propertyPath: m_Sprite
-      value: 
+      propertyPath: m_Size.x
+      value: 3.41
       objectReference: {fileID: 0}
     - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
+      propertyPath: m_Size.y
+      value: 4.88
+      objectReference: {fileID: 0}
+    - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
+    - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_WasSpriteAssigned
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7536343650819012327, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7536343650819012327, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
+      propertyPath: m_SpriteTilingProperty.newSize.x
+      value: 3.41
+      objectReference: {fileID: 0}
+    - target: {fileID: 7536343650819012327, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
+      propertyPath: m_SpriteTilingProperty.newSize.y
+      value: 4.88
+      objectReference: {fileID: 0}
+    - target: {fileID: 7536343650819012327, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
+      propertyPath: m_SpriteTilingProperty.oldSize.x
+      value: 1.3918368
+      objectReference: {fileID: 0}
+    - target: {fileID: 7536343650819012327, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
+      propertyPath: m_SpriteTilingProperty.oldSize.y
+      value: 1.9918368
       objectReference: {fileID: 0}
     - target: {fileID: 9140230545548673164, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1983,6 +2072,7 @@ MonoBehaviour:
   BattleField: {fileID: 8828849072471364866}
   HandCardManager: {fileID: 0}
   Index: 0
+  DefaultCardSprite: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
   Card:
     CardNumber: 0
     Color: 6
@@ -2078,10 +2168,10 @@ PrefabInstance:
     - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
     - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_WasSpriteAssigned
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9140230545548673164, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2157,6 +2247,7 @@ MonoBehaviour:
   BattleField: {fileID: 8828849072471364866}
   HandCardManager: {fileID: 0}
   Index: 0
+  DefaultCardSprite: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
   Card:
     CardNumber: 0
     Color: 6
@@ -2252,14 +2343,14 @@ PrefabInstance:
     - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
     - target: {fileID: 7223647881501134941, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_WasSpriteAssigned
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7536343650819012327, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 2.0163264
+      value: 1.9918368
       objectReference: {fileID: 0}
     - target: {fileID: 9140230545548673164, guid: d3f6ff78b4da72e4fbef4168400bb003, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2335,6 +2426,7 @@ MonoBehaviour:
   BattleField: {fileID: 8828849072471364866}
   HandCardManager: {fileID: 0}
   Index: 0
+  DefaultCardSprite: {fileID: 8995154407686431259, guid: e932e73daa5763c4790744651997454b, type: 3}
   Card:
     CardNumber: 0
     Color: 6

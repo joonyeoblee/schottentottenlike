@@ -1,20 +1,19 @@
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using UnityEngine.SceneManagement;
 
 // Photon API 네임스페이
 
 // 역할: 포톤 서버 관리자(서버 연결, 로비 입장, 방 입장, 게임 입장)
-public class PhotonServerManager : Singleton<PhotonServerManager>
+public class PhotonServerManager : SingletonPhoton<PhotonServerManager>
 {
     // MonoBehaviourPunCallbacks : 유니티 이벤트 말고도 Pun 서버 이벤트를 받을 수 있다.
     private readonly string _gameVersion = "0.0.1";
     private AddressablesPool _pool = new  AddressablesPool();
     private bool _shouldSpawnField = false;
 
-    private GameObject _field;
+    private GameObject _battleField;
     private void Start()
     {
         // 설정
@@ -43,23 +42,19 @@ public class PhotonServerManager : Singleton<PhotonServerManager>
         {
             Debug.Log($"플레이어: {player.NickName}, ActorNumber: {player.ActorNumber}");
         }
-        _shouldSpawnField = true; 
+        _shouldSpawnField = true;
         SceneManager.sceneLoaded += OnSceneLoaded;
         PhotonNetwork.LoadLevel(2);
-    
+
     }
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (_shouldSpawnField && scene.buildIndex == 2)
         {
-            if(PhotonNetwork.IsMasterClient)
+            if (PhotonNetwork.IsMasterClient)
             {
-                _field = PhotonNetwork.Instantiate("Field", new Vector3(0,5,0), Quaternion.identity);
+                _battleField = PhotonNetwork.Instantiate("Field", new Vector3(0, 5, 0), Quaternion.identity);
                 Debug.Log("방장이므로 Field 생성됨.");
-            }
-            else
-            {
-                _field.GetComponent<BattleField>().GameStart();
             }
             _shouldSpawnField = false;
         }
@@ -75,18 +70,15 @@ public class PhotonServerManager : Singleton<PhotonServerManager>
     {
         Debug.Log("방 생성 성공!");
     }
-    // public void EnterGame()
-    // {
-    //     // 설정값들을 이용해 서버 접속 시도
-    //     PhotonNetwork.ConnectUsingSettings();
-    // }
-    //
-    // // 포톤 서버에 접속 후 호출되는 콜백 함수
-    // public override void OnConnected()
-    // {
-    //     Debug.Log("네임 서버 접속 완료");
-    //     Debug.Log(PhotonNetwork.CloudRegion);
-    // }
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        Debug.Log($"플레이어 입장: {newPlayer.NickName}");
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            BattleField.Instance.GameStart();
+        }
+    }
 
 //     // 포톤 마스터 서버에 접속 후 호출되는 콜백 함수
     // public override void OnConnectedToMaster()

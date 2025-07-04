@@ -2,8 +2,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
-public class AccountManager : Singleton<AccountManager>
+public class AccountManager : SingletonPhoton<AccountManager>
 {
     public Account CurrentAccount { get; private set; }
 
@@ -33,17 +32,4 @@ public class AccountManager : Singleton<AccountManager>
         Debug.Log($"로비 참가 요청 결과: {joinResult}");
     }
 
-    // public override void OnJoinedLobby()
-    // {
-    //     // 씬 로드
-    //     SceneManager.LoadScene(1);
-    //     Debug.Log("로비에 참가했습니다.");
-    //     Debug.Log($"현재 상태: {PhotonNetwork.NetworkClientState}");
-    //     
-    // }
-
-    // public override void OnJoinRandomFailed(short returnCode, string message)
-    // {
-    //     Debug.LogError($"로비 참가 실패: {returnCode} - {message}");
-    // }
 }

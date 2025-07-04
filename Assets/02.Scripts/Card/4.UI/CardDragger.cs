@@ -47,7 +47,6 @@ public class CardDragger : BaseSelectable, IPointerDownHandler, IPointerUpHandle
             {
                 var slotCollider = hit.GetComponent<Collider2D>();
                 var cardSlot = hit.GetComponent<CardSlot>();
-                var slotview = hit.GetComponent<PhotonView>();
 
                 if (cardSlot == null || slotCollider == null) continue;
 
@@ -56,23 +55,6 @@ public class CardDragger : BaseSelectable, IPointerDownHandler, IPointerUpHandle
                 {
                     break;
                 }
-                // 다른 플레이어에게 카드 상태를 알려주는 RPC 호출
-
-                // 카드 UI 갱신
-                // cardSlot.Refresh(_cardController.Card);
-
-                // if (slotCollider != null && slotCollider.OverlapPoint(transform.position))
-                // {
-                //     transform.position = hit.transform.position;
-                //     return;
-                // }
-                // slotview.RPC("RPC_UpdateCardInSlot", RpcTarget.Others,
-                //     _cardController.Card.CardNumber,
-                //     (int)_cardController.Card.Color,
-                //     _cardController.Card.CardImageAddress);
-
-                // 카드 배치
-
                 cardSlot.Refresh(_handCardSlot.Card);
                 _handCardSlot.Clear();
                 // 원위치로 되돌리기
