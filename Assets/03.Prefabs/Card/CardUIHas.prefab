@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 8414408717049882651}
   - component: {fileID: 7098496160952907805}
   - component: {fileID: 1640204607337734434}
+  - component: {fileID: 3442046011626845288}
   m_Layer: 0
   m_Name: CardUI
   m_TagString: Untagged
@@ -120,6 +121,7 @@ MonoBehaviour:
   frontTexture: {fileID: 2800000, guid: e932e73daa5763c4790744651997454b, type: 3}
   backTexture: {fileID: 2800000, guid: 600895ab38839654095768af1fd6ab1d, type: 3}
   SizeSprite: {fileID: 21300000, guid: bc27b8f9ebf7f8540a492b2ef41bb8f0, type: 3}
+  ShowAnimation: {fileID: 0}
 --- !u!61 &1976770885247982384
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -243,6 +245,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _originalScale: {x: 0, y: 0, z: 0}
+--- !u!114 &3442046011626845288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6856200020086575882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a91966e01151ae14b8dd9a53d653eaae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyHandPoint: {fileID: 0}
+  midPoint: {fileID: 0}
+  endTransform: {fileID: 0}
+  scaleMultiplier: 1.5
+  durationToMid: 0.5
+  durationToEnd: 0.6
+  easeToMid: 9
+  easeToEnd: 8
 --- !u!1 &6941695836756250442
 GameObject:
   m_ObjectHideFlags: 0

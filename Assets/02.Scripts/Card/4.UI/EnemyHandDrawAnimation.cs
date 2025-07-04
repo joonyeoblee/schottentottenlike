@@ -21,6 +21,12 @@ public class EnemyHandDrawAnimation : MonoBehaviour
     [Tooltip("중간 지점까지 이동하는 데 걸리는 시간입니다.")]
     [SerializeField] private float durationToMid = 0.5f;
 
+    // ==================================================
+    // [수정] 중간 지점에서 머무는 시간을 조절하는 변수 추가
+    // ==================================================
+    [Tooltip("중간 지점에서 머무는 시간입니다.")]
+    [SerializeField] private float delayAtMid = 0.3f;
+
     [Tooltip("최종 목적지까지 이동하는 데 걸리는 시간입니다.")]
     [SerializeField] private float durationToEnd = 0.6f;
 
@@ -70,6 +76,14 @@ public class EnemyHandDrawAnimation : MonoBehaviour
         drawSequence.Append(cardToAnimate.DOMove(midPoint.position, durationToMid).SetEase(easeToMid));
         drawSequence.Join(cardToAnimate.DOScale(originalScale * scaleMultiplier, durationToMid).SetEase(easeToMid));
         drawSequence.Join(cardToAnimate.DORotate(midPoint.rotation.eulerAngles, durationToMid).SetEase(easeToMid));
+
+        // ==================================================
+        // [수정] AppendInterval을 사용하여 중간 지점에서 대기
+        // ==================================================
+        if (delayAtMid > 0)
+        {
+            drawSequence.AppendInterval(delayAtMid);
+        }
 
         // Part 2: 최종 목적지로 이동하며 원래 크기로 축소 및 최종 회전값 적용
         drawSequence.Append(cardToAnimate.DOMove(endTransform.position, durationToEnd).SetEase(easeToEnd));

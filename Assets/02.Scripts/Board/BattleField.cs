@@ -121,6 +121,9 @@ public class BattleField : SingletonPhoton<BattleField>
         {
             Card card = new Card(myNumbers[i], (ECardColor)myColors[i]);
             HandCardManagers[0].HandCardSlots[i].Refresh(i, card, true); // 무조건 보이게
+            HandCardManagers[0].HandCardSlots[i].MyCard.ShowDraw();
+            HandCardManagers[0].HandCardSlots[i].MyCard.ShowAnimation.midPoint =
+                AnimationTransforms.Instance.FirstShowTransfroms[i];
             yield return new WaitForSeconds(0.2f);
         }
 

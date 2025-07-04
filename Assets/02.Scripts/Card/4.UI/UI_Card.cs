@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [ExecuteAlways]
@@ -7,8 +8,15 @@ public class UI_Cards : MonoBehaviour
     public Texture backTexture;
     public Sprite SizeSprite;
 
+    public UI_CardDrawShow ShowAnimation;
     private SpriteRenderer rend;
     private MaterialPropertyBlock block;
+
+
+    private void Awake()
+    {
+        if (ShowAnimation == null) ShowAnimation = GetComponent<UI_CardDrawShow>();
+    }
 
     private void OnEnable()
     {
@@ -22,6 +30,11 @@ public class UI_Cards : MonoBehaviour
             ApplyTextures();
     }
 #endif
+
+    public void ShowDraw()
+    {
+        StartCoroutine(ShowAnimation.DrawProcessCoroutine());
+    }
 
     public void ApplyTextures()
     {
