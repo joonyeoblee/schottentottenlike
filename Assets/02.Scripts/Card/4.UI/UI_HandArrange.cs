@@ -30,12 +30,22 @@ public class CardHandArranger : MonoBehaviour
         }
     }
 
+    // ===================================================================
+    // [수정] HandCardSlot의 IsEmpty가 false인 자식만 리스트에 추가하도록 변경
+    // ===================================================================
     private List<Transform> GetChildList()
     {
         List<Transform> list = new List<Transform>();
         foreach (Transform child in transform)
         {
-            list.Add(child);
+            // 1. 자식 오브젝트에서 HandCardSlot 컴포넌트를 가져옵니다.
+            HandCardSlot slot = child.GetComponent<HandCardSlot>();
+
+            // 2. 컴포넌트가 존재하고, IsEmpty 속성이 false인 경우에만 리스트에 추가합니다.
+            if (slot != null && !slot.IsEmpty)
+            {
+                list.Add(child);
+            }
         }
         return list;
     }

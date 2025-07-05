@@ -90,8 +90,38 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
             _handArranger.ArrangeCards();
         }
 
+
+        var hits = Physics2D.OverlapPointAll(transform.position);
+
+        foreach (var hit in hits)
+        {
+            if (hit.CompareTag("PlayerSlot"))
+            {
+                var slotCollider = hit.GetComponent<Collider2D>();
+                var cardSlot = hit.GetComponent<CardSlot>();
+
+                if (cardSlot == null || slotCollider == null) continue;
+
+                // 슬롯에 이미 카드가 있다면 배치 못함
+                if (cardSlot.IsOccupied)
+                {
+                    break;
+                }
+
+                cardSlot.Refresh(_handCardSlot.Card);
+                _handCardSlot.Clear();
+                // 원위치로 되돌리기
+                transform.localPosition = Vector3.zero;
+                transform.localRotation = Quaternion.identity;
+
+                return;
+            }
+        }
+
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
+
+
     }
 
     public void OnPointerEnter(PointerEventData eventData)

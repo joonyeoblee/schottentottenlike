@@ -18,9 +18,10 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
 
     //UI로 쓰일 Card 이미지
     public UI_Cards MyCard;
-
+    public bool IsEmpty;
     private void Start()
     {
+        IsEmpty = true;
         BattleField = GetComponentInParent<BattleField>();
         if (HandCardManager == null)
         {
@@ -52,6 +53,7 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
             {
                 MyCard.frontTexture = handle.Result.texture;
                 MyCard.ApplyTextures();
+                IsEmpty = false;
 
             }
         };
@@ -62,6 +64,8 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
     public void Clear()
     {
         Card =  null;
-        MyCard.Rend.sprite = DefaultCardSprite;
+        MyCard.Rend.enabled = false;
+        IsEmpty = true;
+
     }
 }
