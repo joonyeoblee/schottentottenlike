@@ -21,7 +21,7 @@ public class CardDrawTestScripts : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.S))
         {
-            EnemyHandDrawAnimation.PlayDrawAnimation();
+            //EnemyHandDrawAnimation.PlayDrawAnimation();
         }
     }
 }

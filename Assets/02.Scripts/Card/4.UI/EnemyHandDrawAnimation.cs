@@ -1,6 +1,8 @@
 using System;
+using System.Net;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.Serialization;
 
 public class EnemyHandDrawAnimation : MonoBehaviour
 {
@@ -9,10 +11,10 @@ public class EnemyHandDrawAnimation : MonoBehaviour
     [SerializeField] private Transform enemyHandPoint;
 
     [Tooltip("카드를 크게 보여줄 중간 지점 Transform 입니다.")]
-    [SerializeField] private Transform midPoint;
+    private Transform midPoint;
 
     [Tooltip("애니메이션이 끝난 후 카드가 최종적으로 위치할 Transform 입니다.")]
-    [SerializeField] private Transform endTransform;
+    public Transform EndTransform;
 
     [Header("====== 애니메이션 상세 설정 ======")]
     [Tooltip("중간 지점에서 카드가 커지는 배율입니다.")]
@@ -36,23 +38,36 @@ public class EnemyHandDrawAnimation : MonoBehaviour
     [Tooltip("최종 목적지로 갈 때의 Ease 타입입니다.")]
     [SerializeField] private Ease easeToEnd = Ease.InCubic;
 
-
+    private void Start()
+    {
+        midPoint = AnimationTransforms.Instance.ShowTransfrom;
+        EndTransform = AnimationTransforms.Instance.DeckTransfrom;
+    }
 
     /// <summary>
     /// 상대방 핸드에서 카드를 뽑는 애니메이션을 재생합니다.
     /// </summary>
-    public void PlayDrawAnimation()
+    public void PlayDrawAnimation(Transform endTransform)
     {
+        EndTransform = endTransform;
+
         // 1. 필수 컴포넌트 및 조건 확인
-        if (enemyHandPoint == null || midPoint == null || endTransform == null)
+        if (enemyHandPoint == null)
         {
-            Debug.LogError("필수 Transform이 인스펙터에 할당되지 않았습니다. 애니메이션을 실행할 수 없습니다.");
+            Debug.LogError("적의 손패에 대한 내용이 없습니다.");
             return;
+        }
+
+        if( midPoint == null)
+        {
+            Debug.LogError("중간 지점에 대한 내용이 없습니다.");
+            midPoint = AnimationTransforms.Instance.ShowTransfrom;
+
         }
 
         if (enemyHandPoint.childCount == 0)
         {
-            Debug.LogWarning("상대방의 핸드에 카드가 없습니다.");
+            Debug.LogWarning("핸드에 카드가 없습니다.");
             return;
         }
 
@@ -86,16 +101,16 @@ public class EnemyHandDrawAnimation : MonoBehaviour
         }
 
         // Part 2: 최종 목적지로 이동하며 원래 크기로 축소 및 최종 회전값 적용
-        drawSequence.Append(cardToAnimate.DOMove(endTransform.position, durationToEnd).SetEase(easeToEnd));
+        drawSequence.Append(cardToAnimate.DOMove(EndTransform.position, durationToEnd).SetEase(easeToEnd));
         drawSequence.Join(cardToAnimate.DOScale(originalScale, durationToEnd).SetEase(easeToEnd));
-        drawSequence.Join(cardToAnimate.DORotateQuaternion(endTransform.rotation, durationToEnd).SetEase(easeToEnd));
+        drawSequence.Join(cardToAnimate.DORotateQuaternion(EndTransform.rotation, durationToEnd).SetEase(easeToEnd));
 
         // OnComplete: 애니메이션 완료 후 처리
         drawSequence.OnComplete(() =>
         {
             Debug.Log("상대 핸드 드로우 애니메이션 완료.");
             // 선택: 최종적으로 endTransform의 자식으로 만들 수 있습니다.
-            cardToAnimate.SetParent(endTransform, true);
+            cardToAnimate.SetParent(EndTransform, true);
         });
 
         // 5. 시퀀스 재생

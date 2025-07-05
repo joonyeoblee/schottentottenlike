@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2402490657331985018}
   - component: {fileID: 4301024225471097515}
   - component: {fileID: 7859921320716256584}
+  - component: {fileID: 292369075265763359}
   m_Layer: 0
   m_Name: EnemySlot1
   m_TagString: EnemySlot
@@ -102,7 +103,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsMine: 0
   BattleField: {fileID: 0}
+  SetAnimation: {fileID: 0}
   Index: 0
+--- !u!114 &292369075265763359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1093070137495254888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a91966e01151ae14b8dd9a53d653eaae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyHandPoint: {fileID: 0}
+  midPoint: {fileID: 0}
+  endTransform: {fileID: 0}
+  scaleMultiplier: 1.5
+  durationToMid: 0.5
+  delayAtMid: 0.3
+  durationToEnd: 0.6
+  easeToMid: 9
+  easeToEnd: 8
 --- !u!1 &1906974304754311067
 GameObject:
   m_ObjectHideFlags: 0
@@ -119,6 +142,7 @@ GameObject:
   - component: {fileID: 6116710803812250869}
   - component: {fileID: 3000314428818359504}
   - component: {fileID: 3233613911742489406}
+  - component: {fileID: 4949194813946681025}
   m_Layer: 0
   m_Name: PlayerSlot1
   m_TagString: PlayerSlot
@@ -210,6 +234,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsMine: 0
   BattleField: {fileID: 0}
+  SetAnimation: {fileID: 4949194813946681025}
   Index: 0
 --- !u!114 &2735803156354339550
 MonoBehaviour:
@@ -355,6 +380,24 @@ MonoBehaviour:
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &4949194813946681025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1906974304754311067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4db23a14d2aa07246bbb94b1ee74832d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _peakScale: 1.2
+  _durationUp: 0.2
+  _durationDown: 0.3
+  _startDelay: 0
+  _easeTypeUp: 6
+  _easeTypeDown: 5
 --- !u!1 &2052371479362967101
 GameObject:
   m_ObjectHideFlags: 0
@@ -366,6 +409,7 @@ GameObject:
   - component: {fileID: 3604987488153164591}
   - component: {fileID: 2945476468058262526}
   - component: {fileID: 5571407320960853015}
+  - component: {fileID: 2646756622133946647}
   m_Layer: 0
   m_Name: EnemySlot3
   m_TagString: EnemySlot
@@ -457,7 +501,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsMine: 0
   BattleField: {fileID: 0}
+  SetAnimation: {fileID: 0}
   Index: 0
+--- !u!114 &2646756622133946647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2052371479362967101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a91966e01151ae14b8dd9a53d653eaae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyHandPoint: {fileID: 0}
+  midPoint: {fileID: 0}
+  endTransform: {fileID: 0}
+  scaleMultiplier: 1.5
+  durationToMid: 0.5
+  delayAtMid: 0.3
+  durationToEnd: 0.6
+  easeToMid: 9
+  easeToEnd: 8
 --- !u!1 &2764538343063914111
 GameObject:
   m_ObjectHideFlags: 0
@@ -469,6 +535,7 @@ GameObject:
   - component: {fileID: 585922051602107245}
   - component: {fileID: 1352926211708656572}
   - component: {fileID: 8553322621783318533}
+  - component: {fileID: 2511292747394086330}
   m_Layer: 0
   m_Name: PlayerSlot3
   m_TagString: PlayerSlot
@@ -560,7 +627,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsMine: 0
   BattleField: {fileID: 0}
+  SetAnimation: {fileID: 2511292747394086330}
   Index: 0
+--- !u!114 &2511292747394086330
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2764538343063914111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4db23a14d2aa07246bbb94b1ee74832d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _peakScale: 1.2
+  _durationUp: 0.2
+  _durationDown: 0.3
+  _startDelay: 0
+  _easeTypeUp: 6
+  _easeTypeDown: 5
 --- !u!1 &6961514819736262747
 GameObject:
   m_ObjectHideFlags: 0
@@ -572,6 +658,7 @@ GameObject:
   - component: {fileID: 5683618742030112073}
   - component: {fileID: 6054903989622752664}
   - component: {fileID: 4727133584013296589}
+  - component: {fileID: 3713818465927484400}
   m_Layer: 0
   m_Name: EnemySlot2
   m_TagString: EnemySlot
@@ -663,7 +750,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsMine: 0
   BattleField: {fileID: 0}
+  SetAnimation: {fileID: 0}
   Index: 0
+--- !u!114 &3713818465927484400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6961514819736262747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a91966e01151ae14b8dd9a53d653eaae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyHandPoint: {fileID: 0}
+  midPoint: {fileID: 0}
+  endTransform: {fileID: 0}
+  scaleMultiplier: 1.5
+  durationToMid: 0.5
+  delayAtMid: 0.3
+  durationToEnd: 0.6
+  easeToMid: 9
+  easeToEnd: 8
 --- !u!1 &7023269612962649103
 GameObject:
   m_ObjectHideFlags: 0
@@ -675,6 +784,7 @@ GameObject:
   - component: {fileID: 5695834690991511837}
   - component: {fileID: 6191527280445950412}
   - component: {fileID: 8578888189309526399}
+  - component: {fileID: 7898582237929439696}
   m_Layer: 0
   m_Name: PlayerSlot2
   m_TagString: PlayerSlot
@@ -766,7 +876,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   IsMine: 0
   BattleField: {fileID: 0}
+  SetAnimation: {fileID: 7898582237929439696}
   Index: 0
+--- !u!114 &7898582237929439696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7023269612962649103}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4db23a14d2aa07246bbb94b1ee74832d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _peakScale: 1.2
+  _durationUp: 0.2
+  _durationDown: 0.3
+  _startDelay: 0
+  _easeTypeUp: 6
+  _easeTypeDown: 5
 --- !u!1 &8203375538915393654
 GameObject:
   m_ObjectHideFlags: 0

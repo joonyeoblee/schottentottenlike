@@ -1,5 +1,6 @@
+using System;
 using UnityEngine;
-using DG.Tweening; // DOTween 네임스페이스 추가
+using DG.Tweening;
 
 public class UI_CardSet : MonoBehaviour
 {
@@ -24,46 +25,45 @@ public class UI_CardSet : MonoBehaviour
     [SerializeField] private Ease _easeTypeDown = Ease.InQuad;
 
     private Vector3 _originalScale; // 카드의 초기 크기를 저장할 변수
-    private Sequence mySequence;
+    // private Sequence mySequence; // 미리 만들어둘 필요 없으므로 삭제
+
     void Awake()
     {
         // 애니메이션이 시작되기 전, 이 오브젝트의 원래 크기를 저장합니다.
         _originalScale = transform.localScale;
     }
 
-    void Start()
-    {
-        CerateSequence();
-        // 게임 오브젝트가 활성화되면 자동으로 애니메이션을 재생합니다.
-        PlayAnimation();
-    }
-
-    private void CerateSequence()
-    {
-        // DOTween 시퀀스를 생성하여 여러 애니메이션을 순차적으로 연결합니다.
-       mySequence  = DOTween.Sequence();
-
-        // 현재 크기를 0으로 만들어 보이지 않게 처리하고 싶다면 아래 주석을 해제하세요.
-        // transform.localScale = Vector3.zero;
-
-        // 1. Append: 원래 크기에서 _peakScale 배율만큼 커지는 애니메이션을 추가합니다.
-        mySequence.Append(transform.DOScale(_originalScale * _peakScale, _durationUp)
-            .SetEase(_easeTypeUp)
-            .SetDelay(_startDelay));
-
-        // 2. Append: 최대 크기에서 다시 원래 크기로 돌아오는 애니메이션을 이어서 추가합니다.
-        mySequence.Append(transform.DOScale(_originalScale, _durationDown)
-            .SetEase(_easeTypeDown));
-    }
+    // Start()와 CreateSequence()는 필요 없으므로 삭제합니다.
 
     /// <summary>
     /// 등장 애니메이션을 재생하는 메서드입니다.
     /// </summary>
-    public void PlayAnimation()
+    public void PlayAnimation(Action callback = null)
     {
+        // 이전에 실행되던 DOTween 애니메이션이 있다면 확실하게 종료
+        transform.DOKill();
+        // 크기를 즉시 원본으로 되돌려서 여러 번 호출해도 문제가 없도록 함
+        transform.localScale = _originalScale;
 
+        // 시퀀스를 이 메서드 안에서 새로 생성합니다.
+        Sequence sequence = DOTween.Sequence();
 
-        // 생성된 시퀀스를 재생합니다.
-        mySequence.Play();
+        // 1. 커지는 애니메이션 추가
+        sequence.Append(transform.DOScale(_originalScale * _peakScale, _durationUp)
+            .SetEase(_easeTypeUp)
+            .SetDelay(_startDelay));
+
+        // 2. 다시 작아지는 애니메이션 추가
+        sequence.Append(transform.DOScale(_originalScale, _durationDown)
+            .SetEase(_easeTypeDown));
+
+        // 3. 콜백 등록 (가장 마지막에 체인으로 연결)
+        //    전달받은 콜백이 null이 아닐 경우에만 실행되도록 합니다.
+        sequence.OnComplete(() =>
+        {
+            callback?.Invoke();
+        });
+
+        // 시퀀스는 생성과 동시에 자동 재생되므로 Play()를 호출할 필요가 없습니다.
     }
 }
