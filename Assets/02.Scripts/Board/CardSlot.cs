@@ -1,7 +1,7 @@
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-public class CardSlot : MonoBehaviourPunCallbacks
+public class CardSlot : MonoBehaviour
 {
     private Card _card;
     public Card Card => _card;
@@ -33,11 +33,18 @@ public class CardSlot : MonoBehaviourPunCallbacks
             _cardSprite.sprite = handle.Result;
         };
 
-        // 내 카드일 때만 상대에게 알림
+        // 콜라이더 비활성화
+        var boxcollider = GetComponent<Collider2D>();
+        if (boxcollider != null)
+            boxcollider.enabled = false;
+
         if (IsMine && PhotonNetwork.IsConnected)
         {
             BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
+            BattleField.OnMyCardPlaced(this);
         }
+
+
     }
 
     public void Clear()

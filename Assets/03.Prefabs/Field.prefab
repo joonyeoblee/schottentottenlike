@@ -287,6 +287,7 @@ MonoBehaviour:
   - {fileID: 637693453779201092}
   - {fileID: 2647518759776380688}
   CardDeck: {fileID: 746340210935965431}
+  CurrentTurn: 0
 --- !u!1 &7836810801477439309
 GameObject:
   m_ObjectHideFlags: 0
@@ -545,7 +546,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: 1Round (6)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 3587753524291547926, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
+    - {fileID: 5228181550033798459, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1627,10 +1630,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8828849072471364866}
     - target: {fileID: 8578888189309526399, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
-      propertyPath: CardSprite
-      value: 
-      objectReference: {fileID: 2157382137576623855}
-    - target: {fileID: 8578888189309526399, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: BattleField
       value: 
       objectReference: {fileID: 8828849072471364866}
@@ -1639,11 +1638,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
---- !u!212 &2157382137576623855 stripped
-SpriteRenderer:
-  m_CorrespondingSourceObject: {fileID: 6191527280445950412, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
-  m_PrefabInstance: {fileID: 5196088398717650723}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2322821611147352658 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}

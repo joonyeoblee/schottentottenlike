@@ -44,6 +44,8 @@ MonoBehaviour:
   - RemoveHandCard
   - RPC_SyncDeck
   - ReceiveFirstTurnCards
+  - SetTurn
+  - RPC_UpdateSlotActivation
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

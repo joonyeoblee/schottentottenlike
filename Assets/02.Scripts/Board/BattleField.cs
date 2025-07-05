@@ -1,13 +1,25 @@
 using System.Collections;
 using Photon.Pun;
 using UnityEngine;
+
+public enum ETurn
+{
+    Player1 = 0,
+    Player2 = 1
+}
+
 public class BattleField : SingletonPhoton<BattleField>
 {
     public HandCardManager[] HandCardManagers; // [0] = 내 카드, [1] = 상대 카드
     public RoundSlot[] Rounds;
     public CardDeck CardDeck;
-
+    public ETurn CurrentTurn;
     private bool _isShuffled;
+
+    private ETurn GetNextTurn()
+    {
+        return CurrentTurn == ETurn.Player1 ? ETurn.Player2 : ETurn.Player1;
+    }
 
     private void Start()
     {
@@ -20,7 +32,7 @@ public class BattleField : SingletonPhoton<BattleField>
     {
         for (int i = 0; i < Rounds.Length; i++)
         {
-            Rounds[i].index = i;
+            Rounds[i].Index = i;
 
             for (int j = 0; j < Rounds[i].PlayerCardSlots.Length; j++)
             {
@@ -50,6 +62,16 @@ public class BattleField : SingletonPhoton<BattleField>
                 HandCardManagers[i].HandCardSlots[j].Index = j;
                 HandCardManagers[i].HandCardSlots[j].HandCardIndex = i;
             }
+            for (int j = 0; j < Rounds[i].PlayerCardSlots.Length; j++)
+            {
+                var slot = Rounds[i].PlayerCardSlots[j];
+                slot.IsMine = true;
+                slot.Index = j;
+                slot.RoundIndex = i;
+
+                // 첫 슬롯만 활성화, 나머지는 비활성화
+                slot.gameObject.SetActive(j == 0);
+            }
         }
     }
 
@@ -66,7 +88,11 @@ public class BattleField : SingletonPhoton<BattleField>
         yield return new WaitForSeconds(0.5f); // 셔플 후 애니메이션 딜레이
 
         if (PhotonNetwork.IsMasterClient)
+        {
+            int rand = Random.Range(0, 2); // 마스터 클라이언트만 턴 결정
+            photonView.RPC(nameof(SetTurn), RpcTarget.All, rand);
             SendFirstTurnDealToAll(); // 카드 뽑고 전송
+        }
     }
 
     private void OnShuffled()
@@ -104,6 +130,12 @@ public class BattleField : SingletonPhoton<BattleField>
     }
 
 
+    [PunRPC]
+    public void SetTurn(int turn)
+    {
+        CurrentTurn = (ETurn)turn;
+        Debug.Log($"턴이 {CurrentTurn}으로 변경됨");
+    }
 
     [PunRPC]
     private void ReceiveFirstTurnCards(int[] myColors, int[] myNumbers, int[] enemyColors, int[] enemyNumbers)
@@ -136,16 +168,69 @@ public class BattleField : SingletonPhoton<BattleField>
     }
 
 
+    public void OnMyCardPlaced(CardSlot placedSlot)
+    {
+        StartCoroutine(HandleCardPlaced());
+    }
+
+    private IEnumerator HandleCardPlaced()
+    {
+        yield return new WaitForSeconds(0.05f); // 카드가 핸드에서 제거되도록 잠시 대기
+
+        DrawCardToHand();
+
+        ETurn nextTurn = GetNextTurn();
+        photonView.RPC(nameof(SetTurn), RpcTarget.All, (int)nextTurn);
+
+        photonView.RPC(nameof(RPC_UpdateSlotActivation), RpcTarget.All);
+    }
 
 
+    private void DrawCardToHand()
+    {
+        // 내 핸드에서 비어있는 슬롯 찾기
+        var hand = HandCardManagers[0]; // 항상 내 핸드
+        for (int i = 0; i < hand.HandCardSlots.Length; i++)
+        {
+            if (!hand.HandCardSlots[i].HasCard) // 예시: HasCard는 bool 프로퍼티로 구현 필요
+            {
+                var card = CardDeck.GetCard();
+                hand.HandCardSlots[i].Refresh(i, card, true); // 보이게
+                break;
+            }
+        }
+    }
+    [PunRPC]
+    private void RPC_UpdateSlotActivation()
+    {
+        foreach (var round in Rounds)
+        {
+            foreach (var slot in round.PlayerCardSlots)
+            {
+                int i = slot.Index;
+                var slots = round.PlayerCardSlots;
+
+                if (i < slots.Length - 1 && slots[i].IsOccupied && !slots[i + 1].gameObject.activeSelf)
+                {
+                    slots[i + 1].gameObject.SetActive(true);
+                }
+            }
+        }
+    }
 
     [PunRPC]
     public void SetCard(int roundIndex, int slotIndex, int cardNumber, int color)
     {
         Card card = new Card(cardNumber, (ECardColor)color);
-        Rounds[roundIndex].EnemyCardSlots[slotIndex].Refresh(card);
-    }
+        var slot = Rounds[roundIndex].EnemyCardSlots[slotIndex];
 
+        if (!slot.gameObject.activeSelf)
+        {
+            slot.gameObject.SetActive(true); // 반드시 필요
+        }
+
+        slot.Refresh(card);
+    }
     [PunRPC]
     public void RPC_SyncDeck(int[] nums, int[] colors)
     {

@@ -14,6 +14,7 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
     private SpriteRenderer _cardSprite;
     public Sprite DefaultCardSprite;
     public Card Card;
+    public bool HasCard => Card != null;
 
     private void Start()
     {

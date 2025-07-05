@@ -3,10 +3,10 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 
-public class BaseSelectable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class BaseSelectable : MonoBehaviour
 {
     protected Outlinable _outlinable;
-    
+
     protected virtual void Awake()
     {
         _outlinable = GetComponent<Outlinable>();
@@ -22,7 +22,7 @@ public class BaseSelectable : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     {
         _outlinable.enabled = false;
     }
-    
+
     public void ActivateOutlinable()
     {
         _outlinable.enabled = true;
@@ -40,4 +40,6 @@ public class BaseSelectable : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             _outlinable.OutlineParameters.Color = color;
         }
     }
+
+
 }

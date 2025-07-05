@@ -38,6 +38,16 @@ public class CardDragger : BaseSelectable, IPointerDownHandler, IPointerUpHandle
     public void OnPointerUp(PointerEventData eventData)
     {
         _isDragging = false;
+        // --- 자기 턴인지 확인 ---
+        var isMaster = PhotonNetwork.IsMasterClient;
+        var currentTurn = BattleField.Instance.CurrentTurn;
+        bool isMyTurn = (isMaster && currentTurn == ETurn.Player1) || (!isMaster && currentTurn == ETurn.Player2);
+        if (!isMyTurn)
+        {
+            // 자기 턴이 아니면 배치 불가 → 제자리 복귀
+            transform.position = _originPosition;
+            return;
+        }
 
         var hits = Physics2D.OverlapPointAll(transform.position);
 
@@ -50,8 +60,8 @@ public class CardDragger : BaseSelectable, IPointerDownHandler, IPointerUpHandle
 
                 if (cardSlot == null || slotCollider == null) continue;
 
-                // 슬롯에 이미 카드가 있다면 배치 못함
-                if (cardSlot.IsOccupied)
+                // 슬롯에 이미 카드가 있다면 배치 못함 // 혹은 내꺼가 아니면
+                if (cardSlot.IsOccupied || !cardSlot.IsMine)
                 {
                     break;
                 }
