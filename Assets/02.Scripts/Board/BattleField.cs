@@ -36,6 +36,7 @@ public enum ETurn
                     Rounds[i].PlayerCardSlots[j].IsMine = true;
                     Rounds[i].PlayerCardSlots[j].Index = j;
                     Rounds[i].PlayerCardSlots[j].RoundIndex = i;
+                    Rounds[i].PlayerCardSlots[j].Clear();
                 }
 
                 for (int j = 0; j < Rounds[i].EnemyCardSlots.Length; j++)
@@ -43,8 +44,10 @@ public enum ETurn
                     Rounds[i].EnemyCardSlots[j].IsMine = false;
                     Rounds[i].EnemyCardSlots[j].Index = j;
                     Rounds[i].EnemyCardSlots[j].RoundIndex = i;
+                    Rounds[i].EnemyCardSlots[j].Clear();
                 }
             }
+
         }
 
         private void InitializeHandCardSlots()
@@ -74,7 +77,9 @@ public enum ETurn
         public void GameStart()
         {
             Debug.Log("GameStart 호출됨 - 덱 셔플 시작");
+            ClearAllCardSlots();
             StartCoroutine(GameStartSequence());
+            InitializeRoundSlots();
         }
 
         private IEnumerator GameStartSequence()
@@ -89,6 +94,35 @@ public enum ETurn
                 photonView.RPC(nameof(SetTurn), RpcTarget.All, rand);
                 SendFirstTurnDealToAll();
             }
+        }
+        private void ClearAllCardSlots()
+        {
+            foreach (var round in Rounds)
+            {
+                for (int i = 0; i < round.PlayerCardSlots.Length; i++)
+                {
+                    var slot = round.PlayerCardSlots[i];
+                    slot.Clear();
+                    slot.gameObject.SetActive(i == 0); // 0번째만 true, 나머지 false
+                }
+                for (int i = 0; i < round.EnemyCardSlots.Length; i++)
+                {
+                    var slot = round.EnemyCardSlots[i];
+                    slot.Clear();
+                    slot.gameObject.SetActive(i == 0); // 0번째만 true, 나머지 false
+                }
+
+            }
+
+            foreach (var handManager in HandCardManagers)
+            {
+                foreach (var handSlot in handManager.HandCardSlots)
+                {
+                    handSlot.Clear();
+                }
+            }
+
+            Debug.Log("모든 슬롯 초기화 완료: Player 0번째만 활성화됨");
         }
 
         private void OnShuffled()

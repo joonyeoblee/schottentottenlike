@@ -8,6 +8,7 @@ public class CardSlot : MonoBehaviour
     private SpriteRenderer _cardSprite;
     public bool IsMine; // true면 내 카드, false면 상대 카드
     public BattleField BattleField;
+    public Sprite DefaultSprite;
 
     public int Index;
     public bool IsOccupied => _card != null;
@@ -50,6 +51,16 @@ public class CardSlot : MonoBehaviour
     public void Clear()
     {
         _card = null;
+
+        if (_cardSprite != null)
+        {
+            _cardSprite.sprite = DefaultSprite;
+            _cardSprite.color = new Color(1f, 1f, 1f, 122f / 255f);
+        }
+
+        var boxcollider = GetComponent<Collider2D>();
+        if (boxcollider != null)
+            boxcollider.enabled = true;
     }
 
 }
