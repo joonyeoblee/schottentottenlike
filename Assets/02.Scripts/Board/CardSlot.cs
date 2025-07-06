@@ -15,6 +15,8 @@ public class CardSlot : MonoBehaviourPunCallbacks
     public int Index;
     public bool IsOccupied => _card != null;
     public int RoundIndex { get; set; }
+
+    private Sprite CardSprite;
     private void Start()
     {
         MySetAnimation = GetComponent<UI_CardSet>();
@@ -33,31 +35,38 @@ public class CardSlot : MonoBehaviourPunCallbacks
 
         Addressables.LoadAssetAsync<Sprite>(_card.CardImageAddress).Completed += handle =>
         {
+            CardSprite = handle.Result;
 
-            _cardSprite.color = Color.white;
-            _cardSprite.sprite = handle.Result;
 
-        };
+            // 내 카드일 때만 상대에게 알림
 
-        // 내 카드일 때만 상대에게 알림
+            if (PhotonNetwork.IsConnected) //포톤 네트워크에 연결이 돼 있다면
 
-        if(PhotonNetwork.IsConnected)//포톤 네트워크에 연결이 돼 있다면
-
-        {
-            if (IsMine) //내 카드 애니메이션 셋
             {
-                MySetAnimation.PlayAnimation(() =>
+                if (IsMine) //내 카드 애니메이션 셋
                 {
-                    BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
-                });
-            }
-            else //내 카드를 셋하는 게 아니라면
-            {
-                EnemySetAnimaion.PlayDrawAnimation(this.transform);
-            }
+                    _cardSprite.color = Color.white;
+                    _cardSprite.sprite = CardSprite;
 
-        }
-    }
+                    MySetAnimation.PlayAnimation(() =>
+                    {
+                        BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index,
+                            _card.CardNumber, (int)_card.Color);
+                    });
+                }
+                else //내 카드를 셋하는 게 아니라면
+                {
+                    EnemySetAnimaion.PlaySetAnimation(this.transform,CardSprite.texture, () =>
+                    {
+                        _cardSprite.color = Color.white;
+                        _cardSprite.sprite = CardSprite;
+
+                    });
+                }
+
+            }
+        };
+}
 
     public void Clear()
     {

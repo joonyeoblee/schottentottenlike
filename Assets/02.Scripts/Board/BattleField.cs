@@ -115,6 +115,15 @@ public class BattleField : SingletonPhoton<BattleField>
         StartCoroutine(DealFirstTurnCardsCoroutine(myColors, myNumbers, enemyColors, enemyNumbers));
     }
 
+    private void Draw(int i)
+    {
+        HandCardManagers[0].HandCardSlots[i].MyCard.ShowAnimation.midPoint =
+            AnimationTransforms.Instance.FirstShowTransfroms[i];
+        HandCardManagers[0].HandCardSlots[i].MyCard.ShowDraw();
+        HandCardManagers[0].HandCardSlots[i].MyCard.Rend.enabled = true;
+
+
+    }
 
     private IEnumerator DealFirstTurnCardsCoroutine(int[] myColors, int[] myNumbers, int[] enemyColors, int[] enemyNumbers)
     {
@@ -124,11 +133,12 @@ public class BattleField : SingletonPhoton<BattleField>
         for (int i = 0; i < HandCardManagers[0].HandCardSlots.Length; i++)
         {
             Card card = new Card(myNumbers[i], (ECardColor)myColors[i]);
-            HandCardManagers[0].HandCardSlots[i].MyCard.Rend.enabled = true;
+
             HandCardManagers[0].HandCardSlots[i].Refresh(i, card, true); // 무조건 보이게
-            HandCardManagers[0].HandCardSlots[i].MyCard.ShowDraw();
-            HandCardManagers[0].HandCardSlots[i].MyCard.ShowAnimation.midPoint =
-                AnimationTransforms.Instance.FirstShowTransfroms[i];
+
+            Draw(i);
+
+
             yield return new WaitForSeconds(0.2f);
         }
 
@@ -142,12 +152,11 @@ public class BattleField : SingletonPhoton<BattleField>
         }
 
         var enemyAnimation = HandCardManagers[1].GetComponent<EnemyHandAnimation>();
+        ;
 
-// 1. "FanIn" 애니메이션을 시작합니다.
-//    그리고 애니메이션이 끝나면 실행될 모든 작업을 람다식 안에 정의합니다.
+        // 1. "FanIn" 애니메이션을 시작합니다.
         enemyAnimation.PlayFanOutAnimation(() =>
         {
-            // --- 이 중괄호 안의 코드는 PlayFanInAnimation이 완전히 끝난 후에만 실행됩니다. ---
 
             // 2. 원하는 작업: 모든 적 카드의 렌더러를 켭니다.
             foreach (var enemyCardSlot in HandCardManagers[1].HandCardSlots)

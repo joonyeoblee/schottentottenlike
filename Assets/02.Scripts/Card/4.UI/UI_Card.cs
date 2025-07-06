@@ -38,6 +38,12 @@ public class UI_Cards : MonoBehaviour
         StartCoroutine(ShowAnimation.DrawProcessCoroutine());
     }
 
+    public void SwitchRenderer(bool isOn)
+    {
+        Rend.enabled = isOn ? true : false;
+
+    }
+
     public void ApplyTextures()
     {
         if (Rend == null) Rend = GetComponent<SpriteRenderer>();

@@ -1,7 +1,9 @@
 using System;
 using DG.Tweening;
 using UnityEngine;
-using System.Collections; // 코루틴 사용을 위해 추가
+using System.Collections;
+using Unity.VisualScripting;
+using Sequence = DG.Tweening.Sequence; // 코루틴 사용을 위해 추가
 
 public class UI_CardDrawShow : MonoBehaviour
 {
@@ -15,9 +17,6 @@ public class UI_CardDrawShow : MonoBehaviour
 
     [Header("애니메이션 설정")]
     public float durationToMid = 0.5f;
-    // ==========================================
-    // [수정] 중간 지점 대기 시간 변수 추가
-    // ==========================================
     [Tooltip("중간 지점에서 머무는 시간입니다.")]
     public float delayAtMid = 0.2f;
     public float durationToEnd = 0.5f;
@@ -55,29 +54,23 @@ public class UI_CardDrawShow : MonoBehaviour
         _uiCardDragger.enabled = false;
         if (_originalParent == null)
         {
-            _originalParent = objectToMove.parent;
+            _originalParent = objectToMove.parent; //originalParent는 카드 슬롯이다
+
         }
         DOTween.Kill(objectToMove);
         objectToMove.position = startPoint.position;
         objectToMove.rotation = startPoint.rotation;
 
-        // --- 2단계: 자리 만들기 ---
-        Debug.Log("1. 자리 만들기 시작: 빈 슬롯을 핸드에 추가합니다.");
-        if (objectToMove.parent != null)
-        {
-            objectToMove.SetParent(null, true);
-        }
-        _originalParent.SetParent(HandPoint);
 
-        // --- 3단계: 대기 ---
-        float arrangementDuration = 0.2f;
-        Debug.Log($"2. {arrangementDuration}초 동안 자리 만들기를 기다립니다.");
-        yield return new WaitForSeconds(arrangementDuration);
+        //_originalParent.SetParent(HandPoint);
 
         // --- 4단계: 카드의 비행 애니메이션 실행 ---
         Debug.Log("3. 카드를 빈 자리로 비행시킵니다.");
         Sequence flightSequence = CreateFlightSequence(_originalParent.position, _originalParent.rotation);
         flightSequence.Play();
+
+        yield return new Null();
+
     }
 
 
@@ -91,14 +84,12 @@ public class UI_CardDrawShow : MonoBehaviour
     {
         Sequence mySequence = DOTween.Sequence();
         mySequence.SetTarget(objectToMove);
+        objectToMove.transform.SetParent(null, true);//움직일 카드 분리
 
         // Part 1: 시작 -> 중간
         mySequence.Append(objectToMove.DOMove(midPoint.position, durationToMid).SetEase(easeType))
                   .Join(objectToMove.DORotate(Vector3.zero, durationToMid).SetEase(easeType));
 
-        // ==========================================
-        // [수정] 중간 지점에서 설정된 시간만큼 대기
-        // ==========================================
         if (delayAtMid > 0)
         {
             mySequence.AppendInterval(delayAtMid);

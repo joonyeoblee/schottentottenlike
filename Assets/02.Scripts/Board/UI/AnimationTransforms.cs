@@ -11,8 +11,8 @@ public class AnimationTransforms : MonoBehaviour
 
     public Transform PlayerHandTransform;
     public Transform EnemyHandTransform;
-
-
+    public Transform EnemyShowTransform;
+    public Transform EnemyResetTransfrom;
     private void Awake()
     {
         if (Instance == null)
