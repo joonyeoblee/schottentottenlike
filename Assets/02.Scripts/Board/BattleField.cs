@@ -223,6 +223,9 @@ public class BattleField : SingletonPhoton<BattleField>
 
         var judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards);
 
+        GameManager.Instance.UpdateRoundOwnerAndCheckWin(roundIndex, judgeResult.Winner);
+
+
         string playerRank = judgeResult.Player1Rank.ToString();
         string enemyRank = judgeResult.Player2Rank.ToString();
 

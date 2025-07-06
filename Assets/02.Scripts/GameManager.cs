@@ -30,6 +30,7 @@ public class GameManager : Singleton<GameManager>
     private List<Stack<Card>> _player1Stones;
     private List<Stack<Card>> _player2Stones;
     private Stack<Card> _deck;
+    private int[] RoundOwners;
 
     protected override void Awake()
     {
@@ -53,6 +54,7 @@ public class GameManager : Singleton<GameManager>
             _player2Stones.Add(new Stack<Card>());
         }
         _deck = GetAllPossibleCards();
+        RoundOwners = new int[_stoneCount];
     }
 
     // 경계석 점령 판정
@@ -131,7 +133,55 @@ public class GameManager : Singleton<GameManager>
         return result;
     }
 
+    public void UpdateRoundOwnerAndCheckWin(int roundIndex, int winner)
+    {
+        // winner: 1(플레이어1), -1(플레이어2), 0(무승부/미정)
+        if (winner == 1)
+            RoundOwners[roundIndex] = 1;
+        else if (winner == -1)
+            RoundOwners[roundIndex] = 2;
+        else
+            RoundOwners[roundIndex] = 0;
 
+        CheckGameWinCondition();
+    }
+
+    public void CheckGameWinCondition()
+    {
+        int p1Count = RoundOwners.Count(x => x == 1);
+        int p2Count = RoundOwners.Count(x => x == 2);
+
+        // 5개 이상 소유
+        if (p1Count >= 5)
+        {
+            Debug.Log("플레이어1이 5개 라운드 점령! 게임 승리");
+            // 게임 종료 처리
+            return;
+        }
+        if (p2Count >= 5)
+        {
+            Debug.Log("플레이어2가 5개 라운드 점령! 게임 승리");
+            // 게임 종료 처리
+            return;
+        }
+
+        // 연속 3개 소유
+        for (int i = 0; i <= RoundOwners.Length - 3; i++)
+        {
+            if (RoundOwners[i] == 1 && RoundOwners[i + 1] == 1 && RoundOwners[i + 2] == 1)
+            {
+                Debug.Log("플레이어1이 연속 3개 라운드 점령! 게임 승리");
+                // 게임 종료 처리
+                return;
+            }
+            if (RoundOwners[i] == 2 && RoundOwners[i + 1] == 2 && RoundOwners[i + 2] == 2)
+            {
+                Debug.Log("플레이어2가 연속 3개 라운드 점령! 게임 승리");
+                // 게임 종료 처리
+                return;
+            }
+        }
+    }
 
     // 전체 미사용 카드 반환 (Stack 버전)
     public Stack<Card> GetUnusedCards()
