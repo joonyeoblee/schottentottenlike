@@ -59,6 +59,16 @@ public class CardDeck : MonoBehaviour
 
     public Card GetCard()
     {
-        return cards.Pop();
+        //return cards.Pop();
+
+        if (cards.Count == 0)
+        {
+            Debug.LogWarning("더 이상 나올 카드가 없습니다!");
+            return null;
+        }
+
+            Card card = cards.Pop();
+        GameManager.Instance.RecordUsedCard(card); // 사용 기록
+        return card;
     }
 }

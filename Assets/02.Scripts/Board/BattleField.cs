@@ -195,6 +195,13 @@ public class BattleField : SingletonPhoton<BattleField>
             if (!hand.HandCardSlots[i].HasCard) // 예시: HasCard는 bool 프로퍼티로 구현 필요
             {
                 var card = CardDeck.GetCard();
+
+                if (card == null)
+                {
+                    Debug.LogWarning("핸드에 추가할 카드가 없습니다.");
+                    return;
+                }
+
                 hand.HandCardSlots[i].Refresh(i, card, true); // 보이게
                 break;
             }
