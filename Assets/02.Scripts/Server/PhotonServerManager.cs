@@ -82,16 +82,52 @@ public class PhotonServerManager : SingletonPhoton<PhotonServerManager>
     {
         Debug.Log("마스터 클라이언트 변경됨");
 
+        Debug.Log($"newMasterClient: {newMasterClient}, PhotonNetwork.LocalPlayer: {PhotonNetwork.LocalPlayer}");
         // 내가 새로운 마스터가 되었다면 필드 재생성
         if (newMasterClient == PhotonNetwork.LocalPlayer)
         {
-            if (_battleField == null)
+            Debug.Log($"{newMasterClient == PhotonNetwork.LocalPlayer}");
+            if(!_pool.IsLoaded("Field"))
+            {
+                Debug.Log("Field 프리팹이 없어서 새로 Preload 시도");
+                _pool.Preload("Field");
+
+                StartCoroutine(WaitAndInstantiateField());
+            }
+            else
             {
                 _battleField = PhotonNetwork.Instantiate("Field", new Vector3(0, 5, 0), Quaternion.identity);
                 Debug.Log("새로운 마스터가 Field 재생성함.");
             }
+            //if (_battleField == null)
+            //{
+            //    _battleField = PhotonNetwork.Instantiate("Field", new Vector3(0, 5, 0), Quaternion.identity);
+            //    Debug.Log("새로운 마스터가 Field 재생성함.");
+            //}
         }
     }
+
+    private System.Collections.IEnumerator WaitAndInstantiateField()
+    {
+        float timeout = 5f;
+        float timer = 0f;
+
+        while (!_pool.IsLoaded("Field"))
+        {
+            if (timer > timeout)
+            {
+                Debug.LogError("Field 프리팹 로드 타임아웃");
+                yield break;
+            }
+
+            yield return null;
+            timer += Time.deltaTime;
+        }
+
+        _battleField = PhotonNetwork.Instantiate("Field", new Vector3(0, 5, 0), Quaternion.identity);
+        Debug.Log("비동기 로드 완료 후 Field 재생성함");
+    }
+
 
     //     // 포톤 마스터 서버에 접속 후 호출되는 콜백 함수
     // public override void OnConnectedToMaster()
