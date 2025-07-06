@@ -57,7 +57,8 @@ public class UI_Lobby : MonoBehaviourPunCallbacks
         {
             MaxPlayers = 2,
             IsVisible = true, // 반드시 명시적으로 true로 설정
-            IsOpen = true
+            IsOpen = true,
+            CleanupCacheOnLeave = true // 반드시 명시적으로 true로 설정
         };
         bool result = PhotonNetwork.CreateRoom(roomName,
             options, TypedLobby.Default);
