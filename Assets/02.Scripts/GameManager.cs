@@ -147,29 +147,6 @@ public class GameManager : Singleton<GameManager>
         return new Stack<Card>(unused);
     }
 
-    // 전체 미사용 카드 반환 (List 버전)
-    public List<Card> GetUnusedCardsList()
-    {
-        List<Card> used = _player1Stones.SelectMany(x => x)
-                                        .Concat(_player2Stones.SelectMany(x => x))
-                                        .ToList();
-        List<Card> unused = GetAllPossibleCards()
-                            .Where(c => !ContainsCard(used, c))
-                            .ToList();
-        return unused;
-    }
-
-    public void GetUnusedCardDeck(CardDeck cardDeck)
-    {
-        List<Card> used = _player1Stones.SelectMany(x => x)
-                                        .Concat(_player2Stones.SelectMany(x => x))
-                                        .ToList();
-        List<Card> unused = GetAllPossibleCards()
-                            .Where(c => !ContainsCard(used, c))
-                            .ToList();
-        cardDeck.SetDeck(unused);
-    }
-
 
     // 전체 카드 생성 (색상 6종, 숫자 1~9)
     public Stack<Card> GetAllPossibleCards()
