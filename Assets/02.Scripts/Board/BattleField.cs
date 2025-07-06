@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using Photon.Pun;
 using UnityEngine;
 
@@ -171,6 +173,9 @@ public class BattleField : SingletonPhoton<BattleField>
     public void OnMyCardPlaced(CardSlot placedSlot)
     {
         StartCoroutine(HandleCardPlaced());
+
+        int roundIndex = placedSlot.RoundIndex;
+        JudgeRoundWinner(roundIndex);
     }
 
     private IEnumerator HandleCardPlaced()
@@ -184,6 +189,93 @@ public class BattleField : SingletonPhoton<BattleField>
 
         photonView.RPC(nameof(RPC_UpdateSlotActivation), RpcTarget.All);
     }
+
+    //족보 X
+    //private void JudgeRoundWinner(int roundIndex)
+    //{
+    //    var playerCards = GetPlayerCards(roundIndex); // Rounds[roundIndex].PlayerCardSlots에서 추출
+    //    var enemyCards = GetEnemyCards(roundIndex);   // Rounds[roundIndex].EnemyCardSlots에서 추출
+    //    // 미사용 카드 리스트도 BattleField에서 만들어 전달
+    //    var unusedCards = GetUnusedCardsFromField();
+
+    //    int result = GameManager.Instance.JudgeStone(playerCards, enemyCards, unusedCards);
+
+    //    if (result == 1)
+    //    {
+    //        Debug.Log($"라운드 {roundIndex}: 플레이어1 승리");
+    //    }
+    //    else if (result == -1)
+    //    {
+    //        Debug.Log($"라운드 {roundIndex}: 플레이어2 승리");
+    //    }
+    //    else
+    //    {
+    //        Debug.Log($"라운드 {roundIndex}: 무승부 또는 미정");
+    //    }
+    //}
+
+    //족보 O
+    private void JudgeRoundWinner(int roundIndex)
+    {
+        var playerCards = GetPlayerCards(roundIndex);
+        var enemyCards = GetEnemyCards(roundIndex);
+        var unusedCards = GetUnusedCardsFromField();
+
+        var judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards);
+
+        string playerRank = judgeResult.Player1Rank.ToString();
+        string enemyRank = judgeResult.Player2Rank.ToString();
+
+        if (judgeResult.Winner == 1)
+        {
+            Debug.Log($"라운드 {roundIndex}: 플레이어1 승리 ({playerRank} vs {enemyRank})");
+        }
+        else if (judgeResult.Winner == -1)
+        {
+            Debug.Log($"라운드 {roundIndex}: 플레이어2 승리 ({playerRank} vs {enemyRank})");
+        }
+        else
+        {
+            Debug.Log($"라운드 {roundIndex}: 무승부 또는 미정 ({playerRank} vs {enemyRank})");
+        }
+    }
+
+
+    private List<Card> GetPlayerCards(int roundIndex)
+    {
+        var slots = Rounds[roundIndex].PlayerCardSlots;
+        var cards = new List<Card>();
+        foreach (var slot in slots)
+            if (slot.IsOccupied && slot.Card != null)
+                cards.Add(slot.Card);
+        return cards;
+    }
+
+    private List<Card> GetEnemyCards(int roundIndex)
+    {
+        var slots = Rounds[roundIndex].EnemyCardSlots;
+        var cards = new List<Card>();
+        foreach (var slot in slots)
+            if (slot.IsOccupied && slot.Card != null)
+                cards.Add(slot.Card);
+        return cards;
+    }
+
+    private List<Card> GetUnusedCardsFromField()
+    {
+        var used = new List<Card>();
+        foreach (var round in Rounds)
+        {
+            used.AddRange(round.PlayerCardSlots.Where(s => s.IsOccupied && s.Card != null).Select(s => s.Card));
+            used.AddRange(round.EnemyCardSlots.Where(s => s.IsOccupied && s.Card != null).Select(s => s.Card));
+        }
+
+        var all = GameManager.Instance.GetAllPossibleCards().ToList();
+        return all.Where(c => !used.Any(u => u.CardNumber == c.CardNumber && u.Color == c.Color)).ToList();
+    }
+
+
+
 
 
     private void DrawCardToHand()
@@ -200,6 +292,8 @@ public class BattleField : SingletonPhoton<BattleField>
             }
         }
     }
+
+
     [PunRPC]
     private void RPC_UpdateSlotActivation()
     {
@@ -230,6 +324,8 @@ public class BattleField : SingletonPhoton<BattleField>
         }
 
         slot.Refresh(card);
+
+        JudgeRoundWinner(roundIndex);
     }
     [PunRPC]
     public void RPC_SyncDeck(int[] nums, int[] colors)

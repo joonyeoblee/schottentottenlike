@@ -2,6 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
+// 족보 판정
+public enum HandRank
+{
+    StraightFlush = 5,
+    ThreeOfAKind = 4,
+    Straight = 3,
+    Flush = 2,
+    CardSum = 1
+}
+
+public struct JudgeResult
+{
+    public int Winner; // 1: 플레이어1, -1: 플레이어2, 0: 무승부/미정
+    public HandRank Player1Rank;
+    public HandRank Player2Rank;
+}
+
+
 public class GameManager : Singleton<GameManager>
 {
     [Header("쇼텐토텐 룰")]
@@ -15,7 +34,7 @@ public class GameManager : Singleton<GameManager>
     protected override void Awake()
     {
         base.Awake();
-        // InitializeGame();
+        InitializeGame();
     }
 
     protected override void Start()
@@ -59,6 +78,61 @@ public class GameManager : Singleton<GameManager>
         return 0;
     }
 
+    // 새로 추가: Rounds의 카드 리스트를 직접 받아서 판정
+    public int JudgeStone(List<Card> playerCards, List<Card> enemyCards, List<Card> unusedCards = null)
+    {
+        // unusedCards는 미사용 카드(확정승 판정용), 필요시 BattleField에서 전달
+        if (playerCards.Count == 3 && enemyCards.Count == 3)
+        {
+            return CompareHands(playerCards, enemyCards);
+        }
+        else if (playerCards.Count == 3 && enemyCards.Count < 3)
+        {
+            if (unusedCards == null)
+                return 0;
+
+            return IsProvenWin(playerCards, enemyCards, unusedCards) ? 1 : 0;
+        }
+        else if (enemyCards.Count == 3 && playerCards.Count < 3)
+        {
+            if (unusedCards == null)
+                return 0;
+
+            return IsProvenWin(enemyCards, playerCards, unusedCards) ? -1 : 0;
+        }
+        return 0;
+    }
+
+    //족보 반환
+    public JudgeResult JudgeStoneWithRank(List<Card> playerCards, List<Card> enemyCards, List<Card> unusedCards = null)
+    {
+        var result = new JudgeResult();
+        result.Player1Rank = EvaluateHand(playerCards);
+        result.Player2Rank = EvaluateHand(enemyCards);
+
+        if (playerCards.Count == 3 && enemyCards.Count == 3)
+        {
+            result.Winner = CompareHands(playerCards, enemyCards);
+        }
+        else if (playerCards.Count == 3 && enemyCards.Count < 3)
+        {
+            if (unusedCards == null) result.Winner = 0;
+            else result.Winner = IsProvenWin(playerCards, enemyCards, unusedCards) ? 1 : 0;
+        }
+        else if (enemyCards.Count == 3 && playerCards.Count < 3)
+        {
+            if (unusedCards == null) result.Winner = 0;
+            else result.Winner = IsProvenWin(enemyCards, playerCards, unusedCards) ? -1 : 0;
+        }
+        else
+        {
+            result.Winner = 0;
+        }
+        return result;
+    }
+
+
+
     // 전체 미사용 카드 반환 (Stack 버전)
     public Stack<Card> GetUnusedCards()
     {
@@ -72,6 +146,30 @@ public class GameManager : Singleton<GameManager>
 
         return new Stack<Card>(unused);
     }
+
+    // 전체 미사용 카드 반환 (List 버전)
+    public List<Card> GetUnusedCardsList()
+    {
+        List<Card> used = _player1Stones.SelectMany(x => x)
+                                        .Concat(_player2Stones.SelectMany(x => x))
+                                        .ToList();
+        List<Card> unused = GetAllPossibleCards()
+                            .Where(c => !ContainsCard(used, c))
+                            .ToList();
+        return unused;
+    }
+
+    public void GetUnusedCardDeck(CardDeck cardDeck)
+    {
+        List<Card> used = _player1Stones.SelectMany(x => x)
+                                        .Concat(_player2Stones.SelectMany(x => x))
+                                        .ToList();
+        List<Card> unused = GetAllPossibleCards()
+                            .Where(c => !ContainsCard(used, c))
+                            .ToList();
+        cardDeck.SetDeck(unused);
+    }
+
 
     // 전체 카드 생성 (색상 6종, 숫자 1~9)
     public Stack<Card> GetAllPossibleCards()
@@ -94,15 +192,7 @@ public class GameManager : Singleton<GameManager>
         return list.Any(c => c.CardNumber == card.CardNumber && c.Color == card.Color);
     }
 
-    // 족보 판정
-    private enum HandRank
-    {
-        StraightFlush = 5,
-        ThreeOfAKind = 4,
-        Straight = 3,
-        Flush = 2,
-        CardSum = 1
-    }
+
 
     private HandRank EvaluateHand(List<Card> cards)
     {
@@ -209,4 +299,6 @@ public class GameManager : Singleton<GameManager>
             }
         }
     }
+
+
 }
