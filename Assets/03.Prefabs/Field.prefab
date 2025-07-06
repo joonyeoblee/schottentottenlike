@@ -311,7 +311,7 @@ MonoBehaviour:
   PlayerHandTransform: {fileID: 8535223321473045010}
   EnemyHandTransform: {fileID: 8546585618978649662}
   EnemyShowTransform: {fileID: 4646596136400884011}
-  EnemyResetTransfrom: {fileID: 0}
+  EnemyResetTransfrom: {fileID: 9105852375336731626}
 --- !u!1 &3797442638748181835
 GameObject:
   m_ObjectHideFlags: 0
@@ -642,13 +642,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8508357345798564871}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.37, y: 1.39, z: -0.47454193}
+  m_LocalRotation: {x: 0, y: 0, z: 1, w: 0}
+  m_LocalPosition: {x: -0.37, y: 1.3899997, z: -0.47454193}
   m_LocalScale: {x: 1.2147421, y: 1.2147421, z: 1.2147421}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7557406889015036614}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
 --- !u!1 &8906846213622737925
 GameObject:
   m_ObjectHideFlags: 0

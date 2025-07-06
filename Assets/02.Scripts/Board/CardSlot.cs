@@ -1,3 +1,4 @@
+using System.Collections;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -61,12 +62,24 @@ public class CardSlot : MonoBehaviourPunCallbacks
                         _cardSprite.color = Color.white;
                         _cardSprite.sprite = CardSprite;
 
+                        StartCoroutine(EnemyDeckDraw());
                     });
                 }
 
             }
         };
 }
+
+
+    /// <summary>
+    /// 테스트용 연출을 위한 메소드입니다
+    /// </summary>
+    private IEnumerator EnemyDeckDraw()
+    {
+        yield return new WaitForSeconds(3f);
+        EnemySetAnimaion.EnemySetAnimation();
+
+    }
 
     public void Clear()
     {
