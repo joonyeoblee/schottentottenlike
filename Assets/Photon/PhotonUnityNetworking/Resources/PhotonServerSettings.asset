@@ -46,6 +46,8 @@ MonoBehaviour:
   - ReceiveFirstTurnCards
   - SetTurn
   - RPC_UpdateSlotActivation
+  - RPC_ReceiveDrawCard
+  - RPC_RequestDrawCard
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
