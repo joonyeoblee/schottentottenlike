@@ -1,7 +1,7 @@
 using System.Collections;
         using Photon.Pun;
         using UnityEngine;
-
+using ExitGames.Client.Photon;
 public enum ETurn
     {
         Player1 = 0,
@@ -80,6 +80,25 @@ public enum ETurn
             ClearAllCardSlots();
             StartCoroutine(GameStartSequence());
             InitializeRoundSlots();
+
+            // 방 상태 변경
+            SetRoomState(ERoomState.Playing);
+        }
+
+        private void SetRoomState(ERoomState state)
+        {
+            // 방 상태 변경 메서드
+            if (!PhotonNetwork.IsMasterClient)
+            {
+                return;
+            }
+
+            PhotonNetwork.CurrentRoom.SetCustomProperties(new ExitGames.Client.Photon.Hashtable
+            {
+                { "RoomState", (int)state }
+            });
+
+            Debug.Log($"[RoomState] 상태가 '{state}'로 설정되었습니다.");
         }
 
         private IEnumerator GameStartSequence()

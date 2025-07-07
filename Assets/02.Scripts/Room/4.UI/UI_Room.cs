@@ -1,4 +1,5 @@
 using Photon.Pun;
+using Photon.Realtime;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -9,20 +10,29 @@ public class UI_Room : MonoBehaviour
     public TextMeshProUGUI RoomPersonTextUI;
     public TextMeshProUGUI RoomStatusTextUI;
 
-    private Room _myRoom;
+    private RoomInfo _roomInfo;
 
-    public void Refresh(Room myRoom)
+    public void Refresh(RoomInfo roomInfo)
     {
-        _myRoom = myRoom;
-        string[] RoomTitleTexts = _myRoom.RoomTitle.Split("_");
+        _roomInfo = roomInfo;
+        string[] RoomTitleTexts = roomInfo.Name.Split("_");
         RoomTitleTextUI.text = RoomTitleTexts[0];
-        RoomPersonTextUI.text = $"{_myRoom.CurrentPlayers} / {_myRoom.MaxPlayers}";
+        RoomPersonTextUI.text = $"{roomInfo.PlayerCount} / {roomInfo.MaxPlayers}";
 
-        RoomStatusTextUI.text = ChangeStateToKR(_myRoom.RoomState);
+        var roomState = ERoomState.Waiting; // 기본값
+        if (roomInfo.CustomProperties.TryGetValue("RoomState", out var stateObject))
+        {
+            if (stateObject is int stateInt)
+            {
+                roomState = (ERoomState)stateInt;
+            }
+        }
+
+        RoomStatusTextUI.text = ChangeStateToKR(roomState);
     }
     public void JoinRoom()
     {
-        PhotonNetwork.JoinRoom(_myRoom.RoomTitle);
+        PhotonNetwork.JoinRoom(_roomInfo.Name);
     }
 
     private string ChangeStateToKR(ERoomState roomState)

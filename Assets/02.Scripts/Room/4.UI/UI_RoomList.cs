@@ -13,7 +13,7 @@ public class UI_RoomList : MonoBehaviourPunCallbacks
     {
         Debug.Log($"OnRoomListUpdate 호출됨. 방 개수: {roomList.Count}");
 
-        
+
         foreach(Transform child in RoomContainer.transform)
         {
             Destroy(child.gameObject);
@@ -25,12 +25,11 @@ public class UI_RoomList : MonoBehaviourPunCallbacks
             {
                 continue;
             }
-            
+
             Debug.Log($"{info.Name} | RemovedFromList: {info.RemovedFromList}, Visible: {info.IsVisible}, Open: {info.IsOpen}");
             GameObject roomObject = Instantiate(RoomPrefab, RoomContainer.transform);
-            Room room = new Room(info.Name, "", ERoomState.Waiting, info.MaxPlayers, info.PlayerCount);
             UI_Room roomComp = roomObject.GetComponent<UI_Room>();
-            roomComp.Refresh(room);
+            roomComp.Refresh(info);
         }
     }
     private void Awake()
@@ -54,7 +53,7 @@ public class UI_RoomList : MonoBehaviourPunCallbacks
         //     PhotonNetwork.JoinLobby();
         // }
     }
-    
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.L))

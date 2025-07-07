@@ -2,7 +2,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using ExitGames.Client.Photon;
 
 public class UI_Lobby : MonoBehaviourPunCallbacks
 {
@@ -58,7 +58,13 @@ public class UI_Lobby : MonoBehaviourPunCallbacks
             MaxPlayers = 2,
             IsVisible = true, // 반드시 명시적으로 true로 설정
             IsOpen = true,
-            CleanupCacheOnLeave = true // 반드시 명시적으로 true로 설정
+            CleanupCacheOnLeave = true, // 반드시 명시적으로 true로 설정
+
+            CustomRoomProperties = new Hashtable
+            {
+                { "RoomState", (int)ERoomState.Waiting }
+            },
+            CustomRoomPropertiesForLobby = new string[] { "RoomState" }
         };
         bool result = PhotonNetwork.CreateRoom(roomName,
             options, TypedLobby.Default);
