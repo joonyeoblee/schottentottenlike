@@ -15,7 +15,7 @@ public enum HandRank
 
 public struct JudgeResult
 {
-    public int Winner; // 1: 플레이어1, -1: 플레이어2, 0: 무승부/미정
+    public int Winner; // 1: 플레이어1, 2: 플레이어2, 0: 무승부/미정
     public HandRank Player1Rank;
     public HandRank Player2Rank;
 }
@@ -84,7 +84,7 @@ public class GameManager : Singleton<GameManager>
         else if (p2.Count == 3 && p1.Count < 3)
         {
             var unused = GetUnusedCards().ToList();
-            return IsProvenWin(p2, p1, unused) ? -1 : 0;
+            return IsProvenWin(p2, p1, unused) ? 2 : 0;
         }
         return 0;
     }
@@ -109,7 +109,7 @@ public class GameManager : Singleton<GameManager>
             if (unusedCards == null)
                 return 0;
 
-            return IsProvenWin(enemyCards, playerCards, unusedCards) ? -1 : 0;
+            return IsProvenWin(enemyCards, playerCards, unusedCards) ? 2 : 0;
         }
         return 0;
     }
@@ -133,7 +133,7 @@ public class GameManager : Singleton<GameManager>
         else if (enemyCards.Count == 3 && playerCards.Count < 3)
         {
             if (unusedCards == null) result.Winner = 0;
-            else result.Winner = IsProvenWin(enemyCards, playerCards, unusedCards) ? -1 : 0;
+            else result.Winner = IsProvenWin(enemyCards, playerCards, unusedCards) ? 2 : 0;
         }
         else
         {
@@ -147,7 +147,7 @@ public class GameManager : Singleton<GameManager>
         // winner: 1(플레이어1), -1(플레이어2), 0(무승부/미정)
         if (winner == 1)
             RoundOwners[roundIndex] = 1;
-        else if (winner == -1)
+        else if (winner == 2)
             RoundOwners[roundIndex] = 2;
         else
             RoundOwners[roundIndex] = 0;
@@ -195,15 +195,6 @@ public class GameManager : Singleton<GameManager>
     // 전체 미사용 카드 반환 (Stack 버전)
     public Stack<Card> GetUnusedCards()
     {
-        //List<Card> used = _player1Stones.SelectMany(x => x)
-        //                                .Concat(_player2Stones.SelectMany(x => x))
-        //                                .ToList();
-
-        //List<Card> unused = GetAllPossibleCards()
-        //                    .Where(c => !ContainsCard(used, c))
-        //                    .ToList();
-
-        //return new Stack<Card>(unused);
         List<Card> all = GetAllPossibleCards().ToList();
         List<Card> unused = all.Where(c => !_usedCards.Any(u => u.CardNumber == c.CardNumber && u.Color == c.Color)).ToList();
         return new Stack<Card>(unused);
@@ -255,14 +246,14 @@ public class GameManager : Singleton<GameManager>
         var rank2 = EvaluateHand(hand2);
 
         if (rank1 > rank2) return 1;
-        if (rank2 > rank1) return -1;
+        if (rank2 > rank1) return 2;
 
         if (rank1 == HandRank.CardSum)
         {
             int sum1 = hand1.Sum(c => c.CardNumber);
             int sum2 = hand2.Sum(c => c.CardNumber);
             if (sum1 > sum2) return 1;
-            if (sum2 > sum1) return -1;
+            if (sum2 > sum1) return 2;
             return 0;
         }
         else
@@ -272,7 +263,7 @@ public class GameManager : Singleton<GameManager>
             for (int i = 0; i < 3; i++)
             {
                 if (sorted1[i] > sorted2[i]) return 1;
-                if (sorted2[i] > sorted1[i]) return -1;
+                if (sorted2[i] > sorted1[i]) return 2;
             }
             return 0;
         }

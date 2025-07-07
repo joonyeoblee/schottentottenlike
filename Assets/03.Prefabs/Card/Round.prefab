@@ -60,6 +60,7 @@ MonoBehaviour:
   - {fileID: 7104651205338367318}
   - {fileID: 4681487082357340012}
   Index: 0
+  Stone: {fileID: 7164358161199200081}
 --- !u!1001 &201162179382773601
 PrefabInstance:
   m_ObjectHideFlags: 0

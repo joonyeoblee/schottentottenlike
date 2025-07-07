@@ -292,18 +292,24 @@ public class BattleField : SingletonPhoton<BattleField>
             string playerRank = judgeResult.Player1Rank.ToString();
             string enemyRank = judgeResult.Player2Rank.ToString();
 
-            if (judgeResult.Winner == 1)
+            if (judgeResult.Winner == 1 || judgeResult.Winner == -1)
             {
-                Debug.Log($"라운드 {roundIndex}: 플레이어1 승리 ({playerRank} vs {enemyRank})");
+                int owner = judgeResult.Winner == 1 ? 1 : 2;
+                photonView.RPC(nameof(RPC_MoveStone), RpcTarget.All, roundIndex, owner);
             }
-            else if (judgeResult.Winner == -1)
-            {
-                Debug.Log($"라운드 {roundIndex}: 플레이어2 승리 ({playerRank} vs {enemyRank})");
-            }
-            else
-            {
-                Debug.Log($"라운드 {roundIndex}: 무승부 또는 미정 ({playerRank} vs {enemyRank})");
-            }
+
+            //if (judgeResult.Winner == 1)
+            //{
+            //    Debug.Log($"라운드 {roundIndex}: 플레이어1 승리 ({playerRank} vs {enemyRank})");
+            //}
+            //else if (judgeResult.Winner == -1)
+            //{
+            //    Debug.Log($"라운드 {roundIndex}: 플레이어2 승리 ({playerRank} vs {enemyRank})");
+            //}
+            //else
+            //{
+            //    Debug.Log($"라운드 {roundIndex}: 무승부 또는 미정 ({playerRank} vs {enemyRank})");
+            //}
         }
         LogAllRoundOwners();
     }
@@ -390,20 +396,27 @@ public class BattleField : SingletonPhoton<BattleField>
     }
     private void LogAllRoundOwners()
     {
-        // GameManager.Instance.RoundOwners가 있다고 가정
         var owners = GameManager.Instance.RoundOwners;
-        string log = "[라운드 소유 현황] ";
+        string log = "[소유된 라운드 현황] ";
+        bool hasOwner = false;
         for (int i = 0; i < owners.Length; i++)
         {
             string ownerStr = owners[i] switch
             {
                 1 => "플레이어1",
                 2 => "플레이어2",
-                _ => "무소유"
+                _ => null
             };
-            log += $"[{i}:{ownerStr}] ";
+            if (ownerStr != null)
+            {
+                log += $"[{i}:{ownerStr}] ";
+                hasOwner = true;
+            }
         }
-        Debug.Log(log);
+        if (hasOwner)
+            Debug.Log(log);
+        else
+            Debug.Log("[소유된 라운드 없음]");
     }
 
     // 마스터가 카드 뽑고 카드 정보 전송
@@ -428,4 +441,12 @@ public class BattleField : SingletonPhoton<BattleField>
     {
         CardDeck.SyncDeckFromData(nums, colors);
     }
+    [PunRPC]
+    public void RPC_MoveStone(int roundIndex, int owner)
+    {
+        bool isMine = Photon.Pun.PhotonNetwork.LocalPlayer.ActorNumber == Photon.Pun.PhotonNetwork.MasterClient.ActorNumber;
+        Rounds[roundIndex].MoveStoneToOwner(owner, isMine);
+    }
+
+
 }
