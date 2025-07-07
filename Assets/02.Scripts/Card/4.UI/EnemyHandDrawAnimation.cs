@@ -200,6 +200,7 @@ public class EnemyHandDrawAnimation : MonoBehaviour
             CardToAnimate.SetParent(TargetSlot.transform, true);
             CardToAnimate.localPosition = Vector3.zero;
             CardToAnimate.localRotation = Quaternion.identity;
+            CardToAnimate.localScale = _cachedOriginalScale;
 
             callback?.Invoke();
             Debug.Log("적 드로우 애니메이션 완료");

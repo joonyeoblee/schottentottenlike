@@ -448,20 +448,14 @@ public class BattleField : SingletonPhoton<BattleField>
     {
         foreach (var round in Rounds)
         {
-            // 플레이어 슬롯 업데이트
             for (int i = 0; i < round.PlayerCardSlots.Length - 1; i++)
             {
-                if (round.PlayerCardSlots[i].IsOccupied && !round.PlayerCardSlots[i + 1].gameObject.activeSelf)
+                var current = round.PlayerCardSlots[i];
+                var next = round.PlayerCardSlots[i + 1];
+
+                if (current.IsOccupied && !next.gameObject.activeSelf)
                 {
-                    round.PlayerCardSlots[i + 1].gameObject.SetActive(true);
-                }
-            }
-            // 적 슬롯 업데이트 (동일한 로직, IsMine 플래그로 구분되므로 괜찮음)
-            for (int i = 0; i < round.EnemyCardSlots.Length - 1; i++)
-            {
-                if (round.EnemyCardSlots[i].IsOccupied && !round.EnemyCardSlots[i + 1].gameObject.activeSelf)
-                {
-                    round.EnemyCardSlots[i + 1].gameObject.SetActive(true);
+                    next.gameObject.SetActive(true);
                 }
             }
         }
