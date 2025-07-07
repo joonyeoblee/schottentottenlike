@@ -233,14 +233,8 @@ public class BattleField : SingletonPhoton<BattleField>
     /// </summary>
     public void OnMyCardPlaced(CardSlot placedSlot)
     {
-        // 로컬에서 즉시 턴 넘김 및 UI 업데이트 요청
         StartCoroutine(HandleCardPlacedSequence());
-
-        // 모든 클라이언트에게 라운드 승패 판정 요청
-        int roundIndex = placedSlot.RoundIndex;
-        // 마스터 클라이언트만 판정 결과를 전파하도록 할 수도 있습니다.
-        // 여기서는 각자 판정하도록 합니다.
-        JudgeRoundWinner(roundIndex);
+        JudgeAllRoundsWinner();
     }
 
     /// <summary>
