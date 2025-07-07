@@ -1,9 +1,9 @@
-using UnityEngine;
-using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System; // Action을 사용하기 위해 추가
+using Photon.Pun;
+using UnityEngine;
+// Action을 사용하기 위해 추가
 
 // 턴을 구분하기 위한 Enum (V2에서 추가)
 public enum ETurn
@@ -145,7 +145,7 @@ public class BattleField : SingletonPhoton<BattleField>
         if (PhotonNetwork.IsMasterClient)
         {
             // 선공 턴 랜덤 결정 (V2 로직)
-            int rand = UnityEngine.Random.Range(0, 2);
+            int rand = Random.Range(0, 2);
             photonView.RPC(nameof(SetTurn), RpcTarget.All, rand);
 
             // 첫 패 분배
@@ -291,9 +291,8 @@ public class BattleField : SingletonPhoton<BattleField>
             slot.gameObject.SetActive(true);
 
         slot.Refresh(card);
-
         // 상대 카드가 놓인 후에도 승패 판정
-        JudgeRoundWinner(roundIndex);
+        JudgeAllRoundsWinner();
     }
 
 
@@ -328,26 +327,79 @@ public class BattleField : SingletonPhoton<BattleField>
         }
         Debug.Log($"라운드 {roundIndex} 판정: {winnerMessage}");
     }
+    private void JudgeAllRoundsWinner()
+    {
+        for (int roundIndex = 0; roundIndex < Rounds.Length; roundIndex++)
+        {
+            List<Card> playerCards = GetPlayerCards(roundIndex);
+            List<Card> enemyCards = GetEnemyCards(roundIndex);
+            List<Card> unusedCards = GetUnusedCardsFromField();
+
+            JudgeResult judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards);
+
+            GameManager.Instance.UpdateRoundOwnerAndCheckWin(roundIndex, judgeResult.Winner);
+
+            string playerRank = judgeResult.Player1Rank.ToString();
+            string enemyRank = judgeResult.Player2Rank.ToString();
+
+            if (judgeResult.Winner == 1 || judgeResult.Winner == 2)
+            {
+                int owner = judgeResult.Winner == 1 ? 1 : 2;
+                photonView.RPC(nameof(RPC_MoveStone), RpcTarget.All, roundIndex, owner);
+            }
+
+            if (judgeResult.Winner == 1)
+            {
+                Debug.Log($"라운드 {roundIndex}: 플레이어1 승리 ({playerRank} vs {enemyRank})");
+            }
+            else if (judgeResult.Winner == 2)
+            {
+                Debug.Log($"라운드 {roundIndex}: 플레이어2 승리 ({playerRank} vs {enemyRank})");
+            }
+            else
+            {
+                Debug.Log($"라운드 {roundIndex}: 무승부 또는 미정 ({playerRank} vs {enemyRank})");
+            }
+        }
+    }
+
+    private List<Card> GetPlayerCards(int roundIndex)
+    {
+        CardSlot[] slots = Rounds[roundIndex].PlayerCardSlots;
+        List<Card> cards = new List<Card>();
+        foreach (CardSlot slot in slots)
+            if (slot.IsOccupied && slot.Card != null)
+                cards.Add(slot.Card);
+        return cards;
+    }
+
+    private List<Card> GetEnemyCards(int roundIndex)
+    {
+        CardSlot[] slots = Rounds[roundIndex].EnemyCardSlots;
+        List<Card> cards = new List<Card>();
+        foreach (CardSlot slot in slots)
+            if (slot.IsOccupied && slot.Card != null)
+                cards.Add(slot.Card);
+        return cards;
+    }
+
+    private List<Card> GetUnusedCardsFromField()
+    {
+        List<Card> used = new List<Card>();
+        foreach (RoundSlot round in Rounds)
+        {
+            used.AddRange(round.PlayerCardSlots.Where(s => s.IsOccupied && s.Card != null).Select(s => s.Card));
+            used.AddRange(round.EnemyCardSlots.Where(s => s.IsOccupied && s.Card != null).Select(s => s.Card));
+        }
+
+        List<Card> all = GameManager.Instance.GetAllPossibleCards().ToList();
+        return all.Where(c => !used.Any(u => u.CardNumber == c.CardNumber && u.Color == c.Color)).ToList();
+    }
 
     private List<Card> GetCardsFromSlots(CardSlot[] slots)
     {
         return slots.Where(s => s.IsOccupied && s.Card != null).Select(s => s.Card).ToList();
     }
-
-    private List<Card> GetUnusedCardsFromField()
-    {
-        var usedCards = new HashSet<Card>();
-        foreach (var round in Rounds)
-        {
-            foreach (var card in GetCardsFromSlots(round.PlayerCardSlots)) usedCards.Add(card);
-            foreach (var card in GetCardsFromSlots(round.EnemyCardSlots)) usedCards.Add(card);
-        }
-
-        var allPossibleCards = GameManager.Instance.GetAllPossibleCards();
-        return allPossibleCards.Where(c => !usedCards.Any(u => u.Equals(c))).ToList();
-    }
-
-
 
     /// <summary>
     /// 내 카드를 뽑는 애니메이션을 보여줍니다.
@@ -468,6 +520,11 @@ public class BattleField : SingletonPhoton<BattleField>
     public void RPC_SyncDeck(int[] nums, int[] colors)
     {
         CardDeck.SyncDeckFromData(nums, colors);
+    }
+    [PunRPC]
+    public void RPC_MoveStone(int roundIndex, int owner)
+    {
+        Rounds[roundIndex].MoveStoneToOwner(owner);
     }
 
 }
