@@ -1,4 +1,3 @@
-using System;
 using EPOOutline;
 using Photon.Pun;
 using UnityEngine;
@@ -9,6 +8,7 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 {
     private bool _isDragging = false;
     private Vector3 _dragOffset;
+    private Vector3 _originPosition;
     private Vector3 _originalPosition;
     private Quaternion _originalRotation;
     private int _originalSiblingIndex;
@@ -33,6 +33,7 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
     public void Init()
     {
+        _originPosition = transform.position;
         _mainCamera = Camera.main;
         _handCardSlot = GetComponentInParent<HandCardSlot>();
         _handArranger = GetComponentInParent<CardHandArranger>();
@@ -89,7 +90,15 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
             _handArranger.enabled = true;
             _handArranger.ArrangeCards();
         }
-
+        bool isMaster = PhotonNetwork.IsMasterClient;
+        ETurn currentTurn = BattleField.Instance.CurrentTurn;
+        bool isMyTurn = isMaster && currentTurn == ETurn.Player1 || !isMaster && currentTurn == ETurn.Player2;
+        if (!isMyTurn)
+        {
+            // 자기 턴이 아니면 배치 불가 → 제자리 복귀
+            transform.position = _originPosition;
+            return;
+        }
 
         var hits = Physics2D.OverlapPointAll(transform.position);
 

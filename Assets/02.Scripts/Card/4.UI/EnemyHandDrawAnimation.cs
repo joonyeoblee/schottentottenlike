@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
-using System.Net;
 using UnityEngine;
 using DG.Tweening;
-using UnityEngine.Serialization;
 
 public class EnemyHandDrawAnimation : MonoBehaviour
 {
@@ -32,20 +29,31 @@ public class EnemyHandDrawAnimation : MonoBehaviour
 
     private Vector3 _cachedOriginalScale = Vector3.one;
 
-    private void Start()
-    {
-        midPoint = AnimationTransforms.Instance.EnemyShowTransform;
-        if (enemyHandArranger == null)
-        {
-            enemyHandArranger = enemyHandPoint.GetComponent<CardHandArranger>();
-        }
-        AnimationObjectInit();
-    }
-
+    /// <summary>
+    /// 애니메이션 대상을 찾고 초기화합니다.
+    /// IsInit 플래그를 제거하여, 애니메이션 호출 시 항상 최신 상태를 반영하도록 수정했습니다.
+    /// </summary>
     private void AnimationObjectInit()
     {
-        if (enemyHandPoint == null || enemyHandPoint.childCount == 0) return;
+        // 싱글턴 인스턴스에서 중간 지점 Transform을 가져옵니다.
+        if (midPoint == null)
+        {
+            midPoint = AnimationTransforms.Instance.EnemyShowTransform;
+        }
 
+        if (enemyHandArranger == null)
+        {
+            Debug.Log("!!!!!!!!");
+            enemyHandArranger = enemyHandPoint.GetComponentInParent<CardHandArranger>();
+        }
+
+        if (enemyHandPoint == null || enemyHandPoint.childCount == 0)
+        {
+            Debug.LogWarning("EnemyHandPoint에 자식 오브젝트(카드 슬롯)가 없어 초기화를 중단합니다.");
+            return;
+        }
+
+        // 항상 마지막 자식을 애니메이션 대상으로 설정합니다.
         TargetSlot = enemyHandPoint.GetChild(enemyHandPoint.childCount - 1).GetComponent<HandCardSlot>();
         if (TargetSlot != null)
         {
@@ -56,13 +64,6 @@ public class EnemyHandDrawAnimation : MonoBehaviour
                 _cachedOriginalScale = CardToAnimate.localScale;
             }
         }
-
-        midPoint = AnimationTransforms.Instance.EnemyShowTransform;
-
-        if (enemyHandArranger == null)
-        {
-            enemyHandArranger = enemyHandPoint.GetComponent<CardHandArranger>();
-        }
     }
 
     /// <summary>
@@ -70,47 +71,78 @@ public class EnemyHandDrawAnimation : MonoBehaviour
     /// </summary>
     public void PlaySetAnimation(Transform endTransform, Texture2D cardTexture, Action callback = null)
     {
+        // 애니메이션 시작 직전에 항상 대상을 새로 찾습니다.
         AnimationObjectInit();
-        if (CardToAnimate == null || enemyHandArranger == null)
+
+        if (CardToAnimate == null )
         {
-            Debug.LogError("애니메이션 대상 카드 또는 HandArranger가 없어 PlaySetAnimation을 실행할 수 없습니다.");
+            Debug.Log("애니메이션 대상 카드가 없어 PlaySetAnimation을 실행할 수 없습니다.");
+            TargetSlot = enemyHandPoint.GetChild(enemyHandPoint.childCount - 1).GetComponent<HandCardSlot>();
+            if (TargetSlot != null)
+            {
+                CardUI = TargetSlot.MyCard;
+                if (CardUI != null)
+                {
+                    CardToAnimate = CardUI.transform;
+                    _cachedOriginalScale = CardToAnimate.localScale;
+                }
+            }
+            callback?.Invoke();
+            return;
+        }
+
+        if (enemyHandArranger == null)
+        {
+            Debug.Log("HandArranger가 없어 PlaySetAnimation을 실행할 수 없습니다.");
+            enemyHandArranger = enemyHandPoint.GetComponentInParent<CardHandArranger>();
+
             return;
         }
 
         Quaternion targetRotation = endTransform.rotation * Quaternion.Euler(0f, 180f, 0f);
 
         CardUI.SwitchRenderer(true);
-        if (cardTexture != null) { CardUI.backTexture = cardTexture; CardUI.ApplyTextures(); }
+        if (cardTexture != null)
+        {
+            CardUI.backTexture = cardTexture;
+            CardUI.ApplyTextures();
+        }
 
         Sequence drawSequence = DOTween.Sequence();
 
         drawSequence.OnStart(() =>
         {
+            // 애니메이션을 위해 월드 좌표계로 카드를 이동시킵니다.
             CardToAnimate.SetParent(null, true);
-            // 슬롯을 '비어있음'으로 처리하고, 즉시 핸드 재정렬 애니메이션을 호출합니다.
+            // 핸드 재정렬을 위해 슬롯을 비웁니다.
             TargetSlot.IsEmpty = true;
             enemyHandArranger.UpdateArrange();
         });
 
+        // 애니메이션 시퀀스: 중간 지점으로 이동 -> 최종 목적지로 이동
         drawSequence.Append(CardToAnimate.DOMove(midPoint.position, durationToMid).SetEase(easeToMid));
         drawSequence.Join(CardToAnimate.DOScale(_cachedOriginalScale * scaleMultiplier, durationToMid).SetEase(easeToMid));
         drawSequence.Join(CardToAnimate.DORotate(midPoint.rotation.eulerAngles, durationToMid).SetEase(easeToMid));
+
         if (delayAtMid > 0) drawSequence.AppendInterval(delayAtMid);
+
         drawSequence.Append(CardToAnimate.DOMove(endTransform.position, durationToEnd).SetEase(easeToEnd));
         drawSequence.Join(CardToAnimate.DOScale(_cachedOriginalScale, durationToEnd).SetEase(easeToEnd));
         drawSequence.Join(CardToAnimate.DORotateQuaternion(targetRotation, durationToEnd).SetEase(easeToEnd));
 
+        // [수정됨] OnComplete 콜백 로직: 카드를 핸드로 되돌리는 대신, 제출 처리합니다.
         drawSequence.OnComplete(() =>
         {
-            Debug.Log("카드 내기(Set) 애니메이션 완료.");
-            CardUI.SwitchRenderer(false);
+            Debug.Log("카드 내기(Set) 애니메이션 완료. 카드를 비활성화하고 슬롯을 정리합니다.");
 
-            CardToAnimate.SetParent(TargetSlot.transform);
 
-            TargetSlot.transform.SetParent(enemyHandPoint, true);
-            CardToAnimate.localPosition = Vector3.zero;
-            CardToAnimate.localRotation = Quaternion.identity;
-            CardToAnimate.localScale = _cachedOriginalScale;
+
+            // 핸드 슬롯의 카드 데이터를 완전히 제거합니다.
+            if(TargetSlot != null)
+            {
+                TargetSlot.Clear(); // MyCard = null; IsEmpty = true; 와 같은 내부 로직이 필요합니다.
+            }
+
             callback?.Invoke();
         });
 
@@ -122,7 +154,9 @@ public class EnemyHandDrawAnimation : MonoBehaviour
     /// </summary>
     public void EnemySetAnimation(Action callback = null, Ease easeType = Ease.Linear)
     {
+        // 애니메이션 시작 직전에 항상 대상을 새로 찾습니다.
         AnimationObjectInit();
+
         if (!ValidateDependencies() || enemyHandArranger == null)
         {
             Debug.LogError("필수 요소 문제로 EnemySetAnimation을 중단합니다.");
@@ -138,33 +172,35 @@ public class EnemyHandDrawAnimation : MonoBehaviour
             return;
         }
 
-        // 애니메이션 시작 전, 핸드를 재정렬하여 새 카드가 들어올 공간을 만듭니다.
-        TargetSlot.IsEmpty = false; // 카드가 채워질 것이므로 IsEmpty를 false로 설정
+        // 새 카드가 들어올 공간을 확보하기 위해 핸드를 먼저 재정렬합니다.
+        TargetSlot.IsEmpty = false;
         enemyHandArranger.UpdateArrange();
 
-        float totalDuration = durationToMid + durationToEnd;
+        // 카드의 최종 목적지 Transform 값을 미리 저장합니다.
+        Vector3 finalHandPos = TargetSlot.transform.position;
+        Quaternion finalHandRot = TargetSlot.transform.rotation;
 
-        CardToAnimate.localScale = _cachedOriginalScale;
+        // 애니메이션을 위해 월드 좌표계로 이동시키고 시작점에 배치합니다.
         CardToAnimate.SetParent(null, true);
         CardToAnimate.position = startPoint.position;
         CardToAnimate.rotation = startPoint.rotation;
+        CardToAnimate.localScale = _cachedOriginalScale;
 
         CardUI.SwitchRenderer(true);
 
         Sequence drawSequence = DOTween.Sequence();
 
-        drawSequence.Append(CardToAnimate.DOMove(TargetSlot.transform.position, enemyDeckDuration)
-            .SetEase(easeType));
-        drawSequence.Join(CardToAnimate.DORotateQuaternion(TargetSlot.transform.rotation, enemyDeckDuration)
-            .SetEase(easeType));
+        // 저장해둔 최종 목적지로 이동합니다.
+        drawSequence.Append(CardToAnimate.DOMove(finalHandPos, enemyDeckDuration).SetEase(easeType));
+        drawSequence.Join(CardToAnimate.DORotateQuaternion(finalHandRot, enemyDeckDuration).SetEase(easeType));
 
         drawSequence.OnComplete(() =>
         {
-            Debug.Log("상대 핸드 드로우 애니메이션 OnComplete 실행.");
+            // 애니메이션 완료 후, 카드를 핸드 슬롯의 자식으로 설정하고 위치를 초기화합니다.
             CardToAnimate.SetParent(TargetSlot.transform, true);
             CardToAnimate.localPosition = Vector3.zero;
             CardToAnimate.localRotation = Quaternion.identity;
-            CardToAnimate.localScale = _cachedOriginalScale;
+
             callback?.Invoke();
             Debug.Log("적 드로우 애니메이션 완료");
         });
@@ -187,8 +223,12 @@ public class EnemyHandDrawAnimation : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// 이 오브젝트와 관련된 모든 DOTween 애니메이션을 중지합니다.
+    /// </summary>
     public void Clear()
     {
+        // 이 스크립트를 대상으로 실행된 모든 트윈을 안전하게 제거합니다.
         DOTween.Kill(this);
     }
 }
