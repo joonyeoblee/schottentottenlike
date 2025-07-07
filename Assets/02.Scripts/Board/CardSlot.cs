@@ -1,20 +1,26 @@
+using System.Collections;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-public class CardSlot : MonoBehaviour
+using UnityEngine.Serialization;
+
+public class CardSlot : MonoBehaviourPunCallbacks
 {
     private Card _card;
     public Card Card => _card;
     private SpriteRenderer _cardSprite;
     public bool IsMine; // true면 내 카드, false면 상대 카드
     public BattleField BattleField;
-    public Sprite DefaultSprite;
-
+    public UI_CardSet MySetAnimation;
+    public EnemyHandDrawAnimation EnemySetAnimaion;
     public int Index;
     public bool IsOccupied => _card != null;
     public int RoundIndex { get; set; }
+
+    private Sprite CardSprite;
     private void Start()
     {
+        MySetAnimation = GetComponent<UI_CardSet>();
         _cardSprite = GetComponent<SpriteRenderer>();
         BattleField = GetComponentInParent<BattleField>();
         if (!IsMine)
@@ -30,37 +36,54 @@ public class CardSlot : MonoBehaviour
 
         Addressables.LoadAssetAsync<Sprite>(_card.CardImageAddress).Completed += handle =>
         {
-            _cardSprite.color = Color.white;
-            _cardSprite.sprite = handle.Result;
+            CardSprite = handle.Result;
+
+
+            // 내 카드일 때만 상대에게 알림
+
+            if (PhotonNetwork.IsConnected) //포톤 네트워크에 연결이 돼 있다면
+
+            {
+                if (IsMine) //내 카드 애니메이션 셋
+                {
+                    _cardSprite.color = Color.white;
+                    _cardSprite.sprite = CardSprite;
+
+                    MySetAnimation.PlayAnimation(() =>
+                    {
+                        BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index,
+                            _card.CardNumber, (int)_card.Color);
+                    });
+                }
+                else //내 카드를 셋하는 게 아니라면
+                {
+                    EnemySetAnimaion.PlaySetAnimation(this.transform,CardSprite.texture, () =>
+                    {
+                        _cardSprite.color = Color.white;
+                        _cardSprite.sprite = CardSprite;
+
+                        StartCoroutine(EnemyDeckDraw());
+                    });
+                }
+
+            }
         };
+}
 
-        // 콜라이더 비활성화
-        var boxcollider = GetComponent<Collider2D>();
-        if (boxcollider != null)
-            boxcollider.enabled = false;
 
-        if (IsMine && PhotonNetwork.IsConnected)
-        {
-            BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
-            BattleField.OnMyCardPlaced(this);
-        }
-
+    /// <summary>
+    /// 테스트용 연출을 위한 메소드입니다
+    /// </summary>
+    private IEnumerator EnemyDeckDraw()
+    {
+        yield return new WaitForSeconds(3f);
+        EnemySetAnimaion.EnemySetAnimation();
 
     }
 
     public void Clear()
     {
         _card = null;
-
-        if (_cardSprite != null)
-        {
-            _cardSprite.sprite = DefaultSprite;
-            _cardSprite.color = new Color(1f, 1f, 1f, 122f / 255f);
-        }
-
-        var boxcollider = GetComponent<Collider2D>();
-        if (boxcollider != null)
-            boxcollider.enabled = true;
     }
 
 }
