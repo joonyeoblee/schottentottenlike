@@ -292,24 +292,24 @@ public class BattleField : SingletonPhoton<BattleField>
             string playerRank = judgeResult.Player1Rank.ToString();
             string enemyRank = judgeResult.Player2Rank.ToString();
 
-            if (judgeResult.Winner == 1 || judgeResult.Winner == -1)
+            if (judgeResult.Winner == 1 || judgeResult.Winner == 2)
             {
                 int owner = judgeResult.Winner == 1 ? 1 : 2;
                 photonView.RPC(nameof(RPC_MoveStone), RpcTarget.All, roundIndex, owner);
             }
 
-            //if (judgeResult.Winner == 1)
-            //{
-            //    Debug.Log($"라운드 {roundIndex}: 플레이어1 승리 ({playerRank} vs {enemyRank})");
-            //}
-            //else if (judgeResult.Winner == -1)
-            //{
-            //    Debug.Log($"라운드 {roundIndex}: 플레이어2 승리 ({playerRank} vs {enemyRank})");
-            //}
-            //else
-            //{
-            //    Debug.Log($"라운드 {roundIndex}: 무승부 또는 미정 ({playerRank} vs {enemyRank})");
-            //}
+            if (judgeResult.Winner == 1)
+            {
+                Debug.Log($"라운드 {roundIndex}: 플레이어1 승리 ({playerRank} vs {enemyRank})");
+            }
+            else if (judgeResult.Winner == 2)
+            {
+                Debug.Log($"라운드 {roundIndex}: 플레이어2 승리 ({playerRank} vs {enemyRank})");
+            }
+            else
+            {
+                Debug.Log($"라운드 {roundIndex}: 무승부 또는 미정 ({playerRank} vs {enemyRank})");
+            }
         }
         LogAllRoundOwners();
     }
@@ -444,8 +444,7 @@ public class BattleField : SingletonPhoton<BattleField>
     [PunRPC]
     public void RPC_MoveStone(int roundIndex, int owner)
     {
-        bool isMine = Photon.Pun.PhotonNetwork.LocalPlayer.ActorNumber == Photon.Pun.PhotonNetwork.MasterClient.ActorNumber;
-        Rounds[roundIndex].MoveStoneToOwner(owner, isMine);
+        Rounds[roundIndex].MoveStoneToOwner(owner);
     }
 
 
