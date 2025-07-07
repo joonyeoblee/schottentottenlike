@@ -15,6 +15,7 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
     public int HandCardIndex { get;  set; }
     public Sprite DefaultCardSprite;
     public Card Card;
+    public bool HasCard => Card != null;
 
     //UI로 쓰일 Card 이미지
     public UI_Cards MyCard;

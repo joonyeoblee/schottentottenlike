@@ -2,6 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
+// 족보 판정
+public enum HandRank
+{
+    StraightFlush = 5,
+    ThreeOfAKind = 4,
+    Straight = 3,
+    Flush = 2,
+    CardSum = 1
+}
+
+public struct JudgeResult
+{
+    public int Winner; // 1: 플레이어1, -1: 플레이어2, 0: 무승부/미정
+    public HandRank Player1Rank;
+    public HandRank Player2Rank;
+}
+
+
 public class GameManager : Singleton<GameManager>
 {
     [Header("쇼텐토텐 룰")]
@@ -11,11 +30,20 @@ public class GameManager : Singleton<GameManager>
     private List<Stack<Card>> _player1Stones;
     private List<Stack<Card>> _player2Stones;
     private Stack<Card> _deck;
+    private int[] RoundOwners;
+
+    private List<Card> _usedCards = new List<Card>();
+
+    public void RecordUsedCard(Card card)
+    {
+        _usedCards.Add(card);
+    }
+
 
     protected override void Awake()
     {
         base.Awake();
-        // InitializeGame();
+        InitializeGame();
     }
 
     protected override void Start()
@@ -34,6 +62,7 @@ public class GameManager : Singleton<GameManager>
             _player2Stones.Add(new Stack<Card>());
         }
         _deck = GetAllPossibleCards();
+        RoundOwners = new int[_stoneCount];
     }
 
     // 경계석 점령 판정
@@ -59,19 +88,126 @@ public class GameManager : Singleton<GameManager>
         return 0;
     }
 
+    // 새로 추가: Rounds의 카드 리스트를 직접 받아서 판정
+    public int JudgeStone(List<Card> playerCards, List<Card> enemyCards, List<Card> unusedCards = null)
+    {
+        // unusedCards는 미사용 카드(확정승 판정용), 필요시 BattleField에서 전달
+        if (playerCards.Count == 3 && enemyCards.Count == 3)
+        {
+            return CompareHands(playerCards, enemyCards);
+        }
+        else if (playerCards.Count == 3 && enemyCards.Count < 3)
+        {
+            if (unusedCards == null)
+                return 0;
+
+            return IsProvenWin(playerCards, enemyCards, unusedCards) ? 1 : 0;
+        }
+        else if (enemyCards.Count == 3 && playerCards.Count < 3)
+        {
+            if (unusedCards == null)
+                return 0;
+
+            return IsProvenWin(enemyCards, playerCards, unusedCards) ? -1 : 0;
+        }
+        return 0;
+    }
+
+    //족보 반환
+    public JudgeResult JudgeStoneWithRank(List<Card> playerCards, List<Card> enemyCards, List<Card> unusedCards = null)
+    {
+        var result = new JudgeResult();
+        result.Player1Rank = EvaluateHand(playerCards);
+        result.Player2Rank = EvaluateHand(enemyCards);
+
+        if (playerCards.Count == 3 && enemyCards.Count == 3)
+        {
+            result.Winner = CompareHands(playerCards, enemyCards);
+        }
+        else if (playerCards.Count == 3 && enemyCards.Count < 3)
+        {
+            if (unusedCards == null) result.Winner = 0;
+            else result.Winner = IsProvenWin(playerCards, enemyCards, unusedCards) ? 1 : 0;
+        }
+        else if (enemyCards.Count == 3 && playerCards.Count < 3)
+        {
+            if (unusedCards == null) result.Winner = 0;
+            else result.Winner = IsProvenWin(enemyCards, playerCards, unusedCards) ? -1 : 0;
+        }
+        else
+        {
+            result.Winner = 0;
+        }
+        return result;
+    }
+
+    public void UpdateRoundOwnerAndCheckWin(int roundIndex, int winner)
+    {
+        // winner: 1(플레이어1), -1(플레이어2), 0(무승부/미정)
+        if (winner == 1)
+            RoundOwners[roundIndex] = 1;
+        else if (winner == -1)
+            RoundOwners[roundIndex] = 2;
+        else
+            RoundOwners[roundIndex] = 0;
+
+        CheckGameWinCondition();
+    }
+
+    public void CheckGameWinCondition()
+    {
+        int p1Count = RoundOwners.Count(x => x == 1);
+        int p2Count = RoundOwners.Count(x => x == 2);
+
+        // 5개 이상 소유
+        if (p1Count >= 5)
+        {
+            Debug.Log("플레이어1이 5개 라운드 점령! 게임 승리");
+            // 게임 종료 처리
+            return;
+        }
+        if (p2Count >= 5)
+        {
+            Debug.Log("플레이어2가 5개 라운드 점령! 게임 승리");
+            // 게임 종료 처리
+            return;
+        }
+
+        // 연속 3개 소유
+        for (int i = 0; i <= RoundOwners.Length - 3; i++)
+        {
+            if (RoundOwners[i] == 1 && RoundOwners[i + 1] == 1 && RoundOwners[i + 2] == 1)
+            {
+                Debug.Log("플레이어1이 연속 3개 라운드 점령! 게임 승리");
+                // 게임 종료 처리
+                return;
+            }
+            if (RoundOwners[i] == 2 && RoundOwners[i + 1] == 2 && RoundOwners[i + 2] == 2)
+            {
+                Debug.Log("플레이어2가 연속 3개 라운드 점령! 게임 승리");
+                // 게임 종료 처리
+                return;
+            }
+        }
+    }
+
     // 전체 미사용 카드 반환 (Stack 버전)
     public Stack<Card> GetUnusedCards()
     {
-        List<Card> used = _player1Stones.SelectMany(x => x)
-                                        .Concat(_player2Stones.SelectMany(x => x))
-                                        .ToList();
+        //List<Card> used = _player1Stones.SelectMany(x => x)
+        //                                .Concat(_player2Stones.SelectMany(x => x))
+        //                                .ToList();
 
-        List<Card> unused = GetAllPossibleCards()
-                            .Where(c => !ContainsCard(used, c))
-                            .ToList();
+        //List<Card> unused = GetAllPossibleCards()
+        //                    .Where(c => !ContainsCard(used, c))
+        //                    .ToList();
 
+        //return new Stack<Card>(unused);
+        List<Card> all = GetAllPossibleCards().ToList();
+        List<Card> unused = all.Where(c => !_usedCards.Any(u => u.CardNumber == c.CardNumber && u.Color == c.Color)).ToList();
         return new Stack<Card>(unused);
     }
+
 
     // 전체 카드 생성 (색상 6종, 숫자 1~9)
     public Stack<Card> GetAllPossibleCards()
@@ -94,16 +230,7 @@ public class GameManager : Singleton<GameManager>
         return list.Any(c => c.CardNumber == card.CardNumber && c.Color == card.Color);
     }
 
-    // 족보 판정
-    private enum HandRank
-    {
-        StraightFlush = 6,
-        ThreeOfAKind = 5,
-        Straight = 4,
-        Flush = 3,
-        Pair = 2,
-        CardSum = 1
-    }
+
 
     private HandRank EvaluateHand(List<Card> cards)
     {
@@ -117,7 +244,6 @@ public class GameManager : Singleton<GameManager>
         if (isThree) return HandRank.ThreeOfAKind;
         if (isStraight) return HandRank.Straight;
         if (isFlush) return HandRank.Flush;
-        if (isPair) return HandRank.Pair;
 
         return HandRank.CardSum;
     }
@@ -211,4 +337,6 @@ public class GameManager : Singleton<GameManager>
             }
         }
     }
+
+
 }

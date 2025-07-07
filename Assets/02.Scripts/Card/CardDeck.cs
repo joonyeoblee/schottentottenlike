@@ -59,8 +59,19 @@ public class CardDeck : MonoBehaviour
         OnCardSuffle?.Invoke();
     }
 
+    
     public Card GetCard()
     {
-        return cards.Pop();
+        //return cards.Pop();
+        Debug.Log($"cards.Count: {cards.Count}");
+        if (cards.Count == 0)
+        {
+            Debug.LogWarning("더 이상 나올 카드가 없습니다!");
+            return null;
+        }
+
+        Card card = cards.Pop();
+        GameManager.Instance.RecordUsedCard(card); // 사용 기록
+        return card;
     }
 }

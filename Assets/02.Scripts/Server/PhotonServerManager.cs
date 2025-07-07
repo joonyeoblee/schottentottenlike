@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
@@ -23,8 +25,6 @@ public class PhotonServerManager : SingletonPhoton<PhotonServerManager>
         PhotonNetwork.SerializationRate = 60;
         // 1. 버전 : 버전이 다르면 다른 서버로 접속이 된다.
         PhotonNetwork.GameVersion = _gameVersion;
-
-
 
         //방장이 로드한 씬으로 다른 참여자가 똑같이 이동하게끔 동기화 해주는 옵션
         //방장 : 방을 만든 소유자이자 "마스터 클라이언트" (방마다 한명의 마스터 클라이언트가 존재)
@@ -53,7 +53,7 @@ public class PhotonServerManager : SingletonPhoton<PhotonServerManager>
         {
             if (PhotonNetwork.IsMasterClient)
             {
-                _battleField = PhotonNetwork.Instantiate("Field", new Vector3(0, 5, 0), Quaternion.identity);
+                _battleField = PhotonNetwork.InstantiateSceneObject("Field", new Vector3(0, 0, 0), Quaternion.identity);
                 Debug.Log("방장이므로 Field 생성됨.");
             }
             _shouldSpawnField = false;
@@ -80,53 +80,31 @@ public class PhotonServerManager : SingletonPhoton<PhotonServerManager>
         }
     }
 
-//     // 포톤 마스터 서버에 접속 후 호출되는 콜백 함수
-    // public override void OnConnectedToMaster()
+    // public override void OnMasterClientSwitched(Player newMasterClient)
     // {
-    //     Debug.Log("Connected to Master!");
-    //     Debug.Log(PhotonNetwork.CloudRegion);
-    //     Debug.Log($"Is in Lobby: {PhotonNetwork.InLobby}"); // 로비 입장 유무
+    //     Debug.Log("마스터 클라이언트 변경됨");
     //
-    //     PhotonNetwork.JoinLobby();
-    //     //PhotonNetwork.JoinLobby(TypedLobby.Default);
-    // }
+    //     if (newMasterClient == PhotonNetwork.LocalPlayer)
+    //     {
+    //         // 필드가 이미 생성되어 있으면 새로 생성하지 않음
+    //         if (_battleField == null)
+    //         {
+    //             // _battleField = PhotonNetwork.Instantiate("Field", new Vector3(0, 5, 0), Quaternion.identity);
+    //             Debug.Log("새로운 마스터가 필드를 재생성함.");
     //
-    // public override void OnJoinedLobby()
-    // {
-    //     Debug.Log("로비 (채널) 입장 완료!");
-    //     Debug.Log($"Is in Lobby: {PhotonNetwork.InLobby}"); // 로비 입장 유무
+    //             // 소유권을 새로운 마스터에게 넘기기
+    //             PhotonView photonView = _battleField.GetComponent<PhotonView>();
+    //             if (photonView != null)
+    //             {
+    //                 photonView.TransferOwnership(newMasterClient);
+    //                 Debug.Log("새로운 마스터에게 필드 소유권을 이전.");
+    //             }
+    //         }
+    //         else
+    //         {
+    //             Debug.Log("필드가 이미 존재하므로 재생성하지 않음.");
+    //         }
+    //     }
     // }
 
-//     // 랜덤 룸 입장에 실패했을 경우 호출되는 콜백 함수
-//     public override void OnJoinRandomFailed(short returnCode, string message)
-//     {
-//         Debug.Log($"랜덤방 입장에 실패 했습니다 {returnCode}:{message}");
-
-//         // 룸 속성 정의
-//         RoomOptions roomOptions = new RoomOptions();
-//         roomOptions.MaxPlayers = 20; // 룸에 입장할 수 있는 최대 접속자 수
-//         roomOptions.IsOpen = true; // 룸의 오픈 여부
-//         roomOptions.IsVisible = true; // 로비에서 룸 목록에 노출시킬지 여부
-
-//         // 룸 생성
-//         // PhotonNetwork.CreateRoom("test", roomOptions);
-//         // 룸 입장 또는 생성
-//         // PhotonNetwork.JoinOrCreateRoom("test", roomOptions, TypedLobby.Default);
-//     }
-
-//     // 룸에 입장한 후 호출되는 콜백 함수
-
-//     // 룸 생성에 실패하면 호출되는 콜백 함수
-//     public override void OnCreateRoomFailed(short returnCode, string message)
-//     {
-//         Debug.Log($"CreatRoom Failed {returnCode}:{message}");
-//     }
-
-//     // 룸 생성이 성공했을 때 호출되는 콜백 함수
-//     public override void OnCreatedRoom()
-//     {
-//         Debug.Log("Created Room");
-//         // 생성된 룸 이름 확인
-//         Debug.Log($"Room Name = {PhotonNetwork.CurrentRoom.Name}");
-//     }
 }

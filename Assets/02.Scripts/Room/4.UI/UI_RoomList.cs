@@ -13,8 +13,19 @@ public class UI_RoomList : MonoBehaviourPunCallbacks
     {
         Debug.Log($"OnRoomListUpdate 호출됨. 방 개수: {roomList.Count}");
 
+        
+        foreach(Transform child in RoomContainer.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
         foreach (RoomInfo info in roomList)
         {
+            if(info.RemovedFromList || !info.IsVisible || !info.IsOpen)
+            {
+                continue;
+            }
+            
             Debug.Log($"{info.Name} | RemovedFromList: {info.RemovedFromList}, Visible: {info.IsVisible}, Open: {info.IsOpen}");
             GameObject roomObject = Instantiate(RoomPrefab, RoomContainer.transform);
             Room room = new Room(info.Name, "", ERoomState.Waiting, info.MaxPlayers, info.PlayerCount);
