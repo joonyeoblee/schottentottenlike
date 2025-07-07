@@ -25,16 +25,13 @@ public class UI_CardDrawShow : MonoBehaviour
     private UI_CardDragger _uiCardDragger;
     [SerializeField]private Transform _originalParent;
 
-
+    private void Awake()
+    {
+        _uiCardDragger = GetComponent<UI_CardDragger>();
+    }
 
     void Start()
     {
-Init();
-    }
-
-    private void Init()
-    {
-        _uiCardDragger = GetComponent<UI_CardDragger>();
         HandPoint = AnimationTransforms.Instance.PlayerHandTransform;
         midPoint = AnimationTransforms.Instance.ShowTransfrom;
         startPoint = AnimationTransforms.Instance.DeckTransfrom;
@@ -52,7 +49,6 @@ Init();
     /// </summary>
     public IEnumerator DrawProcessCoroutine()
     {
-        Init();
         // --- 1단계: 준비 ---
         Debug.Log("0. 시퀀스 준비");
         _uiCardDragger.enabled = false;
