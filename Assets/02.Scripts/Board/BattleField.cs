@@ -50,7 +50,7 @@ public class BattleField : SingletonPhoton<BattleField>
     /// <summary>
     /// 모든 카드 슬롯(라운드, 핸드)을 초기 상태로 되돌립니다. (V2에서 추가)
     /// </summary>
-    private void ClearAllCardSlots()
+    public void ClearAllCardSlots()
     {
         foreach (var round in Rounds)
         {

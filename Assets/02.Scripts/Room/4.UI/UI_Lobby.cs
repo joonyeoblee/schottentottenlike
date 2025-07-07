@@ -74,4 +74,9 @@ public class UI_Lobby : MonoBehaviourPunCallbacks
             Debug.LogError("방 생성 요청이 실패했습니다.");
         }
     }
+
+    public void CreatAIRoom()
+    {
+        SceneManager.LoadScene(3);
+    }
 }

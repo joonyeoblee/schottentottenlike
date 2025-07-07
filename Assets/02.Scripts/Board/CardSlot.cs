@@ -39,44 +39,69 @@ public class CardSlot : MonoBehaviourPunCallbacks
         {
             CardSprite = handle.Result;
 
-
-            // 내 카드일 때만 상대에게 알림
-
             // 콜라이더 비활성화
             var boxcollider = GetComponent<Collider2D>();
             if (boxcollider != null)
                 boxcollider.enabled = false;
 
+            // --- 분기: 솔로/멀티 ---
+            var battleFieldAI = FindObjectOfType<BattleField_AI>();
+            bool isSolo = battleFieldAI != null;
 
-
-            if (PhotonNetwork.IsConnected) //포톤 네트워크에 연결이 돼 있다면
-
+            if (isSolo)
             {
-                if (IsMine) //내 카드 애니메이션 셋
+                // 솔로플레이
+                if (IsMine)
                 {
                     _cardSprite.color = Color.white;
                     _cardSprite.sprite = CardSprite;
-
                     MySetAnimation.PlayAnimation(() =>
                     {
-                        BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
-                        BattleField.OnMyCardPlaced(this);
+                        // 솔로: 네트워크 동기화 없이 바로 후처리
+                        battleFieldAI.OnMyCardPlaced(this);
                     });
                 }
-                else //내 카드를 셋하는 게 아니라면
+                else
                 {
-                    EnemySetAnimaion.PlaySetAnimation(this.transform,CardSprite.texture, () =>
+                    EnemySetAnimaion.PlaySetAnimation(this.transform, CardSprite.texture, () =>
                     {
-                        _cardSprite.color = Color.white;
-                        _cardSprite.sprite = CardSprite;
-
+                        if (_cardSprite != null && CardSprite != null)
+                        {
+                            _cardSprite.color = Color.white;
+                            _cardSprite.sprite = CardSprite;
+                        }
                         StartCoroutine(EnemyDeckDraw());
                     });
                 }
-
+            }
+            else
+            {
+                // 멀티플레이(Photon)
+                if (PhotonNetwork.IsConnected)
+                {
+                    if (IsMine)
+                    {
+                        _cardSprite.color = Color.white;
+                        _cardSprite.sprite = CardSprite;
+                        MySetAnimation.PlayAnimation(() =>
+                        {
+                            BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
+                            BattleField.OnMyCardPlaced(this);
+                        });
+                    }
+                    else
+                    {
+                        EnemySetAnimaion.PlaySetAnimation(this.transform, CardSprite.texture, () =>
+                        {
+                            _cardSprite.color = Color.white;
+                            _cardSprite.sprite = CardSprite;
+                            StartCoroutine(EnemyDeckDraw());
+                        });
+                    }
+                }
             }
         };
-}
+    }
 
 
     /// <summary>

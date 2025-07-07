@@ -94,9 +94,23 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
             _handArranger.enabled = true;
             _handArranger.ArrangeCards();
         }
-        bool isMaster = PhotonNetwork.IsMasterClient;
-        ETurn currentTurn = BattleField.Instance.CurrentTurn;
-        bool isMyTurn = isMaster && currentTurn == ETurn.Player1 || !isMaster && currentTurn == ETurn.Player2;
+
+        // --- 분기: 솔로/멀티 ---
+        bool isSolo = FindObjectOfType<BattleField_AI>() != null;
+        bool isMyTurn = false;
+
+        if (isSolo)
+        {
+            var battleFieldAI = FindObjectOfType<BattleField_AI>();
+            // 솔로플레이: 내 턴(플레이어1)만 배치 허용
+            isMyTurn = battleFieldAI.CurrentTurn == ETurn.Player1;
+        }
+        else
+        {
+            bool isMaster = PhotonNetwork.IsMasterClient;
+            ETurn currentTurn = BattleField.Instance.CurrentTurn;
+            isMyTurn = (isMaster && currentTurn == ETurn.Player1) || (!isMaster && currentTurn == ETurn.Player2);
+        }
 
         if (!isMyTurn)
         {
@@ -126,6 +140,19 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
                 cardSlot.Refresh(_handCardSlot.Card);
                 _handCardSlot.Clear();
 
+                // --- 분기: 후처리 ---
+                if (isSolo)
+                {
+                    var battleFieldAI = FindObjectOfType<BattleField_AI>();
+                    if (battleFieldAI != null)
+                        battleFieldAI.OnMyCardPlaced(cardSlot);
+                }
+                else
+                {
+                    // 멀티플레이 후처리 (기존대로)
+                    BattleField.Instance.OnMyCardPlaced(cardSlot);
+                }
+
                 // 원위치로 되돌리기
                 transform.localPosition = Vector3.zero;
                 transform.localRotation = Quaternion.identity;
@@ -135,8 +162,6 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
-
-
     }
 
     public void OnPointerEnter(PointerEventData eventData)
