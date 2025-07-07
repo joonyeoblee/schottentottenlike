@@ -197,9 +197,7 @@ public class BattleField : SingletonPhoton<BattleField>
     public void OnMyCardPlaced(CardSlot placedSlot)
     {
         StartCoroutine(HandleCardPlaced());
-
-        int roundIndex = placedSlot.RoundIndex;
-        JudgeRoundWinner(roundIndex);
+        JudgeAllRoundsWinner();
     }
 
     private IEnumerator HandleCardPlaced()
@@ -279,6 +277,44 @@ public class BattleField : SingletonPhoton<BattleField>
         }
     }
 
+    private void JudgeAllRoundsWinner()
+    {
+        for (int roundIndex = 0; roundIndex < Rounds.Length; roundIndex++)
+        {
+            var playerCards = GetPlayerCards(roundIndex);
+            var enemyCards = GetEnemyCards(roundIndex);
+            var unusedCards = GetUnusedCardsFromField();
+
+            var judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards);
+
+            GameManager.Instance.UpdateRoundOwnerAndCheckWin(roundIndex, judgeResult.Winner);
+
+            string playerRank = judgeResult.Player1Rank.ToString();
+            string enemyRank = judgeResult.Player2Rank.ToString();
+
+            if (judgeResult.Winner == 1 || judgeResult.Winner == 2)
+            {
+                int owner = judgeResult.Winner == 1 ? 1 : 2;
+                photonView.RPC(nameof(RPC_MoveStone), RpcTarget.All, roundIndex, owner);
+            }
+
+            if (judgeResult.Winner == 1)
+            {
+                Debug.Log($"라운드 {roundIndex}: 플레이어1 승리 ({playerRank} vs {enemyRank})");
+            }
+            else if (judgeResult.Winner == 2)
+            {
+                Debug.Log($"라운드 {roundIndex}: 플레이어2 승리 ({playerRank} vs {enemyRank})");
+            }
+            else
+            {
+                Debug.Log($"라운드 {roundIndex}: 무승부 또는 미정 ({playerRank} vs {enemyRank})");
+            }
+        }
+        LogAllRoundOwners();
+    }
+
+
 
     private List<Card> GetPlayerCards(int roundIndex)
     {
@@ -356,8 +392,31 @@ public class BattleField : SingletonPhoton<BattleField>
             slot.gameObject.SetActive(true);
 
         slot.Refresh(card);
-
-        JudgeRoundWinner(roundIndex);
+        JudgeAllRoundsWinner();
+    }
+    private void LogAllRoundOwners()
+    {
+        var owners = GameManager.Instance.RoundOwners;
+        string log = "[소유된 라운드 현황] ";
+        bool hasOwner = false;
+        for (int i = 0; i < owners.Length; i++)
+        {
+            string ownerStr = owners[i] switch
+            {
+                1 => "플레이어1",
+                2 => "플레이어2",
+                _ => null
+            };
+            if (ownerStr != null)
+            {
+                log += $"[{i}:{ownerStr}] ";
+                hasOwner = true;
+            }
+        }
+        if (hasOwner)
+            Debug.Log(log);
+        else
+            Debug.Log("[소유된 라운드 없음]");
     }
 
     // 마스터가 카드 뽑고 카드 정보 전송
@@ -382,4 +441,11 @@ public class BattleField : SingletonPhoton<BattleField>
     {
         CardDeck.SyncDeckFromData(nums, colors);
     }
+    [PunRPC]
+    public void RPC_MoveStone(int roundIndex, int owner)
+    {
+        Rounds[roundIndex].MoveStoneToOwner(owner);
+    }
+
+
 }
