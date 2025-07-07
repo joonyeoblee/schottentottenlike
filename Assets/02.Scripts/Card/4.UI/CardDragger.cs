@@ -1,6 +1,8 @@
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+// 추가 필요
 
 public class CardDragger : BaseSelectable, IPointerDownHandler, IPointerUpHandler, IDragHandler
 {
@@ -17,22 +19,36 @@ public class CardDragger : BaseSelectable, IPointerDownHandler, IPointerUpHandle
         _cardController = GetComponent<CardController>();
         _handCardSlot = GetComponent<HandCardSlot>();
     }
-
-    // 카드 드래그 시작
     public void OnPointerDown(PointerEventData eventData)
     {
         _isDragging = true;
-        Vector3 mousePos = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        _dragOffset = transform.position - mousePos;
+
+#if UNITY_ANDROID || UNITY_IOS
+        Vector2 touchPos = Touchscreen.current.primaryTouch.position.ReadValue();
+        Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(touchPos.x, touchPos.y, _mainCamera.nearClipPlane));
+#else
+    Vector2 mousePos = Mouse.current.position.ReadValue();
+    Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, _mainCamera.nearClipPlane));
+#endif
+
+        _dragOffset = transform.position - worldPos;
     }
 
-    // 카드 드래그 중
     public void OnDrag(PointerEventData eventData)
     {
         if (!_isDragging) return;
-        Vector3 mousePos = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        transform.position = mousePos + _dragOffset;
+
+#if UNITY_ANDROID || UNITY_IOS
+        Vector2 touchPos = Touchscreen.current.primaryTouch.position.ReadValue();
+        Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(touchPos.x, touchPos.y, _mainCamera.nearClipPlane));
+#else
+    Vector2 mousePos = Mouse.current.position.ReadValue();
+    Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, _mainCamera.nearClipPlane));
+#endif
+
+        transform.position = worldPos + _dragOffset;
     }
+
 
     // 마우스 떼었을 때
     public void OnPointerUp(PointerEventData eventData)
