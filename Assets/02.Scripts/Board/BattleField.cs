@@ -5,169 +5,193 @@ using Photon.Pun;
 using UnityEngine;
 
 public enum ETurn
-{
-    Player1 = 0,
-    Player2 = 1
-}
-
-public class BattleField : SingletonPhoton<BattleField>
-{
-    public HandCardManager[] HandCardManagers; // [0] = 내 카드, [1] = 상대 카드
-    public RoundSlot[] Rounds;
-    public CardDeck CardDeck;
-    public ETurn CurrentTurn;
-    private bool _isShuffled;
-
-    private ETurn GetNextTurn()
     {
-        return CurrentTurn == ETurn.Player1 ? ETurn.Player2 : ETurn.Player1;
+        Player1 = 0,
+        Player2 = 1
     }
 
-    private void Start()
+    public class BattleField : SingletonPhoton<BattleField>
     {
-        InitializeRoundSlots();
-        InitializeHandCardSlots();
-        CardDeck.OnCardSuffle += OnShuffled;
-    }
+        public HandCardManager[] HandCardManagers; // [0] = 내 카드, [1] = 상대 카드
+        public RoundSlot[] Rounds;
+        public CardDeck CardDeck;
+        public ETurn CurrentTurn;
+        private bool _isShuffled;
 
-    private void InitializeRoundSlots()
-    {
-        for (int i = 0; i < Rounds.Length; i++)
+        private ETurn GetNextTurn() => CurrentTurn == ETurn.Player1 ? ETurn.Player2 : ETurn.Player1;
+
+        private void Start()
         {
-            Rounds[i].Index = i;
+            InitializeRoundSlots();
+            InitializeHandCardSlots();
+            CardDeck.OnCardSuffle += OnShuffled;
+        }
 
-            for (int j = 0; j < Rounds[i].PlayerCardSlots.Length; j++)
+        private void InitializeRoundSlots()
+        {
+            for (int i = 0; i < Rounds.Length; i++)
             {
-                Rounds[i].PlayerCardSlots[j].IsMine = true;
-                Rounds[i].PlayerCardSlots[j].Index = j;
-                Rounds[i].PlayerCardSlots[j].RoundIndex = i;
+                Rounds[i].Index = i;
+
+                for (int j = 0; j < Rounds[i].PlayerCardSlots.Length; j++)
+                {
+                    Rounds[i].PlayerCardSlots[j].IsMine = true;
+                    Rounds[i].PlayerCardSlots[j].Index = j;
+                    Rounds[i].PlayerCardSlots[j].RoundIndex = i;
+                    Rounds[i].PlayerCardSlots[j].Clear();
+                }
+
+                for (int j = 0; j < Rounds[i].EnemyCardSlots.Length; j++)
+                {
+                    Rounds[i].EnemyCardSlots[j].IsMine = false;
+                    Rounds[i].EnemyCardSlots[j].Index = j;
+                    Rounds[i].EnemyCardSlots[j].RoundIndex = i;
+                    Rounds[i].EnemyCardSlots[j].Clear();
+                }
             }
 
-            for (int j = 0; j < Rounds[i].EnemyCardSlots.Length; j++)
+        }
+
+        private void InitializeHandCardSlots()
+        {
+            for (int i = 0; i < HandCardManagers.Length; i++)
             {
-                Rounds[i].EnemyCardSlots[j].IsMine = false;
-                Rounds[i].EnemyCardSlots[j].Index = j;
-                Rounds[i].EnemyCardSlots[j].RoundIndex = i;
+                HandCardManagers[i].Index = i;
+
+                for (int j = 0; j < HandCardManagers[i].HandCardSlots.Length; j++)
+                {
+                    HandCardManagers[i].HandCardSlots[j].IsMine = true;
+                    HandCardManagers[i].HandCardSlots[j].Index = j;
+                    HandCardManagers[i].HandCardSlots[j].HandCardIndex = i;
+                }
+                for (int j = 0; j < Rounds[i].PlayerCardSlots.Length; j++)
+                {
+                    var slot = Rounds[i].PlayerCardSlots[j];
+                    slot.IsMine = true;
+                    slot.Index = j;
+                    slot.RoundIndex = i;
+
+                    slot.gameObject.SetActive(j == 0);
+                }
             }
         }
-    }
 
-    private void InitializeHandCardSlots()
-    {
-        for (int i = 0; i < HandCardManagers.Length; i++)
+        public void GameStart()
         {
-            HandCardManagers[i].Index = i;
+            Debug.Log("GameStart 호출됨 - 덱 셔플 시작");
+            ClearAllCardSlots();
+            StartCoroutine(GameStartSequence());
+            InitializeRoundSlots();
+        }
 
-            for (int j = 0; j < HandCardManagers[i].HandCardSlots.Length; j++)
-            {
-                HandCardManagers[i].HandCardSlots[j].IsMine = true;
-                HandCardManagers[i].HandCardSlots[j].Index = j;
-                HandCardManagers[i].HandCardSlots[j].HandCardIndex = i;
-            }
-            for (int j = 0; j < Rounds[i].PlayerCardSlots.Length; j++)
-            {
-                var slot = Rounds[i].PlayerCardSlots[j];
-                slot.IsMine = true;
-                slot.Index = j;
-                slot.RoundIndex = i;
+        private IEnumerator GameStartSequence()
+        {
+            CardDeck.StartDeckSuffle();
+            yield return new WaitUntil(() => _isShuffled);
+            yield return new WaitForSeconds(0.5f);
 
-                // 첫 슬롯만 활성화, 나머지는 비활성화
-                slot.gameObject.SetActive(j == 0);
+            if (PhotonNetwork.IsMasterClient)
+            {
+                int rand = Random.Range(0, 2);
+                photonView.RPC(nameof(SetTurn), RpcTarget.All, rand);
+                SendFirstTurnDealToAll();
             }
         }
-    }
-
-    public void GameStart()
-    {
-        Debug.Log("GameStart 호출됨 - 덱 셔플 시작");
-        StartCoroutine(GameStartSequence());
-    }
-
-    private IEnumerator GameStartSequence()
-    {
-        CardDeck.StartDeckSuffle();
-        yield return new WaitUntil(() => _isShuffled);
-        yield return new WaitForSeconds(0.5f); // 셔플 후 애니메이션 딜레이
-
-        if (PhotonNetwork.IsMasterClient)
+        private void ClearAllCardSlots()
         {
-            int rand = Random.Range(0, 2); // 마스터 클라이언트만 턴 결정
-            photonView.RPC(nameof(SetTurn), RpcTarget.All, rand);
-            SendFirstTurnDealToAll(); // 카드 뽑고 전송
-        }
-    }
+            foreach (var round in Rounds)
+            {
+                for (int i = 0; i < round.PlayerCardSlots.Length; i++)
+                {
+                    var slot = round.PlayerCardSlots[i];
+                    slot.Clear();
+                    slot.gameObject.SetActive(i == 0); // 0번째만 true, 나머지 false
+                }
+                for (int i = 0; i < round.EnemyCardSlots.Length; i++)
+                {
+                    var slot = round.EnemyCardSlots[i];
+                    slot.Clear();
+                    slot.gameObject.SetActive(i == 0); // 0번째만 true, 나머지 false
+                }
 
-    private void OnShuffled()
-    {
-        _isShuffled = true;
-    }
+            }
 
-    private void SendFirstTurnDealToAll()
-    {
-        int handSize = HandCardManagers[0].HandCardSlots.Length;
+            foreach (var handManager in HandCardManagers)
+            {
+                foreach (var handSlot in handManager.HandCardSlots)
+                {
+                    handSlot.Clear();
+                }
+            }
 
-        int[] masterColors = new int[handSize];
-        int[] masterNumbers = new int[handSize];
-        int[] clientColors = new int[handSize];
-        int[] clientNumbers = new int[handSize];
-
-        for (int i = 0; i < handSize; i++)
-        {
-            Card card1 = CardDeck.GetCard();
-            masterColors[i] = (int)card1.Color;
-            masterNumbers[i] = card1.CardNumber;
-
-            Card card2 = CardDeck.GetCard();
-            clientColors[i] = (int)card2.Color;
-            clientNumbers[i] = card2.CardNumber;
+            Debug.Log("모든 슬롯 초기화 완료: Player 0번째만 활성화됨");
         }
 
-        // 마스터에게: 마스터 손패를 0번, 클라 손패를 1번으로
-        photonView.RPC(nameof(ReceiveFirstTurnCards), RpcTarget.MasterClient,
-            masterColors, masterNumbers, clientColors, clientNumbers);
-
-        // 클라이언트에게: 클라 손패를 0번, 마스터 손패를 1번으로
-        photonView.RPC(nameof(ReceiveFirstTurnCards), RpcTarget.Others,
-            clientColors, clientNumbers, masterColors, masterNumbers);
-    }
-
-
-    [PunRPC]
-    public void SetTurn(int turn)
-    {
-        CurrentTurn = (ETurn)turn;
-        Debug.Log($"턴이 {CurrentTurn}으로 변경됨");
-    }
-
-    [PunRPC]
-    private void ReceiveFirstTurnCards(int[] myColors, int[] myNumbers, int[] enemyColors, int[] enemyNumbers)
-    {
-        StartCoroutine(DealFirstTurnCardsCoroutine(myColors, myNumbers, enemyColors, enemyNumbers));
-    }
-
-
-    private IEnumerator DealFirstTurnCardsCoroutine(int[] myColors, int[] myNumbers, int[] enemyColors, int[] enemyNumbers)
-    {
-        yield return new WaitForSeconds(0.5f);
-
-        // 내 손패: 0번
-        for (int i = 0; i < HandCardManagers[0].HandCardSlots.Length; i++)
+        private void OnShuffled()
         {
-            Card card = new Card(myNumbers[i], (ECardColor)myColors[i]);
-            HandCardManagers[0].HandCardSlots[i].Refresh(i, card, true); // 무조건 보이게
-            yield return new WaitForSeconds(0.2f);
+            _isShuffled = true;
         }
 
-        // 상대 손패: 1번
-        for (int i = 0; i < HandCardManagers[1].HandCardSlots.Length; i++)
+        private void SendFirstTurnDealToAll()
         {
-            Card card = new Card(enemyNumbers[i], (ECardColor)enemyColors[i]);
-            HandCardManagers[1].HandCardSlots[i].Refresh(i, card, false); // 무조건 뒷면
-            yield return new WaitForSeconds(0.2f);
+            int handSize = HandCardManagers[0].HandCardSlots.Length;
+
+            int[] masterColors = new int[handSize];
+            int[] masterNumbers = new int[handSize];
+            int[] clientColors = new int[handSize];
+            int[] clientNumbers = new int[handSize];
+
+            for (int i = 0; i < handSize; i++)
+            {
+                Card card1 = CardDeck.GetCard();
+                masterColors[i] = (int)card1.Color;
+                masterNumbers[i] = card1.CardNumber;
+
+                Card card2 = CardDeck.GetCard();
+                clientColors[i] = (int)card2.Color;
+                clientNumbers[i] = card2.CardNumber;
+            }
+
+            photonView.RPC(nameof(ReceiveFirstTurnCards), RpcTarget.MasterClient,
+                masterColors, masterNumbers, clientColors, clientNumbers);
+
+            photonView.RPC(nameof(ReceiveFirstTurnCards), RpcTarget.Others,
+                clientColors, clientNumbers, masterColors, masterNumbers);
         }
 
-        Debug.Log("손패 배분 완료 (로컬 기준)");
-    }
+        [PunRPC]
+        public void SetTurn(int turn)
+        {
+            CurrentTurn = (ETurn)turn;
+            Debug.Log($"턴이 {CurrentTurn}으로 변경됨");
+        }
+
+        [PunRPC]
+        private void ReceiveFirstTurnCards(int[] myColors, int[] myNumbers, int[] enemyColors, int[] enemyNumbers)
+        {
+            StartCoroutine(DealFirstTurnCardsCoroutine(myColors, myNumbers, enemyColors, enemyNumbers));
+        }
+
+        private IEnumerator DealFirstTurnCardsCoroutine(int[] myColors, int[] myNumbers, int[] enemyColors, int[] enemyNumbers)
+        {
+            yield return new WaitForSeconds(0.5f);
+
+            for (int i = 0; i < HandCardManagers[0].HandCardSlots.Length; i++)
+            {
+                Card card = new Card(myNumbers[i], (ECardColor)myColors[i]);
+                HandCardManagers[0].HandCardSlots[i].Refresh(i, card, true);
+                yield return new WaitForSeconds(0.2f);
+            }
+
+            for (int i = 0; i < HandCardManagers[1].HandCardSlots.Length; i++)
+            {
+                Card card = new Card(enemyNumbers[i], (ECardColor)enemyColors[i]);
+                HandCardManagers[1].HandCardSlots[i].Refresh(i, card, false);
+                yield return new WaitForSeconds(0.2f);
+            }
+
+            Debug.Log("손패 배분 완료 (로컬 기준)");
+        }
 
 
     public void OnMyCardPlaced(CardSlot placedSlot)
@@ -178,17 +202,17 @@ public class BattleField : SingletonPhoton<BattleField>
         JudgeRoundWinner(roundIndex);
     }
 
-    private IEnumerator HandleCardPlaced()
-    {
-        yield return new WaitForSeconds(0.05f); // 카드가 핸드에서 제거되도록 잠시 대기
+        private IEnumerator HandleCardPlaced()
+        {
+            yield return new WaitForSeconds(0.05f);
 
-        DrawCardToHand();
+            RequestDrawCard();
 
-        ETurn nextTurn = GetNextTurn();
-        photonView.RPC(nameof(SetTurn), RpcTarget.All, (int)nextTurn);
+            ETurn nextTurn = GetNextTurn();
+            photonView.RPC(nameof(SetTurn), RpcTarget.All, (int)nextTurn);
 
-        photonView.RPC(nameof(RPC_UpdateSlotActivation), RpcTarget.All);
-    }
+            photonView.RPC(nameof(RPC_UpdateSlotActivation), RpcTarget.All);
+        }
 
     //족보 X
     //private void JudgeRoundWinner(int roundIndex)
@@ -294,37 +318,44 @@ public class BattleField : SingletonPhoton<BattleField>
                 break;
             }
         }
-    }
 
-
-    [PunRPC]
-    private void RPC_UpdateSlotActivation()
-    {
-        foreach (var round in Rounds)
+        // 모든 유저가 자신의 핸드에 카드 적용
+        [PunRPC]
+        private void RPC_ReceiveDrawCard(int targetActorNumber, int slotIndex, int cardNumber, int color)
         {
-            foreach (var slot in round.PlayerCardSlots)
-            {
-                int i = slot.Index;
-                var slots = round.PlayerCardSlots;
+            bool isMine = PhotonNetwork.LocalPlayer.ActorNumber == targetActorNumber;
+            int handIndex = isMine ? 0 : 1;
 
-                if (i < slots.Length - 1 && slots[i].IsOccupied && !slots[i + 1].gameObject.activeSelf)
+            Card card = new Card(cardNumber, (ECardColor)color);
+            HandCardManagers[handIndex].HandCardSlots[slotIndex].Refresh(slotIndex, card, isMine);
+        }
+
+        [PunRPC]
+        private void RPC_UpdateSlotActivation()
+        {
+            foreach (var round in Rounds)
+            {
+                for (int i = 0; i < round.PlayerCardSlots.Length - 1; i++)
                 {
-                    slots[i + 1].gameObject.SetActive(true);
+                    var current = round.PlayerCardSlots[i];
+                    var next = round.PlayerCardSlots[i + 1];
+
+                    if (current.IsOccupied && !next.gameObject.activeSelf)
+                    {
+                        next.gameObject.SetActive(true);
+                    }
                 }
             }
         }
-    }
 
-    [PunRPC]
-    public void SetCard(int roundIndex, int slotIndex, int cardNumber, int color)
-    {
-        Card card = new Card(cardNumber, (ECardColor)color);
-        var slot = Rounds[roundIndex].EnemyCardSlots[slotIndex];
-
-        if (!slot.gameObject.activeSelf)
+        [PunRPC]
+        public void SetCard(int roundIndex, int slotIndex, int cardNumber, int color)
         {
-            slot.gameObject.SetActive(true); // 반드시 필요
-        }
+            Card card = new Card(cardNumber, (ECardColor)color);
+            var slot = Rounds[roundIndex].EnemyCardSlots[slotIndex];
+
+            if (!slot.gameObject.activeSelf)
+                slot.gameObject.SetActive(true);
 
         slot.Refresh(card);
 

@@ -254,7 +254,7 @@ MonoBehaviour:
   Group: 0
   prefixField: -1
   Synchronization: 3
-  OwnershipTransfer: 0
+  OwnershipTransfer: 2
   observableSearch: 2
   ObservedComponents: []
   sceneViewId: 0
@@ -934,9 +934,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7134304950993790439}
     m_Modifications:
+    - target: {fileID: 2735803156354339550, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3233613911742489406, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: sceneViewId
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3381636829753999960, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
+      propertyPath: m_Color.a
+      value: 0.47843137
       objectReference: {fileID: 0}
     - target: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_LocalPosition.x
@@ -981,6 +989,10 @@ PrefabInstance:
     - target: {fileID: 8203375538915393654, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_Name
       value: 1Round (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8916841045471548722, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2341,6 +2353,18 @@ PrefabInstance:
     - target: {fileID: 3233613911742489406, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: sceneViewId
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3381636829753999960, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3381636829753999960, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3381636829753999960, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
+      propertyPath: m_Color.r
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_LocalPosition.x

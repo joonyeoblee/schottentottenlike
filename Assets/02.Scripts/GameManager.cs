@@ -32,6 +32,14 @@ public class GameManager : Singleton<GameManager>
     private Stack<Card> _deck;
     private int[] RoundOwners;
 
+    private List<Card> _usedCards = new List<Card>();
+
+    public void RecordUsedCard(Card card)
+    {
+        _usedCards.Add(card);
+    }
+
+
     protected override void Awake()
     {
         base.Awake();
@@ -186,14 +194,17 @@ public class GameManager : Singleton<GameManager>
     // 전체 미사용 카드 반환 (Stack 버전)
     public Stack<Card> GetUnusedCards()
     {
-        List<Card> used = _player1Stones.SelectMany(x => x)
-                                        .Concat(_player2Stones.SelectMany(x => x))
-                                        .ToList();
+        //List<Card> used = _player1Stones.SelectMany(x => x)
+        //                                .Concat(_player2Stones.SelectMany(x => x))
+        //                                .ToList();
 
-        List<Card> unused = GetAllPossibleCards()
-                            .Where(c => !ContainsCard(used, c))
-                            .ToList();
+        //List<Card> unused = GetAllPossibleCards()
+        //                    .Where(c => !ContainsCard(used, c))
+        //                    .ToList();
 
+        //return new Stack<Card>(unused);
+        List<Card> all = GetAllPossibleCards().ToList();
+        List<Card> unused = all.Where(c => !_usedCards.Any(u => u.CardNumber == c.CardNumber && u.Color == c.Color)).ToList();
         return new Stack<Card>(unused);
     }
 
