@@ -2,7 +2,7 @@ using EPOOutline;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.EventSystems;
-
+using UnityEngine.InputSystem;
 // IPointerEnterHandler, IPointerExitHandler 인터페이스는 이미 추가되어 있습니다.
 public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
@@ -46,38 +46,42 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        // <<< 추가: 드래그 시작 시 아웃라인 끄기
-        if (_outlinable != null)
-        {
-            _outlinable.enabled = false;
-        }
-
-        transform.localScale = _originalScale;
         _isDragging = true;
-        if (_handArranger != null) _handArranger.enabled = false;
 
-        _originalPosition = transform.localPosition;
-        _originalRotation = transform.localRotation;
-        _originalSiblingIndex = _slotTransform.GetSiblingIndex();
+        if (_mainCamera == null)
+            _mainCamera = Camera.main;
 
-        transform.rotation = Quaternion.identity;
-        _slotTransform.SetAsLastSibling();
+#if UNITY_EDITOR || UNITY_STANDALONE
+        Vector2 mousePos = Mouse.current != null
+            ? Mouse.current.position.ReadValue()
+            : eventData.position; // fallback
+        Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, _mainCamera.nearClipPlane));
+#elif UNITY_ANDROID || UNITY_IOS
+        Vector2 touchPos = Touchscreen.current.primaryTouch.position.ReadValue();
+        Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(touchPos.x, touchPos.y, _mainCamera.nearClipPlane));
+#endif
 
-        Vector3 mousePos = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        _dragOffset = transform.position - mousePos;
+        _dragOffset = transform.position - worldPos;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         if (!_isDragging) return;
 
-        Vector3 mousePos = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        transform.position = new Vector3(mousePos.x + _dragOffset.x, mousePos.y + _dragOffset.y, -1f);
+        if (_mainCamera == null)
+            _mainCamera = Camera.main;
 
-        if (_handArranger != null)
-        {
-            _handArranger.UpdateCardOrderDuringDrag(_slotTransform);
-        }
+#if UNITY_EDITOR || UNITY_STANDALONE
+        Vector2 mousePos = Mouse.current != null
+            ? Mouse.current.position.ReadValue()
+            : eventData.position;
+        Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, _mainCamera.nearClipPlane));
+#elif UNITY_ANDROID || UNITY_IOS
+        Vector2 touchPos = Touchscreen.current.primaryTouch.position.ReadValue();
+        Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(touchPos.x, touchPos.y, _mainCamera.nearClipPlane));
+#endif
+
+        transform.position = worldPos + _dragOffset;
     }
 
     public void OnPointerUp(PointerEventData eventData)
