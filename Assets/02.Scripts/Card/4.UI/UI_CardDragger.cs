@@ -93,10 +93,12 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         bool isMaster = PhotonNetwork.IsMasterClient;
         ETurn currentTurn = BattleField.Instance.CurrentTurn;
         bool isMyTurn = isMaster && currentTurn == ETurn.Player1 || !isMaster && currentTurn == ETurn.Player2;
+
         if (!isMyTurn)
         {
             // 자기 턴이 아니면 배치 불가 → 제자리 복귀
-            transform.position = _originPosition;
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
             return;
         }
 
@@ -119,10 +121,10 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
                 cardSlot.Refresh(_handCardSlot.Card);
                 _handCardSlot.Clear();
+
                 // 원위치로 되돌리기
                 transform.localPosition = Vector3.zero;
                 transform.localRotation = Quaternion.identity;
-
                 return;
             }
         }
