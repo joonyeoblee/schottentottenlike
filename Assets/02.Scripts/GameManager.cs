@@ -30,7 +30,8 @@ public class GameManager : Singleton<GameManager>
     private List<Stack<Card>> _player1Stones;
     private List<Stack<Card>> _player2Stones;
     private Stack<Card> _deck;
-    private int[] RoundOwners;
+    //private int[] RoundOwners;
+    public int[] RoundOwners; // 0: 무소유, 1: 플레이어1, 2: 플레이어2
 
     private List<Card> _usedCards = new List<Card>();
 
