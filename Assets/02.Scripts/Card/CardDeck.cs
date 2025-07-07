@@ -17,9 +17,7 @@ public class CardDeck : MonoBehaviour
 
         // 셔플 Fisher-Yates shuffle algorithm
         Random rng = new Random();
-
         int n = cardList.Count;
-
         while (n > 1)
         {
             n--;

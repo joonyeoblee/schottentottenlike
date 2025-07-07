@@ -81,7 +81,6 @@ public class CardDragger : BaseSelectable, IPointerDownHandler, IPointerUpHandle
                 {
                     break;
                 }
-
                 cardSlot.Refresh(_handCardSlot.Card);
                 _handCardSlot.Clear();
                 // 원위치로 되돌리기
