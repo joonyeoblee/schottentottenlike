@@ -7,6 +7,7 @@ using UnityEngine.Serialization;
 public class CardSlot : MonoBehaviourPunCallbacks
 {
     private Card _card;
+    public Sprite DefaultSprite;
     public Card Card => _card;
     private SpriteRenderer _cardSprite;
     public bool IsMine; // true면 내 카드, false면 상대 카드
@@ -41,6 +42,13 @@ public class CardSlot : MonoBehaviourPunCallbacks
 
             // 내 카드일 때만 상대에게 알림
 
+            // 콜라이더 비활성화
+            var boxcollider = GetComponent<Collider2D>();
+            if (boxcollider != null)
+                boxcollider.enabled = false;
+
+
+
             if (PhotonNetwork.IsConnected) //포톤 네트워크에 연결이 돼 있다면
 
             {
@@ -51,8 +59,8 @@ public class CardSlot : MonoBehaviourPunCallbacks
 
                     MySetAnimation.PlayAnimation(() =>
                     {
-                        BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index,
-                            _card.CardNumber, (int)_card.Color);
+                        BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
+                        BattleField.OnMyCardPlaced(this);
                     });
                 }
                 else //내 카드를 셋하는 게 아니라면
@@ -84,6 +92,16 @@ public class CardSlot : MonoBehaviourPunCallbacks
     public void Clear()
     {
         _card = null;
+
+        if (_cardSprite != null)
+        {
+            _cardSprite.sprite = DefaultSprite;
+            _cardSprite.color = new Color(1f, 1f, 1f, 122f / 255f);
+        }
+
+        var boxcollider = GetComponent<Collider2D>();
+        if (boxcollider != null)
+            boxcollider.enabled = true;
     }
 
 }
