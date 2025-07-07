@@ -53,7 +53,7 @@ public class PhotonServerManager : SingletonPhoton<PhotonServerManager>
         {
             if (PhotonNetwork.IsMasterClient)
             {
-                _battleField = PhotonNetwork.InstantiateSceneObject("Field", new Vector3(0, 5, 0), Quaternion.identity);
+                _battleField = PhotonNetwork.InstantiateSceneObject("Field", new Vector3(0, 0, 0), Quaternion.identity);
                 Debug.Log("방장이므로 Field 생성됨.");
             }
             _shouldSpawnField = false;
