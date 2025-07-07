@@ -1,6 +1,11 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/01.Scenes/GameBoardScene_BJ.unity.meta
+guid: 6f394ca773921b64291a555a15e0c247
+DefaultImporter:
+========
 guid: 2b5b70277beaba148bb11c72f32a4d92
 TextScriptImporter:
+>>>>>>>> UI:Assets/StompyRobot/SROptions/link.xml.meta
   externalObjects: {}
   userData: 
   assetBundleName: 

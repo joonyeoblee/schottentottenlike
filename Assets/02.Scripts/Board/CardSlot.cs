@@ -4,6 +4,7 @@ using UnityEngine.AddressableAssets;
 public class CardSlot : MonoBehaviour
 {
     private Card _card;
+    public Sprite DefaultSprite;
     public Card Card => _card;
     private SpriteRenderer _cardSprite;
     public bool IsMine; // true면 내 카드, false면 상대 카드
@@ -32,6 +33,44 @@ public class CardSlot : MonoBehaviour
         {
             _cardSprite.color = Color.white;
             _cardSprite.sprite = handle.Result;
+            CardSprite = handle.Result;
+
+
+            // 내 카드일 때만 상대에게 알림
+
+            // 콜라이더 비활성화
+            var boxcollider = GetComponent<Collider2D>();
+            if (boxcollider != null)
+                boxcollider.enabled = false;
+
+
+
+            if (PhotonNetwork.IsConnected) //포톤 네트워크에 연결이 돼 있다면
+
+            {
+                if (IsMine) //내 카드 애니메이션 셋
+                {
+                    _cardSprite.color = Color.white;
+                    _cardSprite.sprite = CardSprite;
+
+                    MySetAnimation.PlayAnimation(() =>
+                    {
+                        BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
+                        BattleField.OnMyCardPlaced(this);
+                    });
+                }
+                else //내 카드를 셋하는 게 아니라면
+                {
+                    EnemySetAnimaion.PlaySetAnimation(this.transform,CardSprite.texture, () =>
+                    {
+                        _cardSprite.color = Color.white;
+                        _cardSprite.sprite = CardSprite;
+
+                        StartCoroutine(EnemyDeckDraw());
+                    });
+                }
+
+            }
         };
 
         // 콜라이더 비활성화
