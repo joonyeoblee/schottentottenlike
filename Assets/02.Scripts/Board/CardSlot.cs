@@ -80,6 +80,8 @@ public class CardSlot : MonoBehaviourPunCallbacks
                             StartCoroutine(EnemyDeckDraw());
                         }
 
+                        photonView.RPC(nameof(BattleField.RPC_Judging),RpcTarget.All,RoundIndex);
+
                     });
                 }
 

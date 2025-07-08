@@ -33,11 +33,7 @@ public class BattleField : SingletonPhoton<BattleField>
     // 현재 턴의 다음 턴을 반환하는 헬퍼 프로퍼티
     private ETurn GetNextTurn() => CurrentTurn == ETurn.Player1 ? ETurn.Player2 : ETurn.Player1;
 
-    private void OnEnable()
-    {
-        EnemyHandDrawAnimation.OnCardDrawEnd += JudgeRoundWinner;
-        UI_CardSet.OnCardDrawEnd += JudgeRoundWinner;
-    }
+
 
     private void Start()
     {
@@ -244,6 +240,9 @@ public class BattleField : SingletonPhoton<BattleField>
         }
     }
 
+
+
+
     [PunRPC]
     public void SetCard(int roundIndex, int slotIndex, int cardNumber, int color)
     {
@@ -259,9 +258,16 @@ public class BattleField : SingletonPhoton<BattleField>
        // JudgeRoundWinner(roundIndex);
     }
 
-    private void JudgeRoundWinner()
+
+    [PunRPC]
+    public void RPC_Judging(int roundIndex)
     {
-        var round = Rounds[_judgeRound];
+        JudgeRoundWinner(roundIndex);
+    }
+
+    private void JudgeRoundWinner(int roundIndex)
+    {
+        var round = Rounds[roundIndex];
         var uiRound = round.UI_Round;
 
         var playerCards = GetCardsFromSlots(round.PlayerCardSlots);
@@ -270,7 +276,7 @@ public class BattleField : SingletonPhoton<BattleField>
 
         var judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards);
 
-        GameManager.Instance.UpdateRoundOwnerAndCheckWin(_judgeRound, judgeResult.Winner);
+        GameManager.Instance.UpdateRoundOwnerAndCheckWin(roundIndex, judgeResult.Winner);
 
         uiRound.MyResult = judgeResult.Player1Rank.ToString();
         uiRound.EnemyResult = judgeResult.Player2Rank.ToString();
@@ -285,7 +291,7 @@ public class BattleField : SingletonPhoton<BattleField>
                 winner = RoundWinner.Enemy;
                 break;
             default: // 무승부
-                Debug.Log($"라운드 {_judgeRound} 판정: 무승부 ({uiRound.MyResult} vs {uiRound.EnemyResult})");
+                Debug.Log($"라운드 {roundIndex} 판정: 무승부 ({uiRound.MyResult} vs {uiRound.EnemyResult})");
                 return; // 함수를 즉시 종료하여 애니메이션을 막음
         }
 
