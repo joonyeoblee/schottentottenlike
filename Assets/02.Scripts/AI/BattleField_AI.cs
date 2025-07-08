@@ -135,6 +135,11 @@ public class BattleField_AI : Singleton<BattleField_AI>
 
         // 첫 패 분배
         DealFirstTurnCards();
+
+        if (CurrentTurn == ETurn.Player2)
+        {
+            StartAITurn();
+        }
     }
 
     private void OnShuffled()
@@ -317,6 +322,9 @@ public class BattleField_AI : Singleton<BattleField_AI>
             var card = handSlot.Card;
             var targetSlot = rounds[bestRoundIdx].EnemyCardSlots[bestSlotIdx];
 
+            if (!targetSlot.gameObject.activeSelf)
+                targetSlot.gameObject.SetActive(true);
+
             targetSlot.Refresh(card);
             handSlot.Clear();
 
@@ -356,6 +364,8 @@ public class BattleField_AI : Singleton<BattleField_AI>
             JudgeResult judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards);
 
             GameManager.Instance.UpdateRoundOwnerAndCheckWin(roundIndex, judgeResult.Winner);
+
+            Rounds[roundIndex].MoveStoneToOwner(judgeResult.Winner);
 
             string playerRank = judgeResult.Player1Rank.ToString();
             string enemyRank = judgeResult.Player2Rank.ToString();
@@ -448,4 +458,9 @@ public class BattleField_AI : Singleton<BattleField_AI>
         }
         enemyAnimation.PlayFanInAnimation();
     }
+
+    //public void MoveStoneToOwner(int roundIndex, int owner)
+    //{
+    //    Rounds[roundIndex].MoveStoneToOwner(owner);
+    //}
 }

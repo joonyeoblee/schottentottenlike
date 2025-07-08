@@ -63,6 +63,13 @@ public class CardSlot : MonoBehaviourPunCallbacks
                 }
                 else
                 {
+                    if (_cardSprite != null && CardSprite != null)
+                    {
+                        _cardSprite.enabled = true;
+                        _cardSprite.color = Color.white;
+                        _cardSprite.sprite = CardSprite;
+                    }
+
                     EnemySetAnimaion.PlaySetAnimation(this.transform, CardSprite.texture, () =>
                     {
                         if (_cardSprite != null && CardSprite != null)
@@ -70,6 +77,10 @@ public class CardSlot : MonoBehaviourPunCallbacks
                             _cardSprite.color = Color.white;
                             _cardSprite.sprite = CardSprite;
                         }
+
+                        if (!gameObject.activeInHierarchy)
+                            gameObject.SetActive(true);
+
                         StartCoroutine(EnemyDeckDraw());
                     });
                 }
