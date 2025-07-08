@@ -338,7 +338,10 @@ public class BattleField_AI : Singleton<BattleField_AI>
                 {
                     var newCard = CardDeck.GetCard();
                     if (newCard != null)
+                    {
                         slot.Refresh(i, newCard, false);
+                        slot.MyCard.Rend.enabled = true;
+                    }
                     break;
                 }
             }
