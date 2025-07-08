@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7503110420191894897}
   - component: {fileID: 565097095440298376}
+  - component: {fileID: 1913676885364516383}
   m_Layer: 0
   m_Name: Round
   m_TagString: Untagged
@@ -60,6 +61,34 @@ MonoBehaviour:
   - {fileID: 7104651205338367318}
   - {fileID: 4681487082357340012}
   Index: 0
+  UI_Round: {fileID: 1913676885364516383}
+--- !u!114 &1913676885364516383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8203375538915393654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d86ed9390f28f6142a46e834047e039d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  EnemyResultText: {fileID: 0}
+  EnemyResult: 
+  MyResultText: {fileID: 0}
+  MyResult: 
+  ShowTransforms: []
+  Stone: {fileID: 7164358161199200081}
+  _moveDuration: 0.4
+  _cardShowScaleMultiplier: 1.1
+  _shakeDuration: 0.3
+  _shakeStrength: 10
+  _interval: 0.15
+  _textFadeInDuration: 0.4
+  _stoneAnimDuration: 0.8
+  _stoneScaleMultiplier: 1.5
+  _stoneFloatHeight: 1
 --- !u!1001 &201162179382773601
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -101,9 +101,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DefaultSprite: {fileID: 0}
   IsMine: 0
   BattleField: {fileID: 0}
-  SetAnimation: {fileID: 0}
+  MySetAnimation: {fileID: 0}
+  EnemySetAnimaion: {fileID: 0}
+  CardVerification: {fileID: 0}
   Index: 0
 --- !u!114 &292369075265763359
 MonoBehaviour:
@@ -118,14 +121,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyHandPoint: {fileID: 0}
-  midPoint: {fileID: 0}
-  endTransform: {fileID: 0}
+  enemyHandArranger: {fileID: 0}
   scaleMultiplier: 1.5
   durationToMid: 0.5
   delayAtMid: 0.3
   durationToEnd: 0.6
+  enemyDeckDuration: 0.3
   easeToMid: 9
   easeToEnd: 8
+  TargetSlot: {fileID: 0}
+  CardUI: {fileID: 0}
+  CardToAnimate: {fileID: 0}
 --- !u!1 &1906974304754311067
 GameObject:
   m_ObjectHideFlags: 0
@@ -232,9 +238,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DefaultSprite: {fileID: 0}
   IsMine: 0
   BattleField: {fileID: 0}
-  SetAnimation: {fileID: 4949194813946681025}
+  MySetAnimation: {fileID: 0}
+  EnemySetAnimaion: {fileID: 0}
+  CardVerification: {fileID: 0}
   Index: 0
 --- !u!114 &2735803156354339550
 MonoBehaviour:
@@ -499,9 +508,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DefaultSprite: {fileID: 0}
   IsMine: 0
   BattleField: {fileID: 0}
-  SetAnimation: {fileID: 0}
+  MySetAnimation: {fileID: 0}
+  EnemySetAnimaion: {fileID: 0}
+  CardVerification: {fileID: 0}
   Index: 0
 --- !u!114 &2646756622133946647
 MonoBehaviour:
@@ -516,14 +528,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyHandPoint: {fileID: 0}
-  midPoint: {fileID: 0}
-  endTransform: {fileID: 0}
+  enemyHandArranger: {fileID: 0}
   scaleMultiplier: 1.5
   durationToMid: 0.5
   delayAtMid: 0.3
   durationToEnd: 0.6
+  enemyDeckDuration: 0.3
   easeToMid: 9
   easeToEnd: 8
+  TargetSlot: {fileID: 0}
+  CardUI: {fileID: 0}
+  CardToAnimate: {fileID: 0}
 --- !u!1 &2764538343063914111
 GameObject:
   m_ObjectHideFlags: 0
@@ -625,9 +640,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DefaultSprite: {fileID: 0}
   IsMine: 0
   BattleField: {fileID: 0}
-  SetAnimation: {fileID: 2511292747394086330}
+  MySetAnimation: {fileID: 0}
+  EnemySetAnimaion: {fileID: 0}
+  CardVerification: {fileID: 0}
   Index: 0
 --- !u!114 &2511292747394086330
 MonoBehaviour:
@@ -748,9 +766,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DefaultSprite: {fileID: 0}
   IsMine: 0
   BattleField: {fileID: 0}
-  SetAnimation: {fileID: 0}
+  MySetAnimation: {fileID: 0}
+  EnemySetAnimaion: {fileID: 0}
+  CardVerification: {fileID: 0}
   Index: 0
 --- !u!114 &3713818465927484400
 MonoBehaviour:
@@ -765,14 +786,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyHandPoint: {fileID: 0}
-  midPoint: {fileID: 0}
-  endTransform: {fileID: 0}
+  enemyHandArranger: {fileID: 0}
   scaleMultiplier: 1.5
   durationToMid: 0.5
   delayAtMid: 0.3
   durationToEnd: 0.6
+  enemyDeckDuration: 0.3
   easeToMid: 9
   easeToEnd: 8
+  TargetSlot: {fileID: 0}
+  CardUI: {fileID: 0}
+  CardToAnimate: {fileID: 0}
 --- !u!1 &7023269612962649103
 GameObject:
   m_ObjectHideFlags: 0
@@ -874,9 +898,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DefaultSprite: {fileID: 0}
   IsMine: 0
   BattleField: {fileID: 0}
-  SetAnimation: {fileID: 7898582237929439696}
+  MySetAnimation: {fileID: 0}
+  EnemySetAnimaion: {fileID: 0}
+  CardVerification: {fileID: 0}
   Index: 0
 --- !u!114 &7898582237929439696
 MonoBehaviour:
@@ -955,7 +982,8 @@ MonoBehaviour:
   - {fileID: 7859921320716256584}
   - {fileID: 4727133584013296589}
   - {fileID: 5571407320960853015}
-  index: 0
+  Index: 0
+  UI_Round: {fileID: 0}
 --- !u!1001 &4435191406897400266
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -967,6 +995,10 @@ PrefabInstance:
     - target: {fileID: 2408874657023120628, guid: 63aa921cf9c0efc418a8649f4075065b, type: 3}
       propertyPath: m_Name
       value: Stone
+      objectReference: {fileID: 0}
+    - target: {fileID: 2766390136831785824, guid: 63aa921cf9c0efc418a8649f4075065b, type: 3}
+      propertyPath: m_SortingOrder
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6836498181619908251, guid: 63aa921cf9c0efc418a8649f4075065b, type: 3}
       propertyPath: m_LocalPosition.x

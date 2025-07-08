@@ -4,6 +4,9 @@ using DG.Tweening;
 
 public class EnemyHandDrawAnimation : MonoBehaviour
 {
+    public static event Action OnCardDrawEnd;
+
+
     [Header("====== 대상 Transform 설정 ======")]
     [Tooltip("상대방의 카드가 정렬되어 있는 부모 Transform 입니다.")]
     [SerializeField] private Transform enemyHandPoint;

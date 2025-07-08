@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 6208291245989524372}
   - component: {fileID: 3128288685068911537}
   - component: {fileID: 785736236037694161}
+  - component: {fileID: 1501945333054154241}
   m_Layer: 0
   m_Name: PlayerSlot1
   m_TagString: PlayerSlot
@@ -104,9 +105,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DefaultSprite: {fileID: 21300000, guid: e7cf3dedc710a4d51ad3cc3b5362313d, type: 3}
   IsMine: 0
   BattleField: {fileID: 0}
-  DefaultSprite: {fileID: 21300000, guid: e7cf3dedc710a4d51ad3cc3b5362313d, type: 3}
+  MySetAnimation: {fileID: 0}
+  EnemySetAnimaion: {fileID: 0}
+  CardVerification: {fileID: 0}
   Index: 0
 --- !u!114 &2827466265369384383
 MonoBehaviour:
@@ -230,3 +234,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034bc47afcbf5e141a58d5c20b7808e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1501945333054154241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1782375322112956666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c22c6f842d6b3b4e888cfc2c0aedda7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Target: {fileID: 3945229212079445480}
+  _punchPower: {x: 0.2, y: 0.2, z: 0}
+  _punchTime: 0.3
+  _punchVibrato: 30
+  _ease: 25
+  _shakeDuration: 0.3
+  _shakePower: {x: 0.2, y: 0.2, z: 0}
+  _shakeVibrato: 20
+  _shakeEase: 31

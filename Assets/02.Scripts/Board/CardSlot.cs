@@ -7,13 +7,14 @@ using UnityEngine.Serialization;
 public class CardSlot : MonoBehaviourPunCallbacks
 {
     private Card _card;
-    public Sprite DefaultSprite;
     public Card Card => _card;
+    public Sprite DefaultSprite;
     private SpriteRenderer _cardSprite;
     public bool IsMine; // true면 내 카드, false면 상대 카드
     public BattleField BattleField;
     public UI_CardSet MySetAnimation;
     public EnemyHandDrawAnimation EnemySetAnimaion;
+    public UI_CardVerification CardVerification;
     public int Index;
     public bool IsOccupied => _card != null;
     public int RoundIndex { get; set; }
@@ -24,6 +25,7 @@ public class CardSlot : MonoBehaviourPunCallbacks
         MySetAnimation = GetComponent<UI_CardSet>();
         _cardSprite = GetComponent<SpriteRenderer>();
         BattleField = GetComponentInParent<BattleField>();
+        CardVerification = GetComponent<UI_CardVerification>();
         if (!IsMine)
         {
             transform.Rotate(Vector3.up * 180f); // 또는 2D 기준으로 180도 회전
@@ -70,7 +72,14 @@ public class CardSlot : MonoBehaviourPunCallbacks
                         _cardSprite.color = Color.white;
                         _cardSprite.sprite = CardSprite;
 
-                        StartCoroutine(EnemyDeckDraw());
+
+                        Card card = BattleField.CardDeck.GetCard();
+
+                        if (card != null)
+                        {
+                            StartCoroutine(EnemyDeckDraw());
+                        }
+
                     });
                 }
 
@@ -80,11 +89,11 @@ public class CardSlot : MonoBehaviourPunCallbacks
 
 
     /// <summary>
-    /// 테스트용 연출을 위한 메소드입니다
+    /// 테스트용 연출을 위한 메소드입니다. 추후 원한다면 다른 곳에 삽입하셔도 됩니다.
     /// </summary>
     private IEnumerator EnemyDeckDraw()
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(1f);
         EnemySetAnimaion.EnemySetAnimation();
 
     }
