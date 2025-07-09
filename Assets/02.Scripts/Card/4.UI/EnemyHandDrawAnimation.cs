@@ -38,10 +38,6 @@ public class EnemyHandDrawAnimation : MonoBehaviour
     private void Start()
     {
         midPoint = AnimationTransforms.Instance.EnemyShowTransform;
-        if (enemyHandArranger == null)
-        {
-            enemyHandArranger = enemyHandPoint.GetComponent<CardHandArranger>();
-        }
         AnimationObjectInit();
     }
 

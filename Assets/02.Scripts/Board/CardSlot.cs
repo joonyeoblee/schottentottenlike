@@ -119,17 +119,6 @@ public class CardSlot : MonoBehaviour
                 }
             }
         };
-
-        // 콜라이더 비활성화
-        var boxcollider = GetComponent<Collider2D>();
-        if (boxcollider != null)
-            boxcollider.enabled = false;
-
-        if (IsMine && PhotonNetwork.IsConnected)
-        {
-            BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
-            BattleField.OnMyCardPlaced(this);
-        }
     }
     /// <summary>
     /// 테스트용 연출을 위한 메소드입니다. 추후 원한다면 다른 곳에 삽입하셔도 됩니다.
