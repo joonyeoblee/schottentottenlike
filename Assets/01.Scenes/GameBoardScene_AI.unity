@@ -131,6 +131,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22efbe3cea391f84ca7ddf0315c70b89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initializeOn: 0
   HandCardManagers:
   - {fileID: 5707824518301703970}
   - {fileID: 6529344434177204700}
@@ -1416,7 +1417,7 @@ PrefabInstance:
     - target: {fileID: 238934906802491391, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 1394324681933002910, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -1444,7 +1445,7 @@ PrefabInstance:
     - target: {fileID: 3434858090422364446, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 4058088871783939593, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -1460,7 +1461,7 @@ PrefabInstance:
     - target: {fileID: 4681487082357340012, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 5157908925005213044, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 1
@@ -1472,7 +1473,7 @@ PrefabInstance:
     - target: {fileID: 6264340528067370803, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: BattleField
       value: 
@@ -1480,7 +1481,7 @@ PrefabInstance:
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -14.43
@@ -1528,7 +1529,7 @@ PrefabInstance:
     - target: {fileID: 7649839065138356435, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7875346030056176331, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 3
@@ -1643,7 +1644,7 @@ PrefabInstance:
     - target: {fileID: 238934906802491391, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 1394324681933002910, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -1671,7 +1672,7 @@ PrefabInstance:
     - target: {fileID: 3434858090422364446, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 4058088871783939593, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -1687,7 +1688,7 @@ PrefabInstance:
     - target: {fileID: 4681487082357340012, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 5157908925005213044, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 1
@@ -1699,7 +1700,7 @@ PrefabInstance:
     - target: {fileID: 6264340528067370803, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: BattleField
       value: 
@@ -1707,7 +1708,7 @@ PrefabInstance:
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -2.38
@@ -1755,7 +1756,7 @@ PrefabInstance:
     - target: {fileID: 7649839065138356435, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7875346030056176331, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 3
@@ -1922,7 +1923,7 @@ PrefabInstance:
     - target: {fileID: 238934906802491391, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 1394324681933002910, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -1950,7 +1951,7 @@ PrefabInstance:
     - target: {fileID: 3434858090422364446, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 4058088871783939593, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -1966,7 +1967,7 @@ PrefabInstance:
     - target: {fileID: 4681487082357340012, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 5157908925005213044, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 1
@@ -1978,7 +1979,7 @@ PrefabInstance:
     - target: {fileID: 6264340528067370803, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: BattleField
       value: 
@@ -1986,7 +1987,7 @@ PrefabInstance:
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -12.71
@@ -2034,7 +2035,7 @@ PrefabInstance:
     - target: {fileID: 7649839065138356435, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7875346030056176331, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 3
@@ -2129,7 +2130,7 @@ PrefabInstance:
     - target: {fileID: 238934906802491391, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 1394324681933002910, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -2161,7 +2162,7 @@ PrefabInstance:
     - target: {fileID: 3434858090422364446, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 3583070366947638258, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_Enabled
       value: 0
@@ -2181,7 +2182,7 @@ PrefabInstance:
     - target: {fileID: 4681487082357340012, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 5157908925005213044, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 1
@@ -2193,7 +2194,7 @@ PrefabInstance:
     - target: {fileID: 6264340528067370803, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: BattleField
       value: 
@@ -2201,7 +2202,7 @@ PrefabInstance:
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.73
@@ -2249,7 +2250,7 @@ PrefabInstance:
     - target: {fileID: 7649839065138356435, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7875346030056176331, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 3
@@ -2275,7 +2276,7 @@ PrefabInstance:
   m_SourcePrefab: {fileID: 100100000, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
 --- !u!114 &2597793649066611191
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -2390,7 +2391,7 @@ PrefabInstance:
     - target: {fileID: 238934906802491391, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 1394324681933002910, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -2434,7 +2435,7 @@ PrefabInstance:
     - target: {fileID: 3434858090422364446, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 4058088871783939593, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -2450,7 +2451,7 @@ PrefabInstance:
     - target: {fileID: 4681487082357340012, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 5157908925005213044, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 1
@@ -2462,7 +2463,7 @@ PrefabInstance:
     - target: {fileID: 6264340528067370803, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: BattleField
       value: 
@@ -2470,7 +2471,7 @@ PrefabInstance:
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5.81
@@ -2518,7 +2519,7 @@ PrefabInstance:
     - target: {fileID: 7649839065138356435, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7875346030056176331, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 3
@@ -2637,7 +2638,7 @@ PrefabInstance:
     - target: {fileID: 238934906802491391, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 1394324681933002910, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -2665,7 +2666,7 @@ PrefabInstance:
     - target: {fileID: 3434858090422364446, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 4058088871783939593, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -2681,7 +2682,7 @@ PrefabInstance:
     - target: {fileID: 4681487082357340012, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 5157908925005213044, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 1
@@ -2693,7 +2694,7 @@ PrefabInstance:
     - target: {fileID: 6264340528067370803, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: BattleField
       value: 
@@ -2701,7 +2702,7 @@ PrefabInstance:
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.08
@@ -2749,7 +2750,7 @@ PrefabInstance:
     - target: {fileID: 7649839065138356435, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7875346030056176331, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 3
@@ -3312,6 +3313,14 @@ MonoBehaviour:
   EnemyHandTransform: {fileID: 0}
   EnemyShowTransform: {fileID: 4646596136127336040}
   EnemyResetTransfrom: {fileID: 9105852375073414313}
+  CardPunchPower: {x: 0.2, y: 0.2, z: 0}
+  CardPunchTime: 0.3
+  CardPunchVibrato: 30
+  CardPunchEase: 25
+  CardShakeDuration: 0.3
+  CardShakePower: {x: 0, y: 0, z: 20}
+  CardShakeVibrato: 50
+  CardShakeEase: 31
 --- !u!4 &5191161638882300053 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1050074119267441413, guid: d16d2d3525b60e34bb49601a46e5ce83, type: 3}
@@ -3337,7 +3346,7 @@ PrefabInstance:
     - target: {fileID: 238934906802491391, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 1394324681933002910, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -3365,7 +3374,7 @@ PrefabInstance:
     - target: {fileID: 3434858090422364446, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 4058088871783939593, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -3381,7 +3390,7 @@ PrefabInstance:
     - target: {fileID: 4681487082357340012, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 5157908925005213044, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 1
@@ -3393,7 +3402,7 @@ PrefabInstance:
     - target: {fileID: 6264340528067370803, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: BattleField
       value: 
@@ -3401,7 +3410,7 @@ PrefabInstance:
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -9.270001
@@ -3449,7 +3458,7 @@ PrefabInstance:
     - target: {fileID: 7649839065138356435, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7875346030056176331, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 3
@@ -3472,17 +3481,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1724017667704767886, guid: 1545adf5a0138684795b272b82816519, type: 3}
   m_PrefabInstance: {fileID: 6726774391471207443}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5413661733668659197 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4913175030835912050, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
-  m_PrefabInstance: {fileID: 1084850744717804175}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4db23a14d2aa07246bbb94b1ee74832d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &5415532799324404131
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3906,7 +3904,7 @@ SpriteRenderer:
   m_SpriteSortPoint: 0
 --- !u!114 &6362594810061699004
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -4447,7 +4445,7 @@ PrefabInstance:
     - target: {fileID: 238934906802491391, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 1394324681933002910, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -4475,7 +4473,7 @@ PrefabInstance:
     - target: {fileID: 3434858090422364446, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 4058088871783939593, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -4491,7 +4489,7 @@ PrefabInstance:
     - target: {fileID: 4681487082357340012, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 5157908925005213044, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 1
@@ -4503,7 +4501,7 @@ PrefabInstance:
     - target: {fileID: 6264340528067370803, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: BattleField
       value: 
@@ -4511,7 +4509,7 @@ PrefabInstance:
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -10.990001
@@ -4559,7 +4557,7 @@ PrefabInstance:
     - target: {fileID: 7649839065138356435, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7875346030056176331, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 3
@@ -4791,17 +4789,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &8195662529100864274 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1846199136200860825, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
-  m_PrefabInstance: {fileID: 7504074435698884491}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a91966e01151ae14b8dd9a53d653eaae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &8508357346061890372
 GameObject:
   m_ObjectHideFlags: 0
@@ -4868,7 +4855,7 @@ PrefabInstance:
     - target: {fileID: 238934906802491391, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 1394324681933002910, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -4896,7 +4883,7 @@ PrefabInstance:
     - target: {fileID: 3434858090422364446, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 4058088871783939593, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: enemyHandPoint
       value: 
@@ -4912,7 +4899,7 @@ PrefabInstance:
     - target: {fileID: 4681487082357340012, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 5157908925005213044, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 1
@@ -4924,7 +4911,7 @@ PrefabInstance:
     - target: {fileID: 6264340528067370803, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: MySetAnimation
       value: 
-      objectReference: {fileID: 5413661733668659197}
+      objectReference: {fileID: 0}
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: BattleField
       value: 
@@ -4932,7 +4919,7 @@ PrefabInstance:
     - target: {fileID: 7104651205338367318, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7503110420191894897, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.55
@@ -4980,7 +4967,7 @@ PrefabInstance:
     - target: {fileID: 7649839065138356435, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: EnemySetAnimaion
       value: 
-      objectReference: {fileID: 8195662529100864274}
+      objectReference: {fileID: 0}
     - target: {fileID: 7875346030056176331, guid: 2475d6aeb2073cf4e8a2c1cdc8e4238f, type: 3}
       propertyPath: m_SortingOrder
       value: 3

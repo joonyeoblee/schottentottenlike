@@ -104,7 +104,6 @@ public class CardSlot : MonoBehaviour
                         MySetAnimation.PlayAnimation(() =>
                         {
                             BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
-                            BattleField.OnMyCardPlaced(this);
                         });
                     }
                     else

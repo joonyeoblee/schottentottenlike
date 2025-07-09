@@ -829,6 +829,7 @@ GameObject:
   - component: {fileID: 1548089927}
   - component: {fileID: 1548089926}
   - component: {fileID: 1548089925}
+  - component: {fileID: 1548089929}
   m_Layer: 6
   m_Name: UI_Meta
   m_TagString: Untagged
@@ -896,8 +897,8 @@ Canvas:
   m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: -2
+  m_SortingLayerID: -886632693
+  m_SortingOrder: 5
   m_TargetDisplay: 0
 --- !u!224 &1548089928
 RectTransform:
@@ -920,6 +921,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1548089929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1548089924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f572d30ed9a77f49be294a79b240c44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1724962724
 GameObject:
   m_ObjectHideFlags: 0
@@ -1052,7 +1065,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC77C\uC2DC\n\uC911\uB2E8"
+  m_text: "\uBC29 \uB098\uAC00\uAE30"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 9d1b3fe5685f4e041979a1b9e0283106, type: 2}
   m_sharedMaterial: {fileID: 6069595579700425980, guid: 9d1b3fe5685f4e041979a1b9e0283106, type: 2}
@@ -1213,7 +1226,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1987565431}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1548089929}
+        m_TargetAssemblyTypeName: UI_Meta, Assembly-CSharp
+        m_MethodName: ExitRoom
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1987565431
 MonoBehaviour:
   m_ObjectHideFlags: 0
