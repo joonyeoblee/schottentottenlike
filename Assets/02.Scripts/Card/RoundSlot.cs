@@ -1,4 +1,4 @@
-susing UnityEngine;
+using UnityEngine;
 using System.Collections;
 public class RoundSlot : MonoBehaviour
 {

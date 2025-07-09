@@ -388,29 +388,13 @@ public class BattleField : SingletonPhoton<BattleField>
         return slots.Where(s => s.IsOccupied && s.Card != null).Select(s => s.Card).ToList();
     }
 
-    /// <summary>
-    /// 내 카드를 뽑는 애니메이션을 보여줍니다.
-    /// </summary>
-    private List<Card> GetUnusedCardsFromField()
-    {
-        var usedCards = new HashSet<Card>();
-        foreach (var round in Rounds)
-        {
-            foreach (var card in GetCardsFromSlots(round.PlayerCardSlots)) usedCards.Add(card);
-            foreach (var card in GetCardsFromSlots(round.EnemyCardSlots)) usedCards.Add(card);
-        }
-
-        var allPossibleCards = GameManager.Instance.GetAllPossibleCards();
-        return allPossibleCards.Where(c => !usedCards.Any(u => u.Equals(c))).ToList();
-    }
-
     private void DrawMyCardAnimation(int handSlotIndex)
     {
         var slot = HandCardManagers[0].HandCardSlots[handSlotIndex];
         if (slot.MyCard == null) return;
 
         HandCardManagers[0].HandCardSlots[handSlotIndex].MyCard.ShowAnimation.midPoint =
-            AnimationTransforms.Instance.FirstShowTransfroms[handSlotIndex];
+        AnimationTransforms.Instance.FirstShowTransfroms[handSlotIndex];
         HandCardManagers[0].HandCardSlots[handSlotIndex].MyCard.ShowDraw();
         slot.MyCard.Rend.enabled = true;
     }

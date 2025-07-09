@@ -1,3 +1,4 @@
+using System.Collections;
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -15,6 +16,8 @@ public class CardSlot : MonoBehaviour
     public int Index;
     public bool IsOccupied => _card != null;
     public int RoundIndex { get; set; }
+
+    public Sprite CardSprite;
     private void Start()
     {
         _cardSprite = GetComponent<SpriteRenderer>();
@@ -86,9 +89,6 @@ public class CardSlot : MonoBehaviour
                         {
                             StartCoroutine(EnemyDeckDraw());
                         }
-
-                        photonView.RPC(nameof(BattleField.RPC_Judging),RpcTarget.All,RoundIndex);
-
                     });
                 }
             }
@@ -130,7 +130,7 @@ public class CardSlot : MonoBehaviour
             BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
             BattleField.OnMyCardPlaced(this);
         }
-
+    }
     /// <summary>
     /// 테스트용 연출을 위한 메소드입니다. 추후 원한다면 다른 곳에 삽입하셔도 됩니다.
     /// </summary>
