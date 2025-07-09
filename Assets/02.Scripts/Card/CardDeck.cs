@@ -10,7 +10,11 @@ public class CardDeck : MonoBehaviour
 
     public void StartDeckSuffle()
     {
-        if (!PhotonNetwork.IsMasterClient)
+        // 마스터만 셔플
+        bool isMultiplayer = PhotonNetwork.InRoom;
+        bool isMaster = PhotonNetwork.IsMasterClient;
+
+        if (isMultiplayer && !isMaster)
             return;
 
         List<Card> cardList = new List<Card>(GameManager.Instance.GetAllPossibleCards());
@@ -31,18 +35,18 @@ public class CardDeck : MonoBehaviour
 
         cards = new Stack<Card>(cardList);
 
-        // 덱을 int[]로 변환
-        int[] nums = new int[cardList.Count];
-        int[] colors = new int[cardList.Count];
-
-        for (int i = 0; i < cardList.Count; i++)
+        // 멀티플레이일 때만 덱 동기화
+        if (isMultiplayer && isMaster)
         {
-            nums[i] = cardList[i].CardNumber;
-            colors[i] = (int)cardList[i].Color;
+            int[] nums = new int[cardList.Count];
+            int[] colors = new int[cardList.Count];
+            for (int i = 0; i < cardList.Count; i++)
+            {
+                nums[i] = cardList[i].CardNumber;
+                colors[i] = (int)cardList[i].Color;
+            }
+            BattleField.Instance.photonView.RPC(nameof(BattleField.RPC_SyncDeck), RpcTarget.Others, nums, colors);
         }
-
-        // 동기화 RPC 호출
-        BattleField.Instance.photonView.RPC(nameof(BattleField.RPC_SyncDeck), RpcTarget.Others, nums, colors);
 
         OnCardSuffle?.Invoke();
     }

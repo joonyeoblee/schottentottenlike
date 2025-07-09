@@ -40,9 +40,6 @@ public class HandCardSlot : MonoBehaviourPunCallbacks
         HandCardIndex = handIndex;
         Card = card;
 
-        // if ( CardSprite == null)
-        //     return;
-
         MyCard.Rend.sprite = null;
         MyCard.Rend.color = Color.white;
 

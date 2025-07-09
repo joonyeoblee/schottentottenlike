@@ -35,6 +35,8 @@ public class GameManager : Singleton<GameManager>
 
     private List<Card> _usedCards = new List<Card>();
 
+    public static event Action<int> OnGameOver; // int: 승자(1,2), 0: 무승부
+
     public void RecordUsedCard(Card card)
     {
         _usedCards.Add(card);
@@ -164,13 +166,13 @@ public class GameManager : Singleton<GameManager>
         if (p1Count >= 5)
         {
             Debug.Log("플레이어1이 5개 라운드 점령! 게임 승리");
-            // 게임 종료 처리
+            OnGameOver?.Invoke(1);
             return;
         }
         if (p2Count >= 5)
         {
             Debug.Log("플레이어2가 5개 라운드 점령! 게임 승리");
-            // 게임 종료 처리
+            OnGameOver?.Invoke(2);
             return;
         }
 
@@ -180,13 +182,13 @@ public class GameManager : Singleton<GameManager>
             if (RoundOwners[i] == 1 && RoundOwners[i + 1] == 1 && RoundOwners[i + 2] == 1)
             {
                 Debug.Log("플레이어1이 연속 3개 라운드 점령! 게임 승리");
-                // 게임 종료 처리
+                OnGameOver?.Invoke(1);
                 return;
             }
             if (RoundOwners[i] == 2 && RoundOwners[i + 1] == 2 && RoundOwners[i + 2] == 2)
             {
                 Debug.Log("플레이어2가 연속 3개 라운드 점령! 게임 승리");
-                // 게임 종료 처리
+                OnGameOver?.Invoke(2);
                 return;
             }
         }

@@ -1052,6 +1052,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   initializeOn: 0
   _stoneCount: 9
+  RoundOwners: 
 --- !u!114 &1145073392
 MonoBehaviour:
   m_ObjectHideFlags: 0
