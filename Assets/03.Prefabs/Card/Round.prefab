@@ -61,6 +61,7 @@ MonoBehaviour:
   - {fileID: 7104651205338367318}
   - {fileID: 4681487082357340012}
   Index: 0
+  Stone: {fileID: 7164358161199200081}
   UI_Round: {fileID: 1913676885364516383}
 --- !u!114 &1913676885364516383
 MonoBehaviour:
