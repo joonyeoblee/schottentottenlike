@@ -62,6 +62,7 @@ public class UI_CardSet : MonoBehaviour
         sequence.OnComplete(() =>
         {
             callback?.Invoke();
+
         });
 
         // 시퀀스는 생성과 동시에 자동 재생되므로 Play()를 호출할 필요가 없습니다.

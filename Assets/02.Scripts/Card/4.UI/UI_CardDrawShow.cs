@@ -7,6 +7,8 @@ using Sequence = DG.Tweening.Sequence; // 코루틴 사용을 위해 추가
 
 public class UI_CardDrawShow : MonoBehaviour
 {
+
+
     [Header("애니메이션 대상")]
     private Transform objectToMove; // Card_UI
 

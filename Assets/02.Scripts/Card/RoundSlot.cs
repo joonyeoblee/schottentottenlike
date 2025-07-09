@@ -1,4 +1,4 @@
-using UnityEngine;
+susing UnityEngine;
 using System.Collections;
 public class RoundSlot : MonoBehaviour
 {
@@ -42,4 +42,5 @@ public class RoundSlot : MonoBehaviour
         }
         Stone.localPosition = target;
     }
+    public UI_Round UI_Round;
 }

@@ -49,6 +49,7 @@ MonoBehaviour:
   - RPC_ReceiveDrawCard
   - RPC_RequestDrawCard
   - RPC_RequestDrawCardFromMaster
+  - RPC_Judging
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

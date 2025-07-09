@@ -31,7 +31,6 @@ public class EnemyHandAnimation : MonoBehaviour
     [Tooltip("애니메이션 종료 시점의 부채꼴 너비입니다. (활짝 펼쳐진 상태)")]
     [SerializeField] private float endArcWidth = 10f;
 
-
     private void Awake()
     {
         // 스크립트가 비활성화 상태여도 참조를 찾기 위해 Reset()을 사용합니다.
