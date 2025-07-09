@@ -31,6 +31,10 @@ public class BattleField : SingletonPhoton<BattleField>
     private int _judgeRound;
     public RoundDicator RoundDicator;
 
+    public int MyplayerNumber { get; private set; }
+    public int EnemyPlayerNumber => MyplayerNumber == 1 ? 2 : 1;
+
+
     // 현재 턴의 다음 턴을 반환하는 헬퍼 프로퍼티
     private ETurn GetNextTurn() => CurrentTurn == ETurn.Player1 ? ETurn.Player2 : ETurn.Player1;
 
@@ -40,6 +44,7 @@ public class BattleField : SingletonPhoton<BattleField>
     {
         InitializeRoundSlots();
         InitializeHandCardSlots();
+        MyplayerNumber = PhotonNetwork.IsMasterClient ? 1 : 2;
         CardDeck.OnCardSuffle += OnShuffled;
     }
 
@@ -218,6 +223,7 @@ public class BattleField : SingletonPhoton<BattleField>
     public void OnMyCardPlaced(CardSlot placedSlot)
     {
         StartCoroutine(HandleCardPlacedSequence());
+        GameManager.Instance.RecordFirstPlayerOnStone(placedSlot.RoundIndex, MyplayerNumber);
         JudgeAllRoundsWinner();
     }
 
@@ -256,6 +262,7 @@ public class BattleField : SingletonPhoton<BattleField>
 
         slot.Refresh(card);
         // 상대 카드가 놓인 후에도 승패 판정
+        GameManager.Instance.RecordFirstPlayerOnStone(roundIndex, EnemyPlayerNumber);
         JudgeAllRoundsWinner();
 
     }
@@ -322,7 +329,7 @@ public class BattleField : SingletonPhoton<BattleField>
             List<Card> enemyCards = GetEnemyCards(roundIndex);
             List<Card> unusedCards = GetUnusedCardsFromField();
 
-            JudgeResult judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards);
+            JudgeResult judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards, roundIndex);
 
             GameManager.Instance.UpdateRoundOwnerAndCheckWin(roundIndex, judgeResult.Winner);
 

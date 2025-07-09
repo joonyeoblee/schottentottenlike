@@ -32,6 +32,7 @@ public class GameManager : Singleton<GameManager>
     private Stack<Card> _deck;
     //private int[] RoundOwners;
     public int[] RoundOwners; // 0: 무소유, 1: 플레이어1, 2: 플레이어2
+    private int[] _firstPlayerOnStone;
 
     private List<Card> _usedCards = new List<Card>();
 
@@ -66,6 +67,7 @@ public class GameManager : Singleton<GameManager>
         }
         _deck = GetAllPossibleCards();
         RoundOwners = new int[_stoneCount];
+        _firstPlayerOnStone = new int[_stoneCount];
     }
 
     // 경계석 점령 판정
@@ -117,15 +119,19 @@ public class GameManager : Singleton<GameManager>
     }
 
     //족보 반환
-    public JudgeResult JudgeStoneWithRank(List<Card> playerCards, List<Card> enemyCards, List<Card> unusedCards = null)
+    public JudgeResult JudgeStoneWithRank(List<Card> playerCards, List<Card> enemyCards, List<Card> unusedCards = null, int stoneIndex = -1)
     {
         var result = new JudgeResult();
         result.Player1Rank = EvaluateHand(playerCards);
         result.Player2Rank = EvaluateHand(enemyCards);
 
+
         if (playerCards.Count == 3 && enemyCards.Count == 3)
         {
-            result.Winner = CompareHands(playerCards, enemyCards);
+            int winner = CompareHands(playerCards, enemyCards);
+            if (winner == 0 && stoneIndex >= 0)
+                winner = _firstPlayerOnStone[stoneIndex];
+            result.Winner = winner;
         }
         else if (playerCards.Count == 3 && enemyCards.Count < 3)
         {
@@ -332,5 +338,10 @@ public class GameManager : Singleton<GameManager>
         }
     }
 
+    public void RecordFirstPlayerOnStone(int stoneIndex, int player)
+    {
+        if (_firstPlayerOnStone[stoneIndex] == 0)
+            _firstPlayerOnStone[stoneIndex] = player;
+    }
 
 }

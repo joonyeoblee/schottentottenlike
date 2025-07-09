@@ -257,7 +257,7 @@ public class BattleField_AI : Singleton<BattleField_AI>
 
         fieldSlot.Refresh(card);
         handSlot.Clear();
-
+        GameManager.Instance.RecordFirstPlayerOnStone(roundIndex, 1);
         OnMyCardPlaced(fieldSlot);
     }
 
@@ -327,7 +327,7 @@ public class BattleField_AI : Singleton<BattleField_AI>
 
             targetSlot.Refresh(card);
             handSlot.Clear();
-
+            GameManager.Instance.RecordFirstPlayerOnStone(bestRoundIdx, 2);
             JudgeAllRoundsWinner();
 
             // AI 카드 드로우
@@ -364,7 +364,7 @@ public class BattleField_AI : Singleton<BattleField_AI>
             List<Card> enemyCards = GetEnemyCards(roundIndex);
             List<Card> unusedCards = GetUnusedCardsFromField();
 
-            JudgeResult judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards);
+            JudgeResult judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards, roundIndex);
 
             GameManager.Instance.UpdateRoundOwnerAndCheckWin(roundIndex, judgeResult.Winner);
 
