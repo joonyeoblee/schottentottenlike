@@ -29,6 +29,7 @@ public class BattleField : SingletonPhoton<BattleField>
     [Header("애니메이션을 위한 참조")]
     public EnemyHandDrawAnimation EnemyHandDrawAnimation;
     private int _judgeRound;
+    public RoundDicator RoundDicator;
 
     // 현재 턴의 다음 턴을 반환하는 헬퍼 프로퍼티
     private ETurn GetNextTurn() => CurrentTurn == ETurn.Player1 ? ETurn.Player2 : ETurn.Player1;
@@ -366,6 +367,18 @@ public class BattleField : SingletonPhoton<BattleField>
     public void SetTurn(int turn)
     {
         CurrentTurn = (ETurn)turn;
+
+        //각 턴에 맞게 회전
+        if (CurrentTurn == ETurn.Player1)
+        {
+            RoundDicator.Turn(turn);
+        }
+        else
+        {
+            RoundDicator.Turn(turn);
+
+        }
+
         Debug.Log($"턴이 {CurrentTurn}으로 변경됨");
     }
 
