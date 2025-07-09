@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 
 public class RoundDicator : MonoBehaviour
@@ -10,12 +11,12 @@ public class RoundDicator : MonoBehaviour
 
     public bool IsMyTurn;
 
-    public void Turn(int i)
+    public void Turn()
     {
-        //i가 1이면 적, 0이면 우리
-        Debug.Log($"Turn {i}");
-
-        this.transform.localRotation = IsMyTurn ? MyTurnRotation : EnemyTurnRotaion;
-    }
+        bool isMaster = PhotonNetwork.IsMasterClient;
+        ETurn currentTurn = BattleField.Instance.CurrentTurn;
+        bool isMyTurn = isMaster && currentTurn == ETurn.Player1 || !isMaster && currentTurn == ETurn.Player2;
+        Vector3 targetRotation = isMyTurn ? MyTurnRotation : EnemyTurnRotaion;
+        transform.localRotation = Quaternion.Euler(targetRotation);    }
 
 }

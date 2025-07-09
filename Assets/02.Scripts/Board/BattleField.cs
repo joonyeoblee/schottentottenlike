@@ -51,6 +51,8 @@ public class BattleField : SingletonPhoton<BattleField>
         Debug.Log("GameStart 호출됨 - 덱 셔플 시작");
         ClearAllCardSlots(); // 모든 슬롯을 깨끗하게 초기화
         StartCoroutine(GameStartSequence());
+        RoundDicator.Turn();
+
     }
 
     /// <summary>
@@ -367,19 +369,9 @@ public class BattleField : SingletonPhoton<BattleField>
     public void SetTurn(int turn)
     {
         CurrentTurn = (ETurn)turn;
-
-        //각 턴에 맞게 회전
-        if (CurrentTurn == ETurn.Player1)
-        {
-            RoundDicator.Turn(turn);
-        }
-        else
-        {
-            RoundDicator.Turn(turn);
-
-        }
-
         Debug.Log($"턴이 {CurrentTurn}으로 변경됨");
+        RoundDicator.Turn();
+
     }
 
     [PunRPC]
