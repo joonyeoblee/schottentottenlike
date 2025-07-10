@@ -394,6 +394,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2408874657023120628, guid: 63aa921cf9c0efc418a8649f4075065b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3856092257691062116}
+    - targetCorrespondingSourceObject: {fileID: 2408874657023120628, guid: 63aa921cf9c0efc418a8649f4075065b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7702837128455972776}
   m_SourcePrefab: {fileID: 100100000, guid: 63aa921cf9c0efc418a8649f4075065b, type: 3}
 --- !u!212 &2011075185343247018 stripped
 SpriteRenderer:
@@ -469,6 +472,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034bc47afcbf5e141a58d5c20b7808e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &7702837128455972776
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2081504880604863806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe8095a926dd9d642a66f5fad66a2769, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _riseDuration: 0.5
+  _riseScale: 1.5
+  _riseEase: 27
+  _flyDuration: 1
+  _flyEase: 7
+  _celebrationEffect: {fileID: 0}
 --- !u!4 &7164358161199200081 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6836498181619908251, guid: 63aa921cf9c0efc418a8649f4075065b, type: 3}

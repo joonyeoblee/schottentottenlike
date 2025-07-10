@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 3128288685068911537}
   - component: {fileID: 785736236037694161}
   - component: {fileID: 1501945333054154241}
+  - component: {fileID: 6589564080446475255}
   m_Layer: 0
   m_Name: PlayerSlot1
   m_TagString: PlayerSlot
@@ -112,6 +113,7 @@ MonoBehaviour:
   EnemySetAnimaion: {fileID: 0}
   CardVerification: {fileID: 0}
   Index: 0
+  CardSprite: {fileID: 0}
 --- !u!114 &2827466265369384383
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,11 +249,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Target: {fileID: 3945229212079445480}
-  _punchPower: {x: 0.2, y: 0.2, z: 0}
-  _punchTime: 0.3
-  _punchVibrato: 30
-  _ease: 25
-  _shakeDuration: 0.3
-  _shakePower: {x: 0.2, y: 0.2, z: 0}
-  _shakeVibrato: 20
-  _shakeEase: 31
+--- !u!114 &6589564080446475255
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1782375322112956666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ced22b865dc084e45ae522741490d970, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _chaosMoveDuration: 1.5
+  _chaosMoveStrength: 10
+  _chaosEase: 5
+  _smokeEffect: {fileID: 0}
+  _explosionEffect: {fileID: 0}
