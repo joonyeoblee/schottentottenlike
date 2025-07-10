@@ -336,7 +336,14 @@ public class BattleField : SingletonPhoton<BattleField>
             string playerRank = judgeResult.Player1Rank.ToString();
             string enemyRank = judgeResult.Player2Rank.ToString();
 
-            if (judgeResult.Winner == 1 || judgeResult.Winner == 2)
+            //if (judgeResult.Winner == 1 || judgeResult.Winner == 2)
+            //{
+            //    int owner = judgeResult.Winner == 1 ? 1 : 2;
+            //    photonView.RPC(nameof(RPC_MoveStone), RpcTarget.All, roundIndex, owner);
+            //}
+
+            //마스터만 호출하도록 
+            if (PhotonNetwork.IsMasterClient && (judgeResult.Winner == 1 || judgeResult.Winner == 2))
             {
                 int owner = judgeResult.Winner == 1 ? 1 : 2;
                 photonView.RPC(nameof(RPC_MoveStone), RpcTarget.All, roundIndex, owner);
