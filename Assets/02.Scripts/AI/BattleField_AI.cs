@@ -27,7 +27,7 @@ public class BattleField_AI : Singleton<BattleField_AI>
         Instance = this;
     }
 
-    private void Start()
+    protected virtual void Start()
     {
         InitializeRoundSlots();
         InitializeHandCardSlots();
@@ -39,7 +39,7 @@ public class BattleField_AI : Singleton<BattleField_AI>
     /// <summary>
     /// 게임 시작 또는 재시작 시 호출됩니다.
     /// </summary>
-    public void GameStart()
+    protected void GameStart()
     {
         Debug.Log("GameStart 호출됨 - 덱 셔플 시작");
         ClearAllCardSlots();
@@ -269,7 +269,7 @@ public class BattleField_AI : Singleton<BattleField_AI>
         StartCoroutine(AITurnRoutine());
     }
 
-    private IEnumerator AITurnRoutine()
+    protected virtual IEnumerator AITurnRoutine()
     {
         yield return new WaitForSeconds(0.7f);
 
@@ -280,6 +280,7 @@ public class BattleField_AI : Singleton<BattleField_AI>
         int bestHandIdx = -1, bestRoundIdx = -1, bestSlotIdx = -1;
         HandRank bestRank = HandRank.CardSum;
         int bestSum = -1;
+        //double bestWinRate = -1;
 
         for (int handIdx = 0; handIdx < handSlots.Length; handIdx++)
         {
@@ -294,6 +295,18 @@ public class BattleField_AI : Singleton<BattleField_AI>
                 {
                     var slot = enemySlots[slotIdx];
                     if (slot.IsOccupied) continue;
+
+                    //// 2. 해당 선택을 가정하고, 남은 게임을 여러 번 시뮬레이션
+                    //double winRate = SimulateWinRate(handIdx, roundIdx, slotIdx, simulationCount: 100);
+
+                    //// 3. 가장 승률이 높은 선택을 기록
+                    //if (winRate > bestWinRate)
+                    //{
+                    //    bestHandIdx = handIdx;
+                    //    bestRoundIdx = roundIdx;
+                    //    bestSlotIdx = slotIdx;
+                    //    bestWinRate = winRate;
+                    //}
 
                     var temp = new List<Card>();
                     for (int i = 0; i < enemySlots.Length; i++)
@@ -356,7 +369,8 @@ public class BattleField_AI : Singleton<BattleField_AI>
         }
     }
 
-    private void JudgeAllRoundsWinner()
+
+    protected void JudgeAllRoundsWinner()
     {
         for (int roundIndex = 0; roundIndex < Rounds.Length; roundIndex++)
         {
@@ -436,7 +450,79 @@ public class BattleField_AI : Singleton<BattleField_AI>
         return HandRank.CardSum;
     }
 
-    private enum HandRank
+    /// <summary>
+    /// 현재 손패의 모든 3장 조합에 대한 족보와 합을 평가합니다.
+    /// </summary>
+    /// <param name="handManagerIndex">0=플레이어, 1=AI</param>
+    /// <returns>각 조합별 (카드 리스트, HandRank, 합) 리스트</returns>
+    public List<(List<Card> cards, HandRank rank, int sum)> EvaluateHandCombinations(int handManagerIndex)
+    {
+        var result = new List<(List<Card>, HandRank, int)>();
+        var handCards = GetHandCards(handManagerIndex);
+
+        if (handCards.Count < 3)
+            return result;
+
+        // 모든 3장 조합
+        for (int i = 0; i < handCards.Count - 2; i++)
+        {
+            for (int j = i + 1; j < handCards.Count - 1; j++)
+            {
+                for (int k = j + 1; k < handCards.Count; k++)
+                {
+                    var combo = new List<Card> { handCards[i], handCards[j], handCards[k] };
+                    var rank = EvaluateHand(combo);
+                    int sum = combo.Sum(c => c.CardNumber);
+                    result.Add((combo, rank, sum));
+                }
+            }
+        }
+        return result;
+    }
+
+
+    public List<(List<Card> cards, HandRank rank, int sum)> EvaluateHandCombinations(List<Card> handCards)
+    {
+        var result = new List<(List<Card> cards, HandRank rank, int sum)>();
+
+        if (handCards == null || handCards.Count < 3)
+            return result;
+
+        int n = handCards.Count;
+        for (int i = 0; i < n - 2; i++)
+        {
+            for (int j = i + 1; j < n - 1; j++)
+            {
+                for (int k = j + 1; k < n; k++)
+                {
+                    var combo = new List<Card> { handCards[i], handCards[j], handCards[k] };
+                    var rank = EvaluateHand(combo);
+                    int sum = combo.Sum(c => c.CardNumber);
+                    result.Add((combo, rank, sum));
+                }
+            }
+        }
+        return result;
+    }
+    /// <summary>
+    /// 지정한 핸드(플레이어/AI)의 현재 손패 카드 리스트를 반환합니다.
+    /// </summary>
+    /// <param name="handManagerIndex">0=플레이어, 1=AI</param>
+    public List<Card> GetHandCards(int handManagerIndex)
+    {
+        var list = new List<Card>();
+        if (handManagerIndex < 0 || handManagerIndex >= HandCardManagers.Length)
+            return list;
+        foreach (var slot in HandCardManagers[handManagerIndex].HandCardSlots)
+        {
+            if (slot.HasCard && slot.Card != null)
+                list.Add(slot.Card);
+        }
+        return list;
+    }
+
+    // Change HandRank enum to public so it can be referenced in derived classes
+    public enum HandRank
     {
         StraightFlush = 5,
         ThreeOfAKind = 4,
