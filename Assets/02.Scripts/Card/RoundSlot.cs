@@ -13,8 +13,9 @@ public class RoundSlot : MonoBehaviour
     {
         if (Stone == null)
             return;
-        if (_currentOwner == 1 || _currentOwner == 2)
+        if (_currentOwner == owner)
             return;
+
         Vector3 basePos = Vector3.zero;
         float offset = 0.5f;
         Vector3 targetPos = basePos;
@@ -22,14 +23,20 @@ public class RoundSlot : MonoBehaviour
             targetPos = basePos + (-transform.up) * offset;
         else if (owner == 2)
             targetPos = basePos + (transform.up) * offset;
+
         if (_lastStoneTargetPos == targetPos)
             return;
+
         _lastStoneTargetPos = targetPos;
         if (owner == 1 || owner == 2)
             _currentOwner = owner;
+        else
+            _currentOwner = 0;
+
         StopAllCoroutines();
         StartCoroutine(MoveStoneCoroutine(targetPos));
     }
+
     private IEnumerator MoveStoneCoroutine(Vector3 target)
     {
         float t = 0;
