@@ -8,8 +8,8 @@ public enum HandRank
 {
     StraightFlush = 5,
     ThreeOfAKind = 4,
-    Straight = 3,
-    Flush = 2,
+    Flush = 3,
+    Straight = 2,
     CardSum = 1
 }
 

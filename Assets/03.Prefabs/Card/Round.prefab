@@ -98,6 +98,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7503110420191894897}
     m_Modifications:
+    - target: {fileID: 115534377869232286, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+      propertyPath: MySetAnimation
+      value: 
+      objectReference: {fileID: 8094195058607779632}
+    - target: {fileID: 115534377869232286, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+      propertyPath: CardVerification
+      value: 
+      objectReference: {fileID: 1593518616188625248}
     - target: {fileID: 1782375322112956666, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
       propertyPath: m_Name
       value: PlayerSlot1
@@ -168,6 +176,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1593518616188625248 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1501945333054154241, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+  m_PrefabInstance: {fileID: 201162179382773601}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1906974304754311067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c22c6f842d6b3b4e888cfc2c0aedda7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1906974304754311067 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1782375322112956666, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
@@ -216,6 +235,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7503110420191894897}
     m_Modifications:
+    - target: {fileID: 115534377869232286, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+      propertyPath: MySetAnimation
+      value: 
+      objectReference: {fileID: 3819381141735338880}
+    - target: {fileID: 115534377869232286, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+      propertyPath: CardVerification
+      value: 
+      objectReference: {fileID: 4244255110626150273}
     - target: {fileID: 1782375322112956666, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
       propertyPath: m_Name
       value: PlayerSlot2
@@ -328,6 +355,17 @@ MonoBehaviour:
   _startDelay: 0
   _easeTypeUp: 6
   _easeTypeDown: 5
+--- !u!114 &4244255110626150273 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1501945333054154241, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+  m_PrefabInstance: {fileID: 3328552494010573184}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3930833452765198714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c22c6f842d6b3b4e888cfc2c0aedda7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &4435191406897400266
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -503,6 +541,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7503110420191894897}
     m_Modifications:
+    - target: {fileID: 115534377869232286, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+      propertyPath: CardVerification
+      value: 
+      objectReference: {fileID: 6177378514317040115}
+    - target: {fileID: 115534377869232286, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+      propertyPath: EnemySetAnimaion
+      value: 
+      objectReference: {fileID: 1846199136200860825}
     - target: {fileID: 1782375322112956666, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
       propertyPath: m_Name
       value: EnemySlot3
@@ -587,6 +633,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &6177378514317040115 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1501945333054154241, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+  m_PrefabInstance: {fileID: 4714580881526816754}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6472177049631450888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c22c6f842d6b3b4e888cfc2c0aedda7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6472177049631450888 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1782375322112956666, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
@@ -629,6 +686,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7503110420191894897}
     m_Modifications:
+    - target: {fileID: 115534377869232286, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+      propertyPath: MySetAnimation
+      value: 
+      objectReference: {fileID: 4913175030835912050}
+    - target: {fileID: 115534377869232286, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+      propertyPath: CardVerification
+      value: 
+      objectReference: {fileID: 4873710840719323564}
     - target: {fileID: 1782375322112956666, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
       propertyPath: m_Name
       value: PlayerSlot3
@@ -697,6 +762,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 4913175030835912050}
   m_SourcePrefab: {fileID: 100100000, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+--- !u!114 &4873710840719323564 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1501945333054154241, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+  m_PrefabInstance: {fileID: 6301975563132475309}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5749224856562634583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c22c6f842d6b3b4e888cfc2c0aedda7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5749224856562634583 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1782375322112956666, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
@@ -744,6 +820,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7503110420191894897}
     m_Modifications:
+    - target: {fileID: 115534377869232286, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+      propertyPath: CardVerification
+      value: 
+      objectReference: {fileID: 8634882713842412489}
+    - target: {fileID: 115534377869232286, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+      propertyPath: EnemySetAnimaion
+      value: 
+      objectReference: {fileID: 1394324681933002910}
     - target: {fileID: 1782375322112956666, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
       propertyPath: m_Name
       value: EnemySlot2
@@ -833,6 +917,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: deb62e63efd7471c892a0546ec7053c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &8634882713842412489 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1501945333054154241, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+  m_PrefabInstance: {fileID: 7134475069274934728}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8916841045471548722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c22c6f842d6b3b4e888cfc2c0aedda7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8916841045471548722 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1782375322112956666, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
@@ -870,6 +965,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7503110420191894897}
     m_Modifications:
+    - target: {fileID: 115534377869232286, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+      propertyPath: CardVerification
+      value: 
+      objectReference: {fileID: 9179530850335198796}
+    - target: {fileID: 115534377869232286, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+      propertyPath: EnemySetAnimaion
+      value: 
+      objectReference: {fileID: 4058088871783939593}
     - target: {fileID: 1782375322112956666, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
       propertyPath: m_Name
       value: EnemySlot1
@@ -990,3 +1093,14 @@ MonoBehaviour:
   TargetSlot: {fileID: 0}
   CardUI: {fileID: 0}
   CardToAnimate: {fileID: 0}
+--- !u!114 &9179530850335198796 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1501945333054154241, guid: 786df3c7eb3524970bd1bd334c11f4bd, type: 3}
+  m_PrefabInstance: {fileID: 7760764281666644045}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8290987377089884343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c22c6f842d6b3b4e888cfc2c0aedda7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
