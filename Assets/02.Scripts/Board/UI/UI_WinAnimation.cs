@@ -2,88 +2,138 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
-using System.Collections; // IEnumerator를 위해 추가
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 public class UI_WinAnimation : MonoBehaviour
 {
+    // ... 변수 선언부는 이전과 동일 ...
     [Header("===== 대상 오브젝트 =====")]
-    [Tooltip("승리 시 위로 솟아오르며 날아갈 돌들")]
     public UI_StoneWinAnimation[] WinStones;
-
-    [Tooltip("패배 시 파괴될 상대방 카드들")]
-    public UI_CardWinAnimation[] CardWins;
-
-    [Tooltip("돌을 던질 투석기 오브젝트들")]
+    public UI_CardWinAnimation[] OpponentCards;
+    public UI_CardWinAnimation[] PlayerCards;
     public GameObject[] StoneThrowers;
-
     [Header("===== 애니메이션 타겟 =====")]
-    [Tooltip("승리한 돌들이 날아갈 플레이어측 최종 위치")]
     public Transform PlayerTargetPosition;
-
+    public Transform OpponentTargetPosition;
     [Header("===== UI 요소 =====")]
-    [Tooltip("화면을 어둡게 할 검은색 Image 패널")]
     public Image FadeOutPanel;
-
-    [Tooltip("마지막에 나타날 승리/패배 UI")]
     public GameObject VictoryUI;
+    public GameObject DefeatUI;
 
-
+    // ... Start, ContextMenu 메서드는 이전과 동일 ...
     private void Start()
     {
-        StartVictorySequence();
+        StartVictorySequence(1);
     }
+    public void StartOpponentLoseSequence() => StartVictorySequence(0);
+    public void StartPlayerLoseSequence() => StartVictorySequence(1);
 
-    // 외부에서 이 메서드를 호출하여 전체 시퀀스를 시작합니다.
-    [ContextMenu("Execute Victory Animation")] // 테스트용 메뉴
-    public void StartVictorySequence()
+    public void StartVictorySequence(int index)
     {
-        Debug.Log("승리 애니메이션 스타트");
-        // DOTween의 시퀀스 기능을 사용하여 순차적인 애니메이션 그룹을 만듭니다.
-        Sequence mainSequence = DOTween.Sequence();
+        UI_CardWinAnimation[] allCards = (index == 0) ? OpponentCards : PlayerCards;
+        List<UI_CardWinAnimation> activeCards = allCards.Where(card => card.gameObject.activeInHierarchy).ToList();
 
-        // --- Phase 1: 돌들이 솟아오르고 플레이어에게 날아감 ---
-        // 여러 돌이 동시에 움직이도록 루프를 사용합니다.
+        Sequence mainSequence = DOTween.Sequence();
+        Transform finalTargetPosition = (index == 0) ? PlayerTargetPosition : OpponentTargetPosition;
+
+        bool isPlayerTarget = (index == 0);
         for (int i = 0; i < WinStones.Length; i++)
         {
-            // 각 돌의 애니메이션 시퀀스를 가져옵니다.
-            Sequence stoneSeq = WinStones[i].PlayRiseAndFlyAnimation(PlayerTargetPosition.position);
-            // 메인 시퀀스에 0.1초씩 딜레이를 주어 합류시킵니다. (돌들이 순차적으로 움직이는 효과)
-            mainSequence.Insert(i * 0.1f, stoneSeq);
+            if (finalTargetPosition != null)
+            {
+                Sequence stoneSeq = WinStones[i].PlayRiseAndFlyAnimation(finalTargetPosition.position, isPlayerTarget);
+                mainSequence.Insert(i * 0.05f, stoneSeq);
+            }
         }
 
-        // --- Phase 2: 투석기 등장 및 발사 ---
-        // 돌 애니메이션이 끝난 후 투석기가 나타나도록 AppendCallback 사용
         mainSequence.AppendCallback(() =>
         {
-            foreach (var thrower in StoneThrowers)
+            foreach (var thrower in StoneThrowers) { thrower.SetActive(true); }
+        });
+        mainSequence.AppendInterval(0.5f);
+
+        // --- Phase 3: 카드 순차 파괴 ---
+        Sequence cardDestructionSequence = DOTween.Sequence();
+
+        // ▼▼▼▼▼▼ 변경된 부분 (지속적인 카메라 흔들림) ▼▼▼▼▼▼
+        Tween cameraShakeTween = null; // 카메라 흔들림 트윈을 제어할 변수
+
+        // 카드 파괴가 시작될 때, 지속적인 흔들림 시작
+        cardDestructionSequence.OnStart(() =>
+        {
+            if (Camera.main != null)
             {
-                thrower.SetActive(true);
-                // 투석기에 Animator가 있다면 발사 애니메이션을 트리거할 수 있습니다.
-                // 예: thrower.GetComponent<Animator>()?.SetTrigger("Fire");
+                // 약한 강도로 계속 흔들리는 트윈 생성
+                cameraShakeTween = Camera.main.DOShakePosition(1f, 0.5f, 10, 90)
+                                              .SetLoops(-1, LoopType.Restart); // 무한 반복
             }
         });
-        mainSequence.AppendInterval(1.0f); // 투석기 발사 애니메이션 시간만큼 대기
 
-        // --- Phase 3: 상대 카드 파괴 ---
-        // 투석기 발사와 동시에 카드가 터지도록 Insert 사용
-        Sequence cardDestructionSequence = DOTween.Sequence();
-        foreach (var card in CardWins)
+        // 카드 파괴가 모두 끝나면, 흔들림을 멈춤
+        cardDestructionSequence.OnComplete(() =>
         {
-            // 각 카드의 파괴 애니메이션을 가져와 동시에 실행(Join)
-            cardDestructionSequence.Join(card.PlayDestructionAnimation());
+            cameraShakeTween?.Kill(); // 실행 중인 카메라 흔들림 트윈을 즉시 종료
+        });
+        // ▲▲▲▲▲▲ 변경된 부분 (지속적인 카메라 흔들림) ▲▲▲▲▲▲
+
+        float initialDelay = 0.15f;
+        float currentDelay = 0f;
+
+        for (int i = 0; i < activeCards.Count; i++)
+        {
+            float delayBetweenCards = initialDelay * (1f - (float)i / activeCards.Count);
+            Sequence singleCardDestruction = activeCards[i].PlayDestructionAnimation();
+            cardDestructionSequence.Insert(currentDelay, singleCardDestruction);
+            currentDelay += delayBetweenCards;
         }
-        mainSequence.Insert(mainSequence.Duration() - 1.0f, cardDestructionSequence);
 
+        mainSequence.Insert(mainSequence.Duration() - 0.5f, cardDestructionSequence);
 
-        // --- Phase 4: 화면 페이드 아웃 및 승리 UI 표시 ---
-        mainSequence.AppendInterval(0.5f); // 모든 애니메이션이 끝난 후 잠시 대기
-        mainSequence.Append(FadeOutPanel.DOFade(0.5f, 1.0f)); // 1초에 걸쳐 50% 불투명하게
+        // --- Phase 4: 화면 페이드 아웃 및 결과 UI 표시 ---
+        mainSequence.AppendInterval(0.2f);
         mainSequence.AppendCallback(() =>
         {
-            VictoryUI.SetActive(true);
+            if (FadeOutPanel != null)
+            {
+                FadeOutPanel.gameObject.SetActive(true);
+                FadeOutPanel.color = new Color(FadeOutPanel.color.r, FadeOutPanel.color.g, FadeOutPanel.color.b, 0f);
+            }
         });
-        mainSequence.SetUpdate(true);
+        mainSequence.Append(FadeOutPanel.DOFade(0.7f, 0.5f));
+        mainSequence.AppendCallback(() =>
+        {
+            GameObject uiToShow = (index == 0) ? VictoryUI : DefeatUI;
+            if (uiToShow != null)
+            {
+                AnimateResultUI(uiToShow);
+            }
+        });
 
-        mainSequence.Play();
+        mainSequence.SetUpdate(true).Play();
+    }
+
+    private void AnimateResultUI(GameObject uiToShow)
+    {
+        CanvasGroup uiCanvasGroup = uiToShow.GetComponent<CanvasGroup>();
+        if (uiCanvasGroup == null)
+        {
+            uiCanvasGroup = uiToShow.AddComponent<CanvasGroup>();
+        }
+
+        Vector3 originalScale = uiToShow.transform.localScale;
+
+        uiToShow.SetActive(true);
+        uiCanvasGroup.alpha = 0f;
+        uiToShow.transform.localScale = originalScale * 2.5f;
+
+        Sequence uiSequence = DOTween.Sequence();
+
+        uiSequence.Join(uiCanvasGroup.DOFade(1f, 0.3f));
+        uiSequence.Join(uiToShow.transform.DOScale(originalScale, 0.4f).SetEase(Ease.OutElastic));
+        uiSequence.Append(uiToShow.transform.DOPunchScale(originalScale * -0.1f, 0.4f, 2, 0.5f));
+
+        uiSequence.SetUpdate(true).Play();
     }
 }

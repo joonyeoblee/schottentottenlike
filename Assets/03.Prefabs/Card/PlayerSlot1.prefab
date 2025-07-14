@@ -261,8 +261,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ced22b865dc084e45ae522741490d970, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _chaosMoveDuration: 1.5
+  _chaosMoveDuration: 3
   _chaosMoveStrength: 10
   _chaosEase: 5
-  _smokeEffect: {fileID: 0}
-  _explosionEffect: {fileID: 0}
+  _explosionDelay: 0.2
+  _explosionEffect: {fileID: 7226583673155636401, guid: a2ab56839e1c9504ea9d141e95d0b16b, type: 3}

@@ -13,6 +13,7 @@ public class UI_Cards : MonoBehaviour
     public SpriteRenderer Rend;
     private MaterialPropertyBlock block;
 
+    public GameObject DeadEffect;
 
     private void Awake()
     {
@@ -32,6 +33,11 @@ public class UI_Cards : MonoBehaviour
             ApplyTextures();
     }
 #endif
+
+    public void ShowDeadEffect()
+    {
+        Instantiate(DeadEffect, transform.position, Quaternion.identity);
+    }
 
     public void ShowDraw()
     {
