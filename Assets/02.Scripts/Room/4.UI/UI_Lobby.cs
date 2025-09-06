@@ -77,6 +77,6 @@ public class UI_Lobby : MonoBehaviourPunCallbacks
 
     public void CreatAIRoom()
     {
-        SceneManager.LoadScene(3);
+        SceneManager.LoadScene(4);
     }
 }
