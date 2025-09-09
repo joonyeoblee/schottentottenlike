@@ -69,19 +69,42 @@ public class EnemyHandDrawAnimation : MonoBehaviour
     /// </summary>
     public void PlaySetAnimation(Transform endTransform, Texture2D cardTexture, Action callback = null)
     {
-        AnimationObjectInit();
-        if (CardToAnimate == null)
+        StartCoroutine(WaitAndExecuteAnimation(endTransform, cardTexture, callback));
+    }
+
+    /// <summary>
+    /// 애니메이션 준비가 될 때까지 대기한 후 실행합니다.
+    /// </summary>
+    private IEnumerator WaitAndExecuteAnimation(Transform endTransform, Texture2D cardTexture, Action callback = null)
+    {
+        int maxRetries = 50; // 최대 5초 대기 (0.1초 * 50회)
+        int retryCount = 0;
+
+        while (retryCount < maxRetries)
         {
-            Debug.LogError("CardToAnimate이 널입니다.");
-            return;
+            AnimationObjectInit();
+            
+            if (CardToAnimate != null && enemyHandArranger != null)
+            {
+                Debug.Log($"애니메이션 준비 완료! (시도 {retryCount + 1}회)");
+                ExecuteSetAnimation(endTransform, cardTexture, callback);
+                yield break;
+            }
+
+            retryCount++;
+            Debug.Log($"애니메이션 준비 중... ({retryCount}/{maxRetries})");
+            yield return new WaitForSeconds(0.1f);
         }
 
-        if (enemyHandArranger == null)
-        {
-            Debug.LogError("enemyHandArranger이 널입니다.");
-            return;
-        }
+        Debug.LogWarning("애니메이션 준비 시간 초과. 애니메이션을 건너뜁니다.");
+        callback?.Invoke(); // 콜백만 실행
+    }
 
+    /// <summary>
+    /// 실제 애니메이션을 실행합니다.
+    /// </summary>
+    private void ExecuteSetAnimation(Transform endTransform, Texture2D cardTexture, Action callback = null)
+    {
         Quaternion targetRotation = endTransform.rotation * Quaternion.Euler(0f, 180f, 0f);
 
         CardUI.SwitchRenderer(true);
