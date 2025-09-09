@@ -70,9 +70,15 @@ public class EnemyHandDrawAnimation : MonoBehaviour
     public void PlaySetAnimation(Transform endTransform, Texture2D cardTexture, Action callback = null)
     {
         AnimationObjectInit();
-        if (CardToAnimate == null || enemyHandArranger == null)
+        if (CardToAnimate == null)
         {
-            Debug.LogError("애니메이션 대상 카드 또는 HandArranger가 없어 PlaySetAnimation을 실행할 수 없습니다.");
+            Debug.LogError("CardToAnimate이 널입니다.");
+            return;
+        }
+
+        if (enemyHandArranger == null)
+        {
+            Debug.LogError("enemyHandArranger이 널입니다.");
             return;
         }
 
