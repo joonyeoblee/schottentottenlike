@@ -49,7 +49,9 @@ public class BattleField_AI : Singleton<BattleField_AI>
         GameManager.OnGameOver += HandleGameOver;
 
         _hud = UI_MatchHud.Create(transform);
-        HandCardManagers[1].gameObject.AddComponent<EnemyHandDock>(); // 상대 손패가 판을 가리지 않게 좌상단으로
+        // 하스스톤식 손패 배치: 상대 손패는 화면 위에서 뒤집힌 부채꼴로, 내 손패는 화면 아래에서 반쯤 올라오게
+        HandDock.Attach(HandCardManagers[1].gameObject, HandDock.Edge.Top, 1.0f, 0.72f, 180f, new Vector2(7.3f, 2.19f), 0.13f);
+        HandDock.Attach(HandCardManagers[0].gameObject, HandDock.Edge.Bottom, 1.0f, 0.63f, 0f, new Vector2(9.57f, 3.19f), -0.405f);
         _hud.OnHelp += () => UI_Tutorial.Show(_hud.Font, true, null);
         _hud.OnBack += ConfirmExit;
 

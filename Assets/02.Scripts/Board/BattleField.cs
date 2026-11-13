@@ -73,7 +73,9 @@ public class BattleField : SingletonPhoton<BattleField>
         GameManager.OnGameOver += HandleGameOver;
 
         _hud = UI_MatchHud.Create(transform);
-        HandCardManagers[1].gameObject.AddComponent<EnemyHandDock>(); // 상대 손패가 판을 가리지 않게 좌상단으로
+        // 하스스톤식 손패 배치: 상대 손패는 화면 위에서 뒤집힌 부채꼴로, 내 손패는 화면 아래에서 반쯤 올라오게
+        HandDock.Attach(HandCardManagers[1].gameObject, HandDock.Edge.Top, 1.0f, 0.72f, 180f, new Vector2(7.3f, 2.19f), 0.13f);
+        HandDock.Attach(HandCardManagers[0].gameObject, HandDock.Edge.Bottom, 1.0f, 0.63f, 0f, new Vector2(9.57f, 3.19f), -0.405f);
         _hud.OnHelp += () => UI_Tutorial.Show(_hud.Font, false, null); // 멀티는 시간 정지 없이
         _hud.OnBack += () => _hud.ShowConfirm("방을 나갈까요?", "상대에게는 기권으로 처리돼요", "나가기", LeaveToLobby, "계속하기");
         _hud.SetTurn("상대를 기다리는 중", true);

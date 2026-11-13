@@ -47,6 +47,39 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
     // 터치 시 카드를 손가락 위로 띄워서 손가락에 가려지지 않게 합니다. (월드 단위)
     private const float TouchLift = 1.1f;
     private const float DragScale = 1.15f;
+    // 손패는 화면 아래에 반쯤 걸쳐 있으므로, 마우스를 올리면 카드가 떠올라 전체가 보이게 합니다. (월드 단위)
+    private const float HoverLift = 1.0f;
+    private const int RaisedSortingBoost = 50;
+
+    private SpriteRenderer _renderer;
+    private bool _raised;
+
+    /// <summary>카드를 다른 카드 위로 올려 그리기 (호버/드래그 중)</summary>
+    private void SetRaised(bool on)
+    {
+        if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+        if (_renderer == null || _raised == on) return;
+        _raised = on;
+        _renderer.sortingOrder += on ? RaisedSortingBoost : -RaisedSortingBoost;
+    }
+
+    /// <summary>호버 시 카드를 화면 위쪽(월드 +y) 방향으로 띄움</summary>
+    private void SetHoverLift(bool on)
+    {
+        if (_slotTransform == null) return;
+        if (on)
+        {
+            Vector3 worldUp = Vector3.up * HoverLift;
+            Vector3 local = _slotTransform.InverseTransformVector(worldUp);
+            transform.localPosition = new Vector3(local.x, local.y, -0.5f);
+            transform.rotation = Quaternion.identity; // 똑바로 세워서 보기 쉽게
+        }
+        else
+        {
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
+        }
+    }
 
     /// <summary>
     /// 마우스/터치 공통 포인터 위치 → 월드 좌표. (eventData.position은 마우스와 터치 모두에서 동작)
@@ -78,6 +111,8 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         if (touch) _dragOffset = new Vector3(0, TouchLift, _dragOffset.z);
 
         transform.localScale = _originalScale * DragScale;
+        transform.rotation = Quaternion.identity; // 들어 올린 카드는 똑바로
+        SetRaised(true);
         if (_outlinable != null) _outlinable.enabled = true;
         DropHighlight.Show(true);
     }
@@ -106,6 +141,7 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         _activeDragger = null;
         DropHighlight.Show(false);
         transform.localScale = _originalScale;
+        SetRaised(false);
         if (_outlinable != null) _outlinable.enabled = false;
 
         if (_handArranger != null)
@@ -183,13 +219,18 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         // 터치에는 '호버'가 없으므로 마우스일 때만 확대 연출
         if (_isDragging || (eventData != null && eventData.pointerId >= 0)) return;
 
+        if (_handCardSlot == null || !_handCardSlot.IsMine || !_handCardSlot.HasCard) return;
+
         // <<< 변경: Outlinable 컴포넌트 활성화
         if (_outlinable != null)
         {
             _outlinable.enabled = true;
         }
 
-        transform.localScale = _originalScale * 1.1f;
+        // 하스스톤처럼: 카드가 떠오르고 커져서 전체가 보임
+        transform.localScale = _originalScale * 1.25f;
+        SetHoverLift(true);
+        SetRaised(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -202,5 +243,7 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         }
 
         transform.localScale = _originalScale;
+        SetHoverLift(false);
+        SetRaised(false);
     }
 }

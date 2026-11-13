@@ -7,17 +7,20 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class CameraFitter : MonoBehaviour
 {
-    [Tooltip("항상 보여야 하는 절반 너비 (월드 단위). 경계석 9개(±6.3) + 왼쪽 상대 손패 영역(약 3.3)")]
-    public float RequiredHalfWidth = 9.6f;
+    [Tooltip("항상 보여야 하는 절반 너비 (월드 단위). 경계석 9개(±6.3) + 오른쪽 덱(약 8.8)")]
+    public float RequiredHalfWidth = 9.0f;
 
     private Camera _cam;
     private float _baseSize;
     private float _lastAspect;
 
+    [Tooltip("최소 카메라 세로 크기. 위/아래 손패가 보드를 가리지 않고 잘 보이도록 기본(5)보다 조금 넓게 봅니다.")]
+    public float MinSize = 6f;
+
     private void Awake()
     {
         _cam = GetComponent<Camera>();
-        _baseSize = _cam.orthographicSize;
+        _baseSize = Mathf.Max(_cam.orthographicSize, MinSize);
         Fit();
     }
 

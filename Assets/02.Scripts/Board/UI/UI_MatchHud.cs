@@ -95,24 +95,28 @@ public class UI_MatchHud : MonoBehaviour
         UIKit.Stretch(safe);
         safe.gameObject.AddComponent<SafeAreaFitter>();
 
-        // ---- 턴 배지 (상단 중앙) ----
+        // ---- 턴 배지 (오른쪽, 덱 위) ----
+        // 화면 위 가운데는 상대 손패 자리이므로, 턴 표시는 하스스톤의 턴 버튼처럼 오른쪽에 둡니다.
         var badge = UIKit.Rect("TurnBadge", safe);
-        badge.anchorMin = badge.anchorMax = new Vector2(0.5f, 1f);
-        badge.pivot = new Vector2(0.5f, 1f);
-        badge.anchoredPosition = new Vector2(0, -14);
-        badge.sizeDelta = new Vector2(340, 84);
+        badge.anchorMin = badge.anchorMax = new Vector2(1f, 0.5f);
+        badge.pivot = new Vector2(1f, 0.5f);
+        badge.anchoredPosition = new Vector2(-24, 190);
+        badge.sizeDelta = new Vector2(250, 84);
         _turnBadge = UIKit.SlicedImage(badge.gameObject, "UI/Button", Color.white);
         _turnBadge.raycastTarget = false;
         _turnText = UIKit.Text(badge, _font, "", 38, InkColor);
-        UIKit.Stretch(_turnText.rectTransform, 0, 0, 0, 10);
+        UIKit.Stretch(_turnText.rectTransform, 16, 16, 0, 10);
         _turnText.fontStyle = FontStyles.Bold;
+        _turnText.enableAutoSizing = true; // "상대를 기다리는 중" 같은 긴 문구도 배지 안에
+        _turnText.fontSizeMin = 20;
+        _turnText.fontSizeMax = 38;
 
-        // ---- 점령 현황 ----
+        // ---- 점령 현황 (오른쪽, 덱 아래) ----
         var score = UIKit.Rect("Score", safe);
-        score.anchorMin = score.anchorMax = new Vector2(0.5f, 1f);
-        score.pivot = new Vector2(0.5f, 1f);
-        score.anchoredPosition = new Vector2(0, -100);
-        score.sizeDelta = new Vector2(440, 50);
+        score.anchorMin = score.anchorMax = new Vector2(1f, 0.5f);
+        score.pivot = new Vector2(1f, 0.5f);
+        score.anchoredPosition = new Vector2(-24, -180);
+        score.sizeDelta = new Vector2(250, 92);
         var scoreBg = UIKit.SlicedImage(score.gameObject, "UI/Panel", new Color(1, 1, 1, 0.92f));
         scoreBg.raycastTarget = false;
         _scoreText = UIKit.Text(score, _font, "", 26, InkColor);
@@ -131,11 +135,11 @@ public class UI_MatchHud : MonoBehaviour
         UIKit.Stretch(q.rectTransform);
         q.fontStyle = FontStyles.Bold;
 
-        // ---- 힌트 배너 ----
+        // ---- 힌트 배너 (화면 가운데, 잠깐 떴다 사라짐) ----
         _hintRoot = UIKit.Rect("Hint", safe);
-        _hintRoot.anchorMin = _hintRoot.anchorMax = new Vector2(0.5f, 1f);
-        _hintRoot.pivot = new Vector2(0.5f, 1f);
-        _hintRoot.anchoredPosition = new Vector2(0, -164);
+        _hintRoot.anchorMin = _hintRoot.anchorMax = new Vector2(0.5f, 0.5f);
+        _hintRoot.pivot = new Vector2(0.5f, 0.5f);
+        _hintRoot.anchoredPosition = new Vector2(0, 0);
         _hintRoot.sizeDelta = new Vector2(1000, 76);
         UIKit.SlicedImage(_hintRoot.gameObject, "UI/Panel", Color.white).raycastTarget = false;
         _hintText = UIKit.Text(_hintRoot, _font, "", 30, InkColor);
@@ -212,12 +216,13 @@ public class UI_MatchHud : MonoBehaviour
 
     public void SetScore(int mine, int enemy, string myName = "나", string enemyName = "상대")
     {
-        _scoreText.text = $"<color=#{ColorUtility.ToHtmlStringRGB(MyColor)}><b>{myName} {mine}</b></color>   <size=22>경계석</size>   <color=#{ColorUtility.ToHtmlStringRGB(EnemyColor)}><b>{enemy} {enemyName}</b></color>";
+        _scoreText.text = $"<size=20>경계석</size>\n<color=#{ColorUtility.ToHtmlStringRGB(MyColor)}><b>{myName} {mine}</b></color> : <color=#{ColorUtility.ToHtmlStringRGB(EnemyColor)}><b>{enemy} {enemyName}</b></color>";
     }
 
-    /// <summary>상단 힌트 배너. duration ≤ 0 이면 HideHint 전까지 유지.</summary>
-    public void ShowHint(string text, float duration = 0f)
+    /// <summary>화면 가운데 힌트 배너. 판을 오래 가리지 않도록 항상 잠깐만 보였다가 사라집니다.</summary>
+    public void ShowHint(string text, float duration = 3.5f)
     {
+        if (duration <= 0) duration = 3.5f;
         if (_hintRoutine != null) StopCoroutine(_hintRoutine);
         _hintText.text = text;
         _hintRoot.gameObject.SetActive(true);
