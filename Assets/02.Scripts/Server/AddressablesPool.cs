@@ -36,7 +36,10 @@ public class AddressablesPool : IPunPrefabPool
         Debug.Log($"[AddressablesPool] Instantiate 요청됨: {prefabId}");
         if (_prefabCache.TryGetValue(prefabId, out GameObject prefab))
         {
-            return Object.Instantiate(prefab, position, rotation);
+            // PUN 규약: 풀은 '비활성' 오브젝트를 돌려줘야 PhotonView 설정 후 활성화(Awake/Start)됩니다.
+            var go = Object.Instantiate(prefab, position, rotation);
+            go.SetActive(false);
+            return go;
         }
 
         Debug.LogError($"[AddressablesPool] '{prefabId}' 프리팹이 사전 로드되지 않음");

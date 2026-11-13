@@ -78,12 +78,16 @@ public class UI_MatchHud : MonoBehaviour
 
     public static TMP_FontAsset FindSceneFont(GameObject exclude = null)
     {
-        // 씬에 이미 있는 TMP 텍스트의 폰트를 그대로 사용 (한글 글리프 포함 폰트)
+        // 씬에 이미 있는 TMP 폰트 중 '한글 글리프가 있는' 폰트를 사용
+        // (멀티 씬에서는 기본 영문 폰트(LiberationSans)가 먼저 잡혀 한글이 □로 깨졌음)
+        TMP_FontAsset fallback = null;
         foreach (var t in FindObjectsByType<TMP_Text>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
-            if (t != null && t.font != null && t.gameObject != exclude) return t.font;
+            if (t == null || t.font == null || t.gameObject == exclude) continue;
+            if (t.font.HasCharacter('경', true, true)) return t.font;
+            if (fallback == null) fallback = t.font;
         }
-        return TMP_Settings.defaultFontAsset;
+        return fallback != null ? fallback : TMP_Settings.defaultFontAsset;
     }
 
     private void Build()

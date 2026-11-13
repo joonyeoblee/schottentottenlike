@@ -51,7 +51,8 @@ public class BattleField : SingletonPhoton<BattleField>
     {
         get
         {
-            if (GameManager.Instance == null || GameManager.Instance.IsGameOver || !_matchStarted) return false;
+            // 첫 패를 다 받기 전(딜 연출 중)에는 카드를 낼 수 없음
+            if (GameManager.Instance == null || GameManager.Instance.IsGameOver || !_matchStarted || !_dealt) return false;
             bool isMaster = PhotonNetwork.IsMasterClient;
             return (isMaster && CurrentTurn == ETurn.Player1) || (!isMaster && CurrentTurn == ETurn.Player2);
         }
@@ -66,6 +67,21 @@ public class BattleField : SingletonPhoton<BattleField>
 
     private void Start()
     {
+        EnsureInitialized();
+    }
+
+    private bool _initialized;
+
+    /// <summary>
+    /// 초기화. 게스트 쪽에서는 Field가 네트워크로 생성되는 바로 그 프레임에 방장의 RPC(판 초기화/턴/딜)가
+    /// Start()보다 먼저 도착할 수 있으므로, 모든 RPC 진입점에서도 호출합니다.
+    /// (예전에는 이때 HUD가 null이라 예외가 나서 게스트에게 영원히 차례가 오지 않았음)
+    /// </summary>
+    private void EnsureInitialized()
+    {
+        if (_initialized) return;
+        _initialized = true;
+
         InitializeRoundSlots();
         InitializeHandCardSlots();
         MyplayerNumber = PhotonNetwork.IsMasterClient ? 1 : 2;
@@ -104,6 +120,7 @@ public class BattleField : SingletonPhoton<BattleField>
     [PunRPC]
     private void RPC_PrepareMatch()
     {
+        EnsureInitialized();
         StopAllCoroutines();
         GameManager.Instance.ResetGame();
         ClearAllCardSlots(); // 모든 슬롯을 깨끗하게 초기화
@@ -262,6 +279,7 @@ public class BattleField : SingletonPhoton<BattleField>
     [PunRPC]
     private void ReceiveFirstTurnCards(int[] myColors, int[] myNumbers, int[] enemyColors, int[] enemyNumbers)
     {
+        EnsureInitialized();
         StartCoroutine(DealFirstTurnCardsCoroutine(myColors, myNumbers, enemyColors, enemyNumbers));
     }
 
@@ -331,6 +349,7 @@ public class BattleField : SingletonPhoton<BattleField>
     [PunRPC]
     public void SetCard(int roundIndex, int slotIndex, int cardNumber, int color)
     {
+        EnsureInitialized();
         Card card = new Card(cardNumber, (ECardColor)color);
         var slot = Rounds[roundIndex].EnemyCardSlots[slotIndex];
 
@@ -501,6 +520,7 @@ public class BattleField : SingletonPhoton<BattleField>
     [PunRPC]
     private void RPC_RematchReady(int actorNumber)
     {
+        EnsureInitialized();
         _rematchReady.Add(actorNumber);
         RefreshRematchStatus();
 
@@ -612,6 +632,7 @@ public class BattleField : SingletonPhoton<BattleField>
     [PunRPC]
     public void SetTurn(int turn)
     {
+        EnsureInitialized();
         CurrentTurn = (ETurn)turn;
         Debug.Log($"턴이 {CurrentTurn}으로 변경됨");
         if (RoundDicator != null) RoundDicator.Turn();
@@ -656,6 +677,7 @@ public class BattleField : SingletonPhoton<BattleField>
     [PunRPC]
     private void RPC_ReceiveDrawCard(int targetActorNumber, int slotIndex, int cardNumber, int color)
     {
+        EnsureInitialized();
         bool isMine = PhotonNetwork.LocalPlayer.ActorNumber == targetActorNumber;
         int handManagerIndex = isMine ? 0 : 1;
 
@@ -689,6 +711,7 @@ public class BattleField : SingletonPhoton<BattleField>
     [PunRPC]
     public void RPC_SyncDeck(int[] nums, int[] colors)
     {
+        EnsureInitialized();
         CardDeck.SyncDeckFromData(nums, colors);
     }
     [PunRPC]

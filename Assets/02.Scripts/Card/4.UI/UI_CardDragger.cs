@@ -139,6 +139,12 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         if (!_isDragging) return;
         _isDragging = false;
         _activeDragger = null;
+
+        // 놓은 위치는 손패 재정렬(ArrangeCards) '전에' 저장해야 합니다.
+        // 드래그 중에 새로 뽑은 카드가 도착하면 재정렬로 부모(카드 피벗)가 움직여서
+        // 이 카드도 함께 끌려가 엉뚱한 위치에서 판정되던 버그가 있었음 (멀티에서 자주 발생)
+        Vector3 dropPosition = transform.position;
+
         DropHighlight.Show(false);
         transform.localScale = _originalScale;
         SetRaised(false);
@@ -173,7 +179,17 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
             return;
         }
 
-        var hits = Physics2D.OverlapPointAll(transform.position);
+        // 방금 활성화/이동한 슬롯의 콜라이더가 물리 엔진에 아직 반영되지 않았을 수 있으므로 동기화
+        Physics2D.SyncTransforms();
+        var hits = Physics2D.OverlapPointAll(dropPosition);
+
+        // 물리 판정이 실패해도, 놓을 수 있는 칸의 '보이는 영역' 안에 놓았다면 그 칸으로 인정 (콜라이더 타이밍에 의존하지 않음)
+        if (!System.Array.Exists(hits, h => h.CompareTag("PlayerSlot") && h.GetComponent<CardSlot>() != null &&
+                                           (isSolo ? battleFieldAI.CanPlayerPlaceOn(h.GetComponent<CardSlot>()) : BattleField.Instance.CanPlaceOn(h.GetComponent<CardSlot>()))))
+        {
+            var fallback = FindPlaceableSlotAt(dropPosition, isSolo, battleFieldAI);
+            if (fallback != null) hits = new[] { fallback.GetComponent<Collider2D>() };
+        }
 
         foreach (var hit in hits)
         {
@@ -212,6 +228,28 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
+    }
+
+    /// <summary>
+    /// 드롭 위치가 '놓을 수 있는 빈 칸'의 화면상 영역(SpriteRenderer 범위) 안에 있으면 그 칸을 돌려줍니다.
+    /// </summary>
+    private static CardSlot FindPlaceableSlotAt(Vector3 point, bool isSolo, BattleField_AI ai)
+    {
+        RoundSlot[] rounds = isSolo ? ai.Rounds : (BattleField.Instance != null ? BattleField.Instance.Rounds : null);
+        if (rounds == null) return null;
+        foreach (var round in rounds)
+        {
+            var slot = round.FirstEmptySlot(true);
+            if (slot == null || !slot.gameObject.activeInHierarchy) continue;
+            bool can = isSolo ? ai.CanPlayerPlaceOn(slot) : BattleField.Instance.CanPlaceOn(slot);
+            if (!can) continue;
+            var sr = slot.GetComponent<SpriteRenderer>();
+            if (sr == null) continue;
+            var b = sr.bounds;
+            if (point.x >= b.min.x && point.x <= b.max.x && point.y >= b.min.y && point.y <= b.max.y && slot.GetComponent<Collider2D>() != null)
+                return slot;
+        }
+        return null;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
