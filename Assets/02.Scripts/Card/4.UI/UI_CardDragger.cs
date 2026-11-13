@@ -96,23 +96,21 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         }
 
         // --- 분기: 솔로/멀티 ---
-        bool isSolo = FindObjectOfType<BattleField_AI>() != null;
-        bool isMyTurn = false;
+        var battleFieldAI = BattleField_AI.Instance;
+        bool isSolo = battleFieldAI != null;
+        bool isMyTurn;
 
         if (isSolo)
         {
-            var battleFieldAI = FindObjectOfType<BattleField_AI>();
             // 솔로플레이: 내 턴(플레이어1)만 배치 허용
-            isMyTurn = battleFieldAI.CurrentTurn == ETurn.Player1;
+            isMyTurn = battleFieldAI.IsPlayerTurn;
         }
         else
         {
-            bool isMaster = PhotonNetwork.IsMasterClient;
-            ETurn currentTurn = BattleField.Instance.CurrentTurn;
-            isMyTurn = (isMaster && currentTurn == ETurn.Player1) || (!isMaster && currentTurn == ETurn.Player2);
+            isMyTurn = BattleField.Instance != null && BattleField.Instance.IsMyTurn;
         }
 
-        if (!isMyTurn)
+        if (!isMyTurn || _handCardSlot == null || !_handCardSlot.HasCard)
         {
             // 자기 턴이 아니면 배치 불가 → 제자리 복귀
             transform.localPosition = Vector3.zero;
@@ -131,11 +129,11 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
                 if (cardSlot == null || slotCollider == null) continue;
 
-                // 슬롯에 이미 카드가 있다면 배치 못함
-                if (cardSlot.IsOccupied)
-                {
-                    break;
-                }
+                // 놓을 수 없는 슬롯(상대 슬롯, 이미 찬 슬롯, 점령된 경계석)이면 다른 히트를 계속 확인
+                bool canPlace = isSolo
+                    ? battleFieldAI.CanPlayerPlaceOn(cardSlot)
+                    : BattleField.Instance.CanPlaceOn(cardSlot);
+                if (!canPlace) continue;
 
                 cardSlot.Refresh(_handCardSlot.Card);
                 _handCardSlot.Clear();
@@ -143,13 +141,10 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
                 // --- 분기: 후처리 ---
                 if (isSolo)
                 {
-                    var battleFieldAI = FindObjectOfType<BattleField_AI>();
-                    if (battleFieldAI != null)
-                        battleFieldAI.OnMyCardPlaced(cardSlot);
+                    battleFieldAI.OnMyCardPlaced(cardSlot);
                 }
                 else
                 {
-                    // 멀티플레이 후처리 (기존대로)
                     BattleField.Instance.OnMyCardPlaced(cardSlot);
                 }
 

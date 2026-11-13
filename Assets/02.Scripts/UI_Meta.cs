@@ -14,6 +14,11 @@ public class UI_Meta : MonoBehaviourPunCallbacks
             Debug.Log("방 나가기");
             PhotonNetwork.LeaveRoom();
         }
+        else
+        {
+            // 솔로(AI) 모드: 방이 없으므로 바로 로비로
+            SceneManager.LoadScene(1);
+        }
     }
 
     public override void OnLeftRoom()

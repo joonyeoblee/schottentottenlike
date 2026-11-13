@@ -34,6 +34,30 @@ public class BattleField : SingletonPhoton<BattleField>
     public int MyplayerNumber { get; private set; }
     public int EnemyPlayerNumber => MyplayerNumber == 1 ? 2 : 1;
 
+    // 판정/점령 정보는 각 클라이언트 '로컬 시점'으로 관리합니다. (1 = 나, 2 = 상대)
+    private const int LocalMe = 1;
+    private const int LocalEnemy = 2;
+
+    private UI_MatchHud _hud;
+    private int _enemyHandCount;
+    private bool _matchStarted;
+    private bool _dealt;
+    private readonly HashSet<int> _rematchReady = new HashSet<int>();
+
+    /// <summary>
+    /// 지금이 내 차례인지 (마스터 = Player1, 다른 클라이언트 = Player2)
+    /// </summary>
+    public bool IsMyTurn
+    {
+        get
+        {
+            if (GameManager.Instance == null || GameManager.Instance.IsGameOver || !_matchStarted) return false;
+            bool isMaster = PhotonNetwork.IsMasterClient;
+            return (isMaster && CurrentTurn == ETurn.Player1) || (!isMaster && CurrentTurn == ETurn.Player2);
+        }
+    }
+
+    private ETurn MyTurnValue => PhotonNetwork.IsMasterClient ? ETurn.Player1 : ETurn.Player2;
 
     // 현재 턴의 다음 턴을 반환하는 헬퍼 프로퍼티
     private ETurn GetNextTurn() => CurrentTurn == ETurn.Player1 ? ETurn.Player2 : ETurn.Player1;
@@ -46,18 +70,57 @@ public class BattleField : SingletonPhoton<BattleField>
         InitializeHandCardSlots();
         MyplayerNumber = PhotonNetwork.IsMasterClient ? 1 : 2;
         CardDeck.OnCardSuffle += OnShuffled;
+        GameManager.OnGameOver += HandleGameOver;
+
+        _hud = UI_MatchHud.Create(transform);
+        _hud.SetTurn("상대를 기다리는 중", true);
+        UpdateScore();
+    }
+
+    private void OnDestroy()
+    {
+        if (CardDeck != null) CardDeck.OnCardSuffle -= OnShuffled;
+        GameManager.OnGameOver -= HandleGameOver;
     }
 
     /// <summary>
-    /// 게임 시작 또는 재시작 시 호출됩니다.
+    /// 게임 시작 또는 재시작 시 호출됩니다. (마스터 클라이언트에서만 호출)
     /// </summary>
     public void GameStart()
     {
         Debug.Log("GameStart 호출됨 - 덱 셔플 시작");
-        ClearAllCardSlots(); // 모든 슬롯을 깨끗하게 초기화
-        StartCoroutine(GameStartSequence());
-        RoundDicator.Turn();
+        if (!PhotonNetwork.IsMasterClient) return;
 
+        // 모든 클라이언트의 판 상태 초기화 → 이후 셔플/딜 RPC가 순서대로 도착
+        photonView.RPC(nameof(RPC_PrepareMatch), RpcTarget.All);
+        StartCoroutine(GameStartSequence());
+    }
+
+    [PunRPC]
+    private void RPC_PrepareMatch()
+    {
+        StopAllCoroutines();
+        GameManager.Instance.ResetGame();
+        ClearAllCardSlots(); // 모든 슬롯을 깨끗하게 초기화
+        foreach (var round in Rounds) round.ResetStone();
+        _rematchReady.Clear();
+        _enemyHandCount = 0;
+        _dealt = false;
+        _matchStarted = true;
+        _hud.HideResult();
+        UpdateScore();
+        if (RoundDicator != null) RoundDicator.Turn();
+    }
+
+    /// <summary>
+    /// 내가 이 슬롯에 카드를 낼 수 있는지 (드래그 앤 드롭 검증용)
+    /// </summary>
+    public bool CanPlaceOn(CardSlot slot)
+    {
+        if (!IsMyTurn || slot == null || !slot.IsMine || slot.IsOccupied) return false;
+        if (slot.RoundIndex < 0 || slot.RoundIndex >= Rounds.Length) return false;
+        if (GameManager.Instance.IsStoneClaimed(slot.RoundIndex)) return false;
+        return Rounds[slot.RoundIndex].FirstEmptySlot(true) == slot;
     }
 
     /// <summary>
@@ -209,31 +272,40 @@ public class BattleField : SingletonPhoton<BattleField>
             yield return new WaitForSeconds(0.2f);
         }
 
+        _enemyHandCount = 0;
         for (int i = 0; i < HandCardManagers[1].HandCardSlots.Length; i++)
         {
             Card card = new Card(enemyNumbers[i], (ECardColor)enemyColors[i]);
             HandCardManagers[1].HandCardSlots[i].Refresh(i, card, false);
+            _enemyHandCount++;
             yield return new WaitForSeconds(0.2f);
         }
 
         PlayEnemyHandAnimation();
         Debug.Log("손패 배분 완료 (로컬 기준)");
+        _dealt = true;
+        UpdateTurnHud();
     }
 
     public void OnMyCardPlaced(CardSlot placedSlot)
     {
-        StartCoroutine(HandleCardPlacedSequence());
-        GameManager.Instance.RecordFirstPlayerOnStone(placedSlot.RoundIndex, MyplayerNumber);
+        int round = placedSlot.RoundIndex;
+        GameManager.Instance.RecordStoneCompleted(round, LocalMe, Rounds[round].CountCards(true));
+
+        // 턴 전환 RPC가 돌아오기 전에 한 장 더 내는 것을 막기 위해 로컬 턴을 먼저 넘김
+        ETurn nextTurn = GetNextTurn();
+        CurrentTurn = nextTurn;
+
         JudgeAllRoundsWinner();
+        StartCoroutine(HandleCardPlacedSequence(nextTurn));
     }
 
-    private IEnumerator HandleCardPlacedSequence()
+    private IEnumerator HandleCardPlacedSequence(ETurn nextTurn)
     {
         yield return new WaitForSeconds(0.05f);
         RequestDrawCard();
-        ETurn nextTurn = GetNextTurn();
+        if (GameManager.Instance.IsGameOver) yield break;
         photonView.RPC(nameof(SetTurn), RpcTarget.All, (int)nextTurn);
-        photonView.RPC(nameof(RPC_UpdateSlotActivation), RpcTarget.All);
     }
 
     private void RequestDrawCard()
@@ -261,8 +333,9 @@ public class BattleField : SingletonPhoton<BattleField>
             slot.gameObject.SetActive(true);
 
         slot.Refresh(card);
+        _enemyHandCount = Mathf.Max(0, _enemyHandCount - 1);
         // 상대 카드가 놓인 후에도 승패 판정
-        GameManager.Instance.RecordFirstPlayerOnStone(roundIndex, EnemyPlayerNumber);
+        GameManager.Instance.RecordStoneCompleted(roundIndex, LocalEnemy, Rounds[roundIndex].CountCards(false));
         JudgeAllRoundsWinner();
 
     }
@@ -321,47 +394,145 @@ public class BattleField : SingletonPhoton<BattleField>
             Debug.Log($"[애니메이션 종료] 라운드 {_judgeRound} 최종 판정: {winnerMessage}");
         });
     }
+    /// <summary>
+    /// 모든 경계석을 판정합니다. 양쪽 클라이언트가 같은 필드 정보로 각자 판정하며,
+    /// 결과는 로컬 시점(1 = 나, 2 = 상대)으로 기록되고 경계석도 로컬 시점으로 이동합니다.
+    /// (예전에는 마스터 시점의 owner를 RPC로 보내서 다른 클라이언트에서는 경계석이 반대로 움직였음)
+    /// </summary>
     private void JudgeAllRoundsWinner()
     {
+        List<Card> unusedCards = GetUnusedCardsFromField();
+
         for (int roundIndex = 0; roundIndex < Rounds.Length; roundIndex++)
         {
-            List<Card> playerCards = GetPlayerCards(roundIndex);
-            List<Card> enemyCards = GetEnemyCards(roundIndex);
-            List<Card> unusedCards = GetUnusedCardsFromField();
-
-            JudgeResult judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards, roundIndex);
-
-            GameManager.Instance.UpdateRoundOwnerAndCheckWin(roundIndex, judgeResult.Winner);
-
-            string playerRank = judgeResult.Player1Rank.ToString();
-            string enemyRank = judgeResult.Player2Rank.ToString();
-
-            //if (judgeResult.Winner == 1 || judgeResult.Winner == 2)
-            //{
-            //    int owner = judgeResult.Winner == 1 ? 1 : 2;
-            //    photonView.RPC(nameof(RPC_MoveStone), RpcTarget.All, roundIndex, owner);
-            //}
-
-            //마스터만 호출하도록 
-            if (PhotonNetwork.IsMasterClient && (judgeResult.Winner == 1 || judgeResult.Winner == 2))
+            if (!GameManager.Instance.IsStoneClaimed(roundIndex))
             {
-                int owner = judgeResult.Winner == 1 ? 1 : 2;
-                photonView.RPC(nameof(RPC_MoveStone), RpcTarget.All, roundIndex, owner);
+                List<Card> playerCards = GetPlayerCards(roundIndex);
+                List<Card> enemyCards = GetEnemyCards(roundIndex);
+
+                JudgeResult judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards, roundIndex);
+                GameManager.Instance.UpdateRoundOwnerAndCheckWin(roundIndex, judgeResult.Winner);
+
+                if (judgeResult.Winner != 0)
+                {
+                    string who = judgeResult.Winner == LocalMe ? "나" : "상대";
+                    Debug.Log($"경계석 {roundIndex}: {who} 점령 ({judgeResult.Player1Rank} vs {judgeResult.Player2Rank})");
+                }
             }
 
-            if (judgeResult.Winner == 1)
-            {
-                Debug.Log($"라운드 {roundIndex}: 플레이어1 승리 ({playerRank} vs {enemyRank})");
-            }
-            else if (judgeResult.Winner == 2)
-            {
-                Debug.Log($"라운드 {roundIndex}: 플레이어2 승리 ({playerRank} vs {enemyRank})");
-            }
-            else
-            {
-                Debug.Log($"라운드 {roundIndex}: 무승부 또는 미정 ({playerRank} vs {enemyRank})");
-            }
+            int owner = GameManager.Instance.RoundOwners[roundIndex];
+            Rounds[roundIndex].MoveStoneToOwner(owner);
+            Rounds[roundIndex].RefreshSlotVisibility(owner != 0);
         }
+
+        UpdateScore();
+    }
+
+    private void UpdateScore()
+    {
+        if (_hud == null || GameManager.Instance == null || GameManager.Instance.RoundOwners == null) return;
+        var owners = GameManager.Instance.RoundOwners;
+        _hud.SetScore(owners.Count(o => o == LocalMe), owners.Count(o => o == LocalEnemy), "나", EnemyNickName());
+    }
+
+    private void UpdateTurnHud()
+    {
+        if (_hud == null) return;
+        if (!_matchStarted)
+            _hud.SetTurn("상대를 기다리는 중", true);
+        else if (GameManager.Instance.IsGameOver)
+            _hud.SetTurn(null, false);
+        else
+        {
+            bool mine = CurrentTurn == MyTurnValue;
+            _hud.SetTurn(mine ? "내 차례" : "상대 차례", mine);
+        }
+    }
+
+    private string EnemyNickName()
+    {
+        var other = PhotonNetwork.PlayerListOthers;
+        return other != null && other.Length > 0 && !string.IsNullOrEmpty(other[0].NickName) ? other[0].NickName : "상대";
+    }
+
+    private bool HasLegalMove(bool mine)
+    {
+        bool hasCard = mine ? HandCardManagers[0].HandCardSlots.Any(s => s.HasCard) : _enemyHandCount > 0;
+        if (!hasCard) return false;
+
+        for (int r = 0; r < Rounds.Length; r++)
+        {
+            if (GameManager.Instance.IsStoneClaimed(r)) continue;
+            if (Rounds[r].FirstEmptySlot(mine) != null) return true;
+        }
+        return false;
+    }
+
+    // ------------------------------------------------------------------
+    // 게임 종료 / 재대결
+    // ------------------------------------------------------------------
+
+    private void HandleGameOver(int winner)
+    {
+        UpdateTurnHud();
+        string title = winner == LocalMe ? "승리" : winner == LocalEnemy ? "패배" : "무승부";
+        var owners = GameManager.Instance.RoundOwners;
+        string sub = $"경계석 {owners.Count(o => o == LocalMe)} : {owners.Count(o => o == LocalEnemy)}";
+        StartCoroutine(ShowResultDelayed(title, winner == LocalMe, sub));
+    }
+
+    private IEnumerator ShowResultDelayed(string title, bool isWin, string sub)
+    {
+        yield return new WaitForSeconds(1.0f);
+        _hud.ShowResult(title, isWin, sub, "다시 하기", RequestRematch, "로비로", LeaveToLobby);
+        RefreshRematchStatus();
+    }
+
+    private void RequestRematch()
+    {
+        photonView.RPC(nameof(RPC_RematchReady), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber);
+    }
+
+    [PunRPC]
+    private void RPC_RematchReady(int actorNumber)
+    {
+        _rematchReady.Add(actorNumber);
+        RefreshRematchStatus();
+
+        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount >= 2 &&
+            PhotonNetwork.PlayerList.All(p => _rematchReady.Contains(p.ActorNumber)))
+        {
+            GameStart();
+        }
+    }
+
+    private void RefreshRematchStatus()
+    {
+        if (_hud == null || !_hud.IsResultVisible) return;
+        bool meReady = _rematchReady.Contains(PhotonNetwork.LocalPlayer.ActorNumber);
+        bool otherReady = PhotonNetwork.PlayerListOthers.Any(p => _rematchReady.Contains(p.ActorNumber));
+
+        if (meReady)
+            _hud.SetResultStatus("상대의 응답을 기다리는 중...", false);
+        else if (otherReady)
+            _hud.SetResultStatus("상대가 재대결을 원합니다!", true);
+        else
+            _hud.SetResultStatus("", true);
+    }
+
+    private void LeaveToLobby()
+    {
+        // UI_Meta.OnLeftRoom 에서 로비 씬으로 이동
+        if (PhotonNetwork.InRoom) PhotonNetwork.LeaveRoom();
+        else UnityEngine.SceneManagement.SceneManager.LoadScene(1);
+    }
+
+    public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
+    {
+        StopAllCoroutines();
+        _matchStarted = false;
+        _hud.SetTurn(null, false);
+        _hud.ShowResult("게임 종료", false, "상대가 방을 나갔습니다", null, null, "로비로", LeaveToLobby);
     }
 
     private List<Card> GetPlayerCards(int roundIndex)
@@ -438,8 +609,26 @@ public class BattleField : SingletonPhoton<BattleField>
     {
         CurrentTurn = (ETurn)turn;
         Debug.Log($"턴이 {CurrentTurn}으로 변경됨");
-        RoundDicator.Turn();
+        if (RoundDicator != null) RoundDicator.Turn();
+        UpdateTurnHud();
 
+        if (GameManager.Instance.IsGameOver || !_dealt)
+            return; // 아직 첫 패를 받기 전
+
+        // 낼 수 있는 카드가 없으면 턴을 넘기고, 양쪽 모두 불가능하면 게임 종료 (양쪽 클라이언트가 동일하게 판정)
+        bool myCan = HasLegalMove(true);
+        bool enemyCan = HasLegalMove(false);
+        if (!myCan && !enemyCan)
+        {
+            GameManager.Instance.EndByStalemate();
+            return;
+        }
+
+        if (CurrentTurn == MyTurnValue && !myCan)
+        {
+            Debug.Log("낼 수 있는 카드가 없어 턴을 넘깁니다.");
+            photonView.RPC(nameof(SetTurn), RpcTarget.All, (int)GetNextTurn());
+        }
     }
 
     [PunRPC]
@@ -475,6 +664,7 @@ public class BattleField : SingletonPhoton<BattleField>
         }
         else
         {
+            _enemyHandCount++;
             if(slot.MyCard?.Rend != null)
             {
                 slot.MyCard.Rend.enabled = true;
@@ -487,19 +677,8 @@ public class BattleField : SingletonPhoton<BattleField>
     [PunRPC]
     private void RPC_UpdateSlotActivation()
     {
-        foreach (var round in Rounds)
-        {
-            for (int i = 0; i < round.PlayerCardSlots.Length - 1; i++)
-            {
-                var current = round.PlayerCardSlots[i];
-                var next = round.PlayerCardSlots[i + 1];
-
-                if (current.IsOccupied && !next.gameObject.activeSelf)
-                {
-                    next.gameObject.SetActive(true);
-                }
-            }
-        }
+        for (int i = 0; i < Rounds.Length; i++)
+            Rounds[i].RefreshSlotVisibility(GameManager.Instance.IsStoneClaimed(i));
     }
 
     [PunRPC]

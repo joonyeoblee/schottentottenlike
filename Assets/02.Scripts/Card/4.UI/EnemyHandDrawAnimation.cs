@@ -34,6 +34,7 @@ public class EnemyHandDrawAnimation : MonoBehaviour
     public Transform CardToAnimate;
 
     private Vector3 _cachedOriginalScale = Vector3.one;
+    private static bool _warnedMissingRefs;
 
     private void Start()
     {
@@ -72,7 +73,12 @@ public class EnemyHandDrawAnimation : MonoBehaviour
         AnimationObjectInit();
         if (CardToAnimate == null || enemyHandArranger == null)
         {
-            Debug.LogError("애니메이션 대상 카드 또는 HandArranger가 없어 PlaySetAnimation을 실행할 수 없습니다.");
+            // 씬에 연출용 참조가 연결되지 않은 경우: 연출 없이 진행 (게임 진행에는 영향 없음)
+            if (!_warnedMissingRefs)
+            {
+                _warnedMissingRefs = true;
+                Debug.LogWarning($"[{name}] enemyHandPoint/HandArranger가 연결되지 않아 상대 카드 내기 연출을 생략합니다.");
+            }
             return;
         }
 

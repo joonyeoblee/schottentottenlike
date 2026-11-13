@@ -18,8 +18,19 @@ public class CardSlot : MonoBehaviour
     public int RoundIndex { get; set; }
 
     public Sprite CardSprite;
+    private bool _initialized;
+
     private void Start()
     {
+        Init();
+    }
+
+    // 슬롯이 비활성 상태에서 바로 채워지는 경우(Start 전)를 대비해 지연 초기화
+    private void Init()
+    {
+        if (_initialized) return;
+        _initialized = true;
+
         _cardSprite = GetComponent<SpriteRenderer>();
         BattleField = GetComponentInParent<BattleField>();
         CardVerification = GetComponent<UI_CardVerification>();
@@ -32,7 +43,15 @@ public class CardSlot : MonoBehaviour
 
     public void Refresh(Card card)
     {
+        Init();
         _card = card;
+
+        // 멀티: 내 카드는 즉시 상대에게 전송합니다.
+        // (연출이 끝난 뒤 보내면 뒤이어 보내는 턴 전환 RPC가 먼저 도착해 양쪽 판정이 어긋날 수 있음)
+        if (IsMine && BattleField_AI.Instance == null && PhotonNetwork.InRoom && BattleField != null)
+        {
+            BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
+        }
 
         Addressables.LoadAssetAsync<Sprite>(_card.CardImageAddress).Completed += handle =>
         {
@@ -45,22 +64,27 @@ public class CardSlot : MonoBehaviour
             if (boxcollider != null)
                 boxcollider.enabled = false;
 
+            // 로드가 끝나기 전에 슬롯이 비워졌다면(재시작 등) 무시
+            if (_card == null)
+            {
+                Clear();
+                return;
+            }
+
             // --- 분기: 솔로/멀티 ---
-            var battleFieldAI = FindObjectOfType<BattleField_AI>();
+            var battleFieldAI = BattleField_AI.Instance;
             bool isSolo = battleFieldAI != null;
 
             if (isSolo)
             {
-                // 솔로플레이
+                // 솔로플레이: 턴 진행은 BattleField_AI가 담당하므로 여기서는 연출만 재생합니다.
+                // (예전에는 여기서도 OnMyCardPlaced를 호출해 드로우/턴 전환이 두 번 일어났음)
                 if (IsMine)
                 {
                     _cardSprite.color = Color.white;
                     _cardSprite.sprite = CardSprite;
-                    MySetAnimation.PlayAnimation(() =>
-                    {
-                        // 솔로: 네트워크 동기화 없이 바로 후처리
-                        battleFieldAI.OnMyCardPlaced(this);
-                    });
+                    if (MySetAnimation != null)
+                        MySetAnimation.PlayAnimation(null);
                 }
                 else
                 {
@@ -71,25 +95,24 @@ public class CardSlot : MonoBehaviour
                         _cardSprite.sprite = CardSprite;
                     }
 
-                    EnemySetAnimaion.PlaySetAnimation(this.transform, CardSprite.texture, () =>
+                    if (EnemySetAnimaion != null)
                     {
-                        if (_cardSprite != null && CardSprite != null)
+                        EnemySetAnimaion.PlaySetAnimation(this.transform, CardSprite.texture, () =>
                         {
-                            _cardSprite.color = Color.white;
-                            _cardSprite.sprite = CardSprite;
-                        }
+                            if (_cardSprite != null && CardSprite != null)
+                            {
+                                _cardSprite.color = Color.white;
+                                _cardSprite.sprite = CardSprite;
+                            }
 
-                        if (!gameObject.activeInHierarchy)
-                            gameObject.SetActive(true);
+                            if (!gameObject.activeInHierarchy)
+                                gameObject.SetActive(true);
 
-
-                        Card card = BattleField.CardDeck.GetCard();
-
-                        if (card != null)
-                        {
-                            StartCoroutine(EnemyDeckDraw());
-                        }
-                    });
+                            // AI의 실제 드로우는 BattleField_AI에서 처리하고, 여기서는 드로우 연출만 재생
+                            if (battleFieldAI.CardDeck.cards.Count > 0 && isActiveAndEnabled)
+                                StartCoroutine(EnemyDeckDraw());
+                        });
+                    }
                 }
             }
             else
@@ -101,10 +124,8 @@ public class CardSlot : MonoBehaviour
                     {
                         _cardSprite.color = Color.white;
                         _cardSprite.sprite = CardSprite;
-                        MySetAnimation.PlayAnimation(() =>
-                        {
-                            BattleField.photonView.RPC(nameof(BattleField.SetCard), RpcTarget.Others, RoundIndex, Index, _card.CardNumber, (int)_card.Color);
-                        });
+                        if (MySetAnimation != null)
+                            MySetAnimation.PlayAnimation(null);
                     }
                     else
                     {

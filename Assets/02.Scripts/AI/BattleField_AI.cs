@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 
 public class BattleField_AI : Singleton<BattleField_AI>
@@ -16,24 +17,51 @@ public class BattleField_AI : Singleton<BattleField_AI>
     [Header("게임 상태")]
     public ETurn CurrentTurn;
 
+    [Header("AI 설정")]
+    [SerializeField] private float _aiThinkDelay = 0.8f;
+    [SerializeField] private int _lobbySceneIndex = 1;
+
     private bool _isShuffled;
-    public static BattleField_AI Instance;
+    private bool _isDealing;
+    private UI_MatchHud _hud;
+    private TMPro.TMP_Text _aiScoreText;
+    public new static BattleField_AI Instance;
 
-    // 현재 턴의 다음 턴을 반환하는 헬퍼 프로퍼티
-    private ETurn GetNextTurn() => CurrentTurn == ETurn.Player1 ? ETurn.Player2 : ETurn.Player1;
+    public bool IsPlayerTurn => CurrentTurn == ETurn.Player1 && !_isDealing && !IsGameOver;
+    private bool IsGameOver => GameManager.Instance != null && GameManager.Instance.IsGameOver;
 
-    private void Awake()
+    protected override void Awake()
     {
         Instance = this;
+
+        // 메인 씬을 거치지 않고 AI 씬을 바로 실행해도 동작하도록 GameManager를 보장
+        if (GameManager.Instance == null)
+        {
+            new GameObject("GameManager").AddComponent<GameManager>();
+        }
     }
 
-    private void Start()
+    protected override void Start()
     {
         InitializeRoundSlots();
         InitializeHandCardSlots();
         CardDeck.OnCardSuffle += OnShuffled;
-        GameStart();
+        GameManager.OnGameOver += HandleGameOver;
 
+        _hud = UI_MatchHud.Create(transform);
+
+        // 씬에 배치된 AI 정보 패널의 "획득 돌" 텍스트 (있으면 갱신)
+        var scoreGo = GameObject.Find("AIScoreText");
+        if (scoreGo != null) _aiScoreText = scoreGo.GetComponent<TMPro.TMP_Text>();
+
+        GameStart();
+    }
+
+    private void OnDestroy()
+    {
+        if (CardDeck != null) CardDeck.OnCardSuffle -= OnShuffled;
+        GameManager.OnGameOver -= HandleGameOver;
+        if (Instance == this) Instance = null;
     }
 
     /// <summary>
@@ -42,7 +70,12 @@ public class BattleField_AI : Singleton<BattleField_AI>
     public void GameStart()
     {
         Debug.Log("GameStart 호출됨 - 덱 셔플 시작");
+        StopAllCoroutines();
+        GameManager.Instance.ResetGame();
         ClearAllCardSlots();
+        foreach (var round in Rounds) round.ResetStone();
+        _hud.HideResult();
+        UpdateHud();
         StartCoroutine(GameStartSequence());
     }
 
@@ -124,17 +157,19 @@ public class BattleField_AI : Singleton<BattleField_AI>
 
     private IEnumerator GameStartSequence()
     {
+        _isDealing = true;
         _isShuffled = false;
         CardDeck.StartDeckSuffle();
         yield return new WaitUntil(() => _isShuffled);
         yield return new WaitForSeconds(0.5f);
 
-        // 선공 턴 랜덤 결정
-        int rand = Random.Range(0, 2);
-        SetTurn(rand);
-
         // 첫 패 분배
         DealFirstTurnCards();
+        yield return new WaitForSeconds(0.6f);
+        _isDealing = false;
+
+        // 선공 턴 랜덤 결정
+        SetTurn(Random.Range(0, 2));
 
         if (CurrentTurn == ETurn.Player2)
         {
@@ -169,12 +204,31 @@ public class BattleField_AI : Singleton<BattleField_AI>
     }
 
     /// <summary>
-    /// 내 카드가 필드에 놓였을 때 호출됩니다.
+    /// 플레이어가 이 슬롯에 카드를 낼 수 있는지 (드래그 앤 드롭 검증용)
+    /// </summary>
+    public bool CanPlayerPlaceOn(CardSlot slot)
+    {
+        if (!IsPlayerTurn || slot == null || !slot.IsMine || slot.IsOccupied) return false;
+        if (slot.RoundIndex < 0 || slot.RoundIndex >= Rounds.Length) return false;
+        if (GameManager.Instance.IsStoneClaimed(slot.RoundIndex)) return false;
+        return Rounds[slot.RoundIndex].FirstEmptySlot(true) == slot;
+    }
+
+    /// <summary>
+    /// 내 카드가 필드에 놓였을 때 호출됩니다. (UI_CardDragger에서 1회 호출)
     /// </summary>
     public void OnMyCardPlaced(CardSlot placedSlot)
     {
-        StartCoroutine(HandleCardPlacedSequence());
+        if (CurrentTurn != ETurn.Player1) return; // 중복 호출 방지
+
+        int round = placedSlot.RoundIndex;
+        GameManager.Instance.RecordStoneCompleted(round, 1, Rounds[round].CountCards(true));
+
+        // 턴을 즉시 넘겨서 연출 중에 다른 카드를 또 내지 못하게 함
+        CurrentTurn = ETurn.Player2;
+
         JudgeAllRoundsWinner();
+        StartCoroutine(HandleCardPlacedSequence());
     }
 
     /// <summary>
@@ -185,54 +239,29 @@ public class BattleField_AI : Singleton<BattleField_AI>
         yield return new WaitForSeconds(0.05f);
 
         // 비어있는 내 손패에 카드 드로우
-        RequestDrawCard();
+        DrawCard(0, true);
 
-        // 턴 변경
-        SetTurn((int)GetNextTurn());
+        if (IsGameOver) yield break;
 
-        // 다음 슬롯 활성화
-        UpdateSlotActivation();
-
-        // --- 추가: 턴이 AI로 바뀌면 AI 턴 시작 ---
-        if (CurrentTurn == ETurn.Player2)
-        {
-            StartAITurn();
-        }
+        SetTurn((int)ETurn.Player2);
+        StartAITurn();
     }
 
-
-    private void RequestDrawCard()
+    private void DrawCard(int handManagerIndex, bool visible)
     {
-        for (int i = 0; i < HandCardManagers[0].HandCardSlots.Length; i++)
+        var slots = HandCardManagers[handManagerIndex].HandCardSlots;
+        for (int i = 0; i < slots.Length; i++)
         {
-            if (!HandCardManagers[0].HandCardSlots[i].HasCard)
-            {
-                var card = CardDeck.GetCard();
-                if (card != null)
-                {
-                    HandCardManagers[0].HandCardSlots[i].Refresh(i, card, true);
-                    if (HandCardManagers[0].HandCardSlots[i].MyCard?.Rend != null)
-                        HandCardManagers[0].HandCardSlots[i].MyCard.Rend.enabled = true;
-                }
-                break;
-            }
-        }
-    }
+            if (slots[i].HasCard) continue;
 
-    private void UpdateSlotActivation()
-    {
-        foreach (var round in Rounds)
-        {
-            for (int i = 0; i < round.PlayerCardSlots.Length - 1; i++)
+            var card = CardDeck.GetCard();
+            if (card != null)
             {
-                var current = round.PlayerCardSlots[i];
-                var next = round.PlayerCardSlots[i + 1];
-
-                if (current.IsOccupied && !next.gameObject.activeSelf)
-                {
-                    next.gameObject.SetActive(true);
-                }
+                slots[i].Refresh(i, card, visible);
+                if (slots[i].MyCard?.Rend != null)
+                    slots[i].MyCard.Rend.enabled = true;
             }
+            break;
         }
     }
 
@@ -240,11 +269,43 @@ public class BattleField_AI : Singleton<BattleField_AI>
     {
         CurrentTurn = (ETurn)turn;
         Debug.Log($"턴이 {CurrentTurn}으로 변경됨");
-        // TODO: 현재 턴에 따라 UI 업데이트
+        UpdateHud();
+
+        if (IsGameOver || _isDealing) return;
+
+        // 낼 수 있는 카드가 없으면 턴을 넘기거나, 양쪽 모두 불가능하면 게임 종료
+        bool playerCan = HasLegalMove(true);
+        bool aiCan = HasLegalMove(false);
+        if (!playerCan && !aiCan)
+        {
+            GameManager.Instance.EndByStalemate();
+            return;
+        }
+
+        if (CurrentTurn == ETurn.Player1 && !playerCan)
+        {
+            Debug.Log("플레이어가 낼 수 있는 카드가 없어 턴을 넘깁니다.");
+            CurrentTurn = ETurn.Player2;
+            UpdateHud();
+            StartAITurn();
+        }
+    }
+
+    private bool HasLegalMove(bool player)
+    {
+        var hand = HandCardManagers[player ? 0 : 1].HandCardSlots;
+        if (!hand.Any(s => s.HasCard)) return false;
+
+        for (int r = 0; r < Rounds.Length; r++)
+        {
+            if (GameManager.Instance.IsStoneClaimed(r)) continue;
+            if (Rounds[r].FirstEmptySlot(player) != null) return true;
+        }
+        return false;
     }
 
     /// <summary>
-    /// 플레이어가 카드를 두는 UI에서 호출
+    /// 플레이어가 카드를 두는 UI에서 호출 (드래그 이외의 입력 방식용)
     /// </summary>
     public void OnPlayerWantsToPlaceCard(int handIndex, int roundIndex, int slotIndex)
     {
@@ -253,11 +314,10 @@ public class BattleField_AI : Singleton<BattleField_AI>
         if (card == null) return;
 
         var fieldSlot = Rounds[roundIndex].PlayerCardSlots[slotIndex];
-        if (fieldSlot.IsOccupied) return;
+        if (!CanPlayerPlaceOn(fieldSlot)) return;
 
         fieldSlot.Refresh(card);
         handSlot.Clear();
-        GameManager.Instance.RecordFirstPlayerOnStone(roundIndex, 1);
         OnMyCardPlaced(fieldSlot);
     }
 
@@ -266,126 +326,156 @@ public class BattleField_AI : Singleton<BattleField_AI>
     /// </summary>
     public void StartAITurn()
     {
+        if (IsGameOver) return;
         StartCoroutine(AITurnRoutine());
     }
 
     private IEnumerator AITurnRoutine()
     {
-        yield return new WaitForSeconds(0.7f);
+        yield return new WaitForSeconds(_aiThinkDelay);
+        if (IsGameOver) yield break;
 
         var handManager = HandCardManagers[1];
         var handSlots = handManager.HandCardSlots;
-        var rounds = Rounds;
 
-        int bestHandIdx = -1, bestRoundIdx = -1, bestSlotIdx = -1;
-        HandRank bestRank = HandRank.CardSum;
-        int bestSum = -1;
+        var move = AIBrain.ChooseMove(BuildBoardView());
 
-        for (int handIdx = 0; handIdx < handSlots.Length; handIdx++)
+        if (move.HasValue)
         {
-            var handSlot = handSlots[handIdx];
-            if (!handSlot.HasCard) continue;
+            var handSlot = handSlots[move.Value.HandIndex];
             var card = handSlot.Card;
-
-            for (int roundIdx = 0; roundIdx < rounds.Length; roundIdx++)
-            {
-                var enemySlots = rounds[roundIdx].EnemyCardSlots;
-                for (int slotIdx = 0; slotIdx < enemySlots.Length; slotIdx++)
-                {
-                    var slot = enemySlots[slotIdx];
-                    if (slot.IsOccupied) continue;
-
-                    var temp = new List<Card>();
-                    for (int i = 0; i < enemySlots.Length; i++)
-                        if (enemySlots[i].IsOccupied && enemySlots[i].Card != null)
-                            temp.Add(enemySlots[i].Card);
-                    temp.Add(card);
-
-                    var rank = EvaluateHand(temp);
-                    int sum = temp.Sum(c => c.CardNumber);
-
-                    if (rank > bestRank || (rank == bestRank && sum > bestSum))
-                    {
-                        bestHandIdx = handIdx;
-                        bestRoundIdx = roundIdx;
-                        bestSlotIdx = slotIdx;
-                        bestRank = rank;
-                        bestSum = sum;
-                    }
-                }
-            }
-        }
-
-        if (bestHandIdx != -1 && bestRoundIdx != -1 && bestSlotIdx != -1)
-        {
-            var handSlot = handSlots[bestHandIdx];
-            var card = handSlot.Card;
-            var targetSlot = rounds[bestRoundIdx].EnemyCardSlots[bestSlotIdx];
+            var round = Rounds[move.Value.RoundIndex];
+            var targetSlot = round.FirstEmptySlot(false);
 
             if (!targetSlot.gameObject.activeSelf)
                 targetSlot.gameObject.SetActive(true);
 
             targetSlot.Refresh(card);
             handSlot.Clear();
-            GameManager.Instance.RecordFirstPlayerOnStone(bestRoundIdx, 2);
+            GameManager.Instance.RecordStoneCompleted(move.Value.RoundIndex, 2, round.CountCards(false));
             JudgeAllRoundsWinner();
 
-            // AI 카드 드로우
-            for (int i = 0; i < handManager.HandCardSlots.Length; i++)
-            {
-                var slot = handManager.HandCardSlots[i];
-                if (!slot.HasCard)
-                {
-                    var newCard = CardDeck.GetCard();
-                    if (newCard != null)
-                    {
-                        slot.Refresh(i, newCard, false);
-                        slot.MyCard.Rend.enabled = true;
-                    }
-                    break;
-                }
-            }
-
-            // 턴 전환
-            SetTurn((int)ETurn.Player1);
+            // AI 카드 드로우 (뒷면)
+            DrawCard(1, false);
         }
         else
         {
             Debug.Log("AI가 낼 카드가 없습니다.");
-            SetTurn((int)ETurn.Player1);
         }
+
+        if (IsGameOver) yield break;
+
+        // 턴 전환
+        SetTurn((int)ETurn.Player1);
+    }
+
+    private AIBrain.BoardView BuildBoardView()
+    {
+        var view = new AIBrain.BoardView
+        {
+            AiCards = new List<Card>[Rounds.Length],
+            PlayerCards = new List<Card>[Rounds.Length],
+            Owners = (int[])GameManager.Instance.RoundOwners.Clone(),
+            Hand = HandCardManagers[1].HandCardSlots.Select(s => s.HasCard ? s.Card : null).ToList(),
+            FieldUnused = GetUnusedCardsFromField(),
+            SlotsPerSide = Rounds[0].EnemyCardSlots.Length,
+        };
+
+        for (int r = 0; r < Rounds.Length; r++)
+        {
+            view.AiCards[r] = GetEnemyCards(r);
+            view.PlayerCards[r] = GetPlayerCards(r);
+        }
+
+        // AI가 모르는 카드 = 필드에 없는 카드 - AI 손패
+        view.Unseen = view.FieldUnused
+            .Where(c => !view.Hand.Any(h => h != null && h.CardNumber == c.CardNumber && h.Color == c.Color))
+            .ToList();
+        return view;
     }
 
     private void JudgeAllRoundsWinner()
     {
+        List<Card> unusedCards = GetUnusedCardsFromField();
+
         for (int roundIndex = 0; roundIndex < Rounds.Length; roundIndex++)
         {
-            List<Card> playerCards = GetPlayerCards(roundIndex);
-            List<Card> enemyCards = GetEnemyCards(roundIndex);
-            List<Card> unusedCards = GetUnusedCardsFromField();
-
-            JudgeResult judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards, roundIndex);
-
-            GameManager.Instance.UpdateRoundOwnerAndCheckWin(roundIndex, judgeResult.Winner);
-
-            Rounds[roundIndex].MoveStoneToOwner(judgeResult.Winner);
-
-            string playerRank = judgeResult.Player1Rank.ToString();
-            string enemyRank = judgeResult.Player2Rank.ToString();
-
-            if (judgeResult.Winner == 1)
+            if (!GameManager.Instance.IsStoneClaimed(roundIndex))
             {
-                Debug.Log($"라운드 {roundIndex}: 플레이어1 승리 ({playerRank} vs {enemyRank})");
+                List<Card> playerCards = GetPlayerCards(roundIndex);
+                List<Card> enemyCards = GetEnemyCards(roundIndex);
+
+                JudgeResult judgeResult = GameManager.Instance.JudgeStoneWithRank(playerCards, enemyCards, unusedCards, roundIndex);
+                GameManager.Instance.UpdateRoundOwnerAndCheckWin(roundIndex, judgeResult.Winner);
+
+                if (judgeResult.Winner != 0)
+                {
+                    string who = judgeResult.Winner == 1 ? "플레이어" : "AI";
+                    Debug.Log($"경계석 {roundIndex}: {who} 점령 ({judgeResult.Player1Rank} vs {judgeResult.Player2Rank})");
+                }
             }
-            else if (judgeResult.Winner == 2)
-            {
-                Debug.Log($"라운드 {roundIndex}: 플레이어2 승리 ({playerRank} vs {enemyRank})");
-            }
-            else
-            {
-                Debug.Log($"라운드 {roundIndex}: 무승부 또는 미정 ({playerRank} vs {enemyRank})");
-            }
+
+            int owner = GameManager.Instance.RoundOwners[roundIndex];
+            Rounds[roundIndex].MoveStoneToOwner(owner);
+            Rounds[roundIndex].RefreshSlotVisibility(owner != 0);
         }
+
+        UpdateHud();
+    }
+
+    private void UpdateHud()
+    {
+        if (_hud == null || GameManager.Instance == null) return;
+
+        var owners = GameManager.Instance.RoundOwners;
+        int aiStones = owners.Count(o => o == 2);
+        _hud.SetScore(owners.Count(o => o == 1), aiStones, "나", "AI");
+        if (_aiScoreText != null) _aiScoreText.text = $"획득 돌: {aiStones}개";
+
+        if (IsGameOver)
+            _hud.SetTurn(null, false);
+        else if (_isDealing)
+            _hud.SetTurn("카드 분배 중", true);
+        else
+            _hud.SetTurn(CurrentTurn == ETurn.Player1 ? "내 차례" : "AI 차례", CurrentTurn == ETurn.Player1);
+    }
+
+    private void HandleGameOver(int winner)
+    {
+        StopAllCoroutines();
+        UpdateHud();
+
+        string title = winner == 1 ? "승리" : winner == 2 ? "패배" : "무승부";
+        string sub = DescribeResult(winner);
+
+        StartCoroutine(ShowResultDelayed(title, winner == 1, sub));
+    }
+
+    private IEnumerator ShowResultDelayed(string title, bool isWin, string sub)
+    {
+        // 마지막 카드/경계석 연출을 볼 수 있도록 잠시 대기
+        yield return new WaitForSeconds(1.0f);
+        _hud.ShowResult(title, isWin, sub,
+            "다시 하기", GameStart,
+            "로비로", () => SceneManager.LoadScene(_lobbySceneIndex));
+    }
+
+    private string DescribeResult(int winner)
+    {
+        var owners = GameManager.Instance.RoundOwners;
+        int mine = owners.Count(o => o == 1);
+        int ai = owners.Count(o => o == 2);
+        if (winner == 0) return $"경계석 {mine} : {ai} — 더 이상 낼 카드가 없습니다";
+
+        int w = winner;
+        for (int i = 0; i <= owners.Length - 3; i++)
+            if (owners[i] == w && owners[i + 1] == w && owners[i + 2] == w)
+                return $"연속된 경계석 3개 점령!  (경계석 {mine} : {ai})";
+
+        if ((w == 1 ? mine : ai) >= 5)
+            return $"경계석 5개 점령!  (경계석 {mine} : {ai})";
+
+        return $"경계석 {mine} : {ai}";
     }
 
     private List<Card> GetPlayerCards(int roundIndex)
@@ -421,30 +511,6 @@ public class BattleField_AI : Singleton<BattleField_AI>
         return all.Where(c => !used.Any(u => u.CardNumber == c.CardNumber && u.Color == c.Color)).ToList();
     }
 
-    private HandRank EvaluateHand(List<Card> cards)
-    {
-        if (cards.Count < 1) return HandRank.CardSum;
-        var numbers = cards.Select(c => c.CardNumber).OrderBy(n => n).ToArray();
-        bool isFlush = cards.All(c => c.Color == cards[0].Color);
-        bool isStraight = cards.Count == 3 && numbers[2] - numbers[0] == 2 && numbers.Distinct().Count() == 3;
-        bool isThree = cards.GroupBy(c => c.CardNumber).Any(g => g.Count() == 3);
-
-        if (isFlush && isStraight) return HandRank.StraightFlush;
-        if (isThree) return HandRank.ThreeOfAKind;
-        if (isFlush) return HandRank.Flush;
-        if (isStraight) return HandRank.Straight;
-        return HandRank.CardSum;
-    }
-
-    private enum HandRank
-    {
-        StraightFlush = 5,
-        ThreeOfAKind = 4,
-        Flush = 3,
-        Straight = 2,
-        CardSum = 1
-    }
-
     /// <summary>
     /// 상대 핸드카드가 펼쳐지는 애니메이션을 재생합니다.
     /// </summary>
@@ -461,9 +527,4 @@ public class BattleField_AI : Singleton<BattleField_AI>
         }
         enemyAnimation.PlayFanInAnimation();
     }
-
-    //public void MoveStoneToOwner(int roundIndex, int owner)
-    //{
-    //    Rounds[roundIndex].MoveStoneToOwner(owner);
-    //}
 }
