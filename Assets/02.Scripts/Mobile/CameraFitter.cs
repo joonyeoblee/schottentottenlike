@@ -7,8 +7,8 @@ using UnityEngine;
 [RequireComponent(typeof(Camera))]
 public class CameraFitter : MonoBehaviour
 {
-    [Tooltip("항상 보여야 하는 보드의 절반 너비 (월드 단위). 경계석 9개 + 여백")]
-    public float RequiredHalfWidth = 7.2f;
+    [Tooltip("항상 보여야 하는 절반 너비 (월드 단위). 경계석 9개(±6.3) + 왼쪽 상대 손패 영역(약 3.3)")]
+    public float RequiredHalfWidth = 9.6f;
 
     private Camera _cam;
     private float _baseSize;

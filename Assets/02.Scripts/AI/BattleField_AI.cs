@@ -49,6 +49,7 @@ public class BattleField_AI : Singleton<BattleField_AI>
         GameManager.OnGameOver += HandleGameOver;
 
         _hud = UI_MatchHud.Create(transform);
+        HandCardManagers[1].gameObject.AddComponent<EnemyHandDock>(); // 상대 손패가 판을 가리지 않게 좌상단으로
         _hud.OnHelp += () => UI_Tutorial.Show(_hud.Font, true, null);
         _hud.OnBack += ConfirmExit;
 
