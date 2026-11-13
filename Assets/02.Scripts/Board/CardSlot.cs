@@ -150,6 +150,26 @@ public class CardSlot : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// 재연결 복원용: 네트워크 전송/연출 없이 카드만 조용히 놓습니다.
+    /// (Refresh는 내 카드일 때 상대에게 SetCard RPC를 보내므로 복원에 쓰면 안 됨)
+    /// </summary>
+    public void RestoreCard(Card card)
+    {
+        Init();
+        _card = card;
+        if (!gameObject.activeSelf) gameObject.SetActive(true);
+        Addressables.LoadAssetAsync<Sprite>(card.CardImageAddress).Completed += handle =>
+        {
+            if (_card != card || _cardSprite == null) return;
+            _cardSprite.color = Color.white;
+            _cardSprite.sprite = handle.Result;
+            CardSprite = handle.Result;
+            var col = GetComponent<Collider2D>();
+            if (col != null) col.enabled = false;
+        };
+    }
+
     private static readonly Color EmptyColor = new Color(1f, 1f, 1f, 122f / 255f);
     private static readonly Color HighlightColor = new Color(1f, 0.92f, 0.55f, 1f);
 

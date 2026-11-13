@@ -34,6 +34,7 @@ public class CardDeck : MonoBehaviour
         }
 
         cards = new Stack<Card>(cardList);
+        _order = new List<Card>(cardList);
 
         // 멀티플레이일 때만 덱 동기화
         if (isMultiplayer && isMaster)
@@ -53,14 +54,45 @@ public class CardDeck : MonoBehaviour
 
     public void SyncDeckFromData(int[] nums, int[] colors)
     {
-        Stack<Card> syncedDeck = new Stack<Card>();
-        for (int i = nums.Length - 1; i >= 0; i--)
-        {
-            syncedDeck.Push(new Card(nums[i], (ECardColor)colors[i]));
-        }
+        // 방장과 같은 순서/같은 뽑기 방향으로 구성 (예전에는 뒤집힌 순서였지만 방장만 뽑아서 드러나지 않았음)
+        _order = new List<Card>();
+        for (int i = 0; i < nums.Length; i++)
+            _order.Add(new Card(nums[i], (ECardColor)colors[i]));
 
-        cards = syncedDeck;
+        cards = new Stack<Card>(_order);
         OnCardSuffle?.Invoke();
+    }
+
+    // ---- 재연결/방장 교체 지원 ----
+    private List<Card> _order = new List<Card>(); // 셔플된 전체 덱 순서 (양쪽 클라이언트가 동일하게 보유)
+
+    public bool HasOrder => _order.Count > 0;
+
+    public void GetOrder(out int[] nums, out int[] colors)
+    {
+        nums = new int[_order.Count];
+        colors = new int[_order.Count];
+        for (int i = 0; i < _order.Count; i++) { nums[i] = _order[i].CardNumber; colors[i] = (int)_order[i].Color; }
+    }
+
+    /// <summary>
+    /// 이미 뽑힌 카드(필드 + 양쪽 손패)를 제외하고 남은 덱을 같은 순서로 재구성합니다.
+    /// 방장이 바뀌거나(새 방장이 뽑기 담당) 재연결로 상태를 복원할 때 사용합니다.
+    /// </summary>
+    public void RebuildRemaining(IEnumerable<Card> drawn)
+    {
+        var used = new HashSet<(int, ECardColor)>();
+        foreach (var c in drawn) if (c != null) used.Add((c.CardNumber, c.Color));
+        var remaining = new List<Card>();
+        foreach (var c in _order) if (!used.Contains((c.CardNumber, c.Color))) remaining.Add(c);
+        cards = new Stack<Card>(remaining);
+        Debug.Log($"[CardDeck] 남은 덱 재구성: {cards.Count}장");
+    }
+
+    public void SetOrder(int[] nums, int[] colors)
+    {
+        _order = new List<Card>();
+        for (int i = 0; i < nums.Length; i++) _order.Add(new Card(nums[i], (ECardColor)colors[i]));
     }
 
     

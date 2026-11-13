@@ -57,6 +57,23 @@ public class GameManager : Singleton<GameManager>
         IsGameOver = false;
     }
 
+    /// <summary>재연결 동기화용: 경계석별 '먼저 3장을 완성한 플레이어' 기록 (로컬 시점 1/2, 0=없음)</summary>
+    public int[] GetCompletionOrder() => (int[])_firstPlayerOnStone.Clone();
+
+    /// <summary>
+    /// 재연결 시 판 상태 복원. owners/firsts는 로컬 시점(1=나, 2=상대)이어야 합니다.
+    /// </summary>
+    public void RestoreState(int[] owners, int[] firsts, bool gameOver)
+    {
+        InitializeGame();
+        for (int i = 0; i < _stoneCount && i < owners.Length; i++)
+        {
+            RoundOwners[i] = owners[i];
+            _firstPlayerOnStone[i] = i < firsts.Length ? firsts[i] : 0;
+        }
+        IsGameOver = gameOver;
+    }
+
     /// <summary>
     /// 해당 경계석이 이미 점령되었는지 여부. 점령된 경계석에는 더 이상 카드를 낼 수 없습니다.
     /// </summary>

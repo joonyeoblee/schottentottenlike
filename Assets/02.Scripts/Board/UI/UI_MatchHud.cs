@@ -205,12 +205,28 @@ public class UI_MatchHud : MonoBehaviour
     // Public API
     // ------------------------------------------------------------------
 
+    private string _turnBase = "";
+    private int _lastTimerShown = -2;
+
+    /// <summary>턴 남은 시간 표시 (음수면 숨김). 10초 이하면 붉게 강조</summary>
+    public void SetTimer(float seconds)
+    {
+        int s = seconds < 0 ? -1 : Mathf.CeilToInt(seconds);
+        if (s == _lastTimerShown || !_turnBadge.gameObject.activeSelf) return;
+        _lastTimerShown = s;
+        _turnText.text = s < 0 ? _turnBase
+            : s <= 10 ? $"{_turnBase} <color=#C0392B>{s}</color>"
+            : $"{_turnBase} <size=80%>{s}</size>";
+    }
+
     /// <param name="text">null이면 배지를 숨깁니다.</param>
     public void SetTurn(string text, bool isMine)
     {
         bool show = !string.IsNullOrEmpty(text);
         _turnBadge.gameObject.SetActive(show);
         if (!show) return;
+        _turnBase = text;
+        _lastTimerShown = -2;
         _turnText.text = text;
         _turnBadge.color = isMine ? new Color(0.75f, 1f, 0.78f) : new Color(1f, 0.72f, 0.68f);
         _turnBadge.sprite = UIKit.Sprite(isMine ? "UI/ButtonGreen" : "UI/Button");
@@ -320,5 +336,165 @@ public class UI_MatchHud : MonoBehaviour
     {
         _isConfirmDialog = false;
         _resultRoot.SetActive(false);
+        if (_reviewButton != null) _reviewButton.gameObject.SetActive(false);
+    }
+
+    // ------------------------------------------------------------------
+    // 상태 배너 (상대 재연결 대기 등, 계속 표시)
+    // ------------------------------------------------------------------
+    private RectTransform _statusRoot;
+    private TextMeshProUGUI _statusText;
+
+    public void ShowStatus(string text)
+    {
+        if (_statusRoot == null)
+        {
+            var safe = transform.Find("SafeArea");
+            _statusRoot = UIKit.Rect("Status", safe != null ? safe : transform);
+            UIKit.Place(_statusRoot, new Vector2(0, 130), new Vector2(1100, 80));
+            UIKit.SlicedImage(_statusRoot.gameObject, "UI/Panel", new Color(1f, 0.9f, 0.8f)).raycastTarget = false;
+            _statusText = UIKit.Text(_statusRoot, _font, "", 32, InkColor);
+            UIKit.Stretch(_statusText.rectTransform, 20, 20, 0, 0);
+            _statusText.fontStyle = FontStyles.Bold;
+        }
+        _statusRoot.gameObject.SetActive(true);
+        if (_statusText.text != text) _statusText.text = text;
+    }
+
+    public void HideStatus()
+    {
+        if (_statusRoot != null) _statusRoot.gameObject.SetActive(false);
+    }
+
+    // ------------------------------------------------------------------
+    // 복기 (게임이 끝난 뒤 경계석별 양쪽 조합 보기)
+    // ------------------------------------------------------------------
+    private Button _reviewButton;
+    private Action _onReview;
+    private GameObject _reviewRoot;
+
+    /// <summary>결과 패널 오른쪽 위에 '복기' 버튼 표시</summary>
+    public void SetReviewAction(Action onReview)
+    {
+        _onReview = onReview;
+        if (_reviewButton == null)
+        {
+            var rt = UIKit.Rect("ReviewButton", _resultPanel);
+            UIKit.Place(rt, new Vector2(320, 225), new Vector2(170, 76));
+            var img = UIKit.SlicedImage(rt.gameObject, "UI/Panel", new Color(0.9f, 0.95f, 1f));
+            _reviewButton = rt.gameObject.AddComponent<Button>();
+            _reviewButton.targetGraphic = img;
+            _reviewButton.onClick.AddListener(() => _onReview?.Invoke());
+            rt.gameObject.AddComponent<ButtonPress>();
+            var t = UIKit.Text(rt, _font, "복기", 32, InkColor);
+            UIKit.Stretch(t.rectTransform);
+            t.fontStyle = FontStyles.Bold;
+        }
+        _reviewButton.gameObject.SetActive(onReview != null);
+    }
+
+    public void HideReview()
+    {
+        if (_reviewRoot != null) Destroy(_reviewRoot);
+    }
+
+    private static string RankName(System.Collections.Generic.List<Card> cards)
+    {
+        if (cards.Count < 3) return $"<size=80%>미완성 ({cards.Count}장)</size>";
+        int sum = 0; foreach (var c in cards) sum += c.CardNumber;
+        switch (GameManager.EvaluateHand(cards))
+        {
+            case HandRank.StraightFlush: return "같은 색 연속";
+            case HandRank.ThreeOfAKind: return "같은 숫자";
+            case HandRank.Flush: return "같은 색";
+            case HandRank.Straight: return "연속 숫자";
+            default: return $"합 {sum}";
+        }
+    }
+
+    /// <summary>
+    /// 경계석 9개 각각에 대해 양쪽 카드와 조합, 누가 차지했는지 보여줍니다. (owners: 1 = 나, 2 = 상대)
+    /// </summary>
+    public void ShowReview(RoundSlot[] rounds, int[] owners, string myName, string enemyName)
+    {
+        HideReview();
+        _reviewRoot = UIKit.Rect("Review", transform).gameObject;
+        var root = (RectTransform)_reviewRoot.transform;
+        UIKit.Stretch(root);
+        root.gameObject.AddComponent<Image>().color = new Color(0, 0, 0, 0.75f);
+
+        var panel = UIKit.Rect("Panel", root);
+        UIKit.Place(panel, Vector2.zero, new Vector2(2120, 960));
+        UIKit.SlicedImage(panel.gameObject, "UI/Panel", Color.white);
+        // 화면이 좁으면(16:9, 태블릿) 패널 전체를 줄여서 맞춤
+        var canvasRect = ((RectTransform)transform).rect;
+        float fit = Mathf.Min(1f, (canvasRect.width - 40f) / 2120f, (canvasRect.height - 40f) / 960f);
+        if (fit > 0) panel.localScale = Vector3.one * fit;
+
+        var title = UIKit.Text(panel, _font, "대전 복기", 52, InkColor);
+        UIKit.Place(title.rectTransform, new Vector2(0, 410), new Vector2(800, 70));
+        title.fontStyle = FontStyles.Bold;
+
+        var en = UIKit.Text(panel, _font, enemyName, 30, EnemyColor);
+        UIKit.Place(en.rectTransform, new Vector2(-960, 225), new Vector2(160, 60));
+        en.fontStyle = FontStyles.Bold;
+        var me = UIKit.Text(panel, _font, myName, 30, MyColor);
+        UIKit.Place(me.rectTransform, new Vector2(-960, -205), new Vector2(160, 60));
+        me.fontStyle = FontStyles.Bold;
+
+        float colW = 205f;
+        for (int r = 0; r < rounds.Length; r++)
+        {
+            float x = -820 + r * colW;
+            var mine = new System.Collections.Generic.List<Card>();
+            var theirs = new System.Collections.Generic.List<Card>();
+
+            for (int k = 0; k < rounds[r].EnemyCardSlots.Length; k++)
+            {
+                var s = rounds[r].EnemyCardSlots[k];
+                if (!s.IsOccupied) continue;
+                theirs.Add(s.Card);
+                ReviewCard(panel, s.CardSprite, new Vector2(x - 52 + k * 52, 270), 180f);
+            }
+            for (int k = 0; k < rounds[r].PlayerCardSlots.Length; k++)
+            {
+                var s = rounds[r].PlayerCardSlots[k];
+                if (!s.IsOccupied) continue;
+                mine.Add(s.Card);
+                ReviewCard(panel, s.CardSprite, new Vector2(x - 52 + k * 52, -250), 0f);
+            }
+
+            var et = UIKit.Text(panel, _font, RankName(theirs), 26, InkColor);
+            UIKit.Place(et.rectTransform, new Vector2(x, 145), new Vector2(200, 40));
+            var mt = UIKit.Text(panel, _font, RankName(mine), 26, InkColor);
+            UIKit.Place(mt.rectTransform, new Vector2(x, -125), new Vector2(200, 40));
+
+            // 경계석 (차지한 쪽 색)
+            var stone = UIKit.Rect("Stone", panel);
+            UIKit.Place(stone, new Vector2(x, 10), new Vector2(150, 107));
+            var si = stone.gameObject.AddComponent<Image>();
+            si.sprite = UIKit.Sprite("UI/Stone");
+            si.preserveAspect = true;
+            int o = owners != null && r < owners.Length ? owners[r] : 0;
+            si.color = o == 1 ? RoundSlot.MyStone : o == 2 ? RoundSlot.EnemyStone : new Color(1, 1, 1, 0.6f);
+            var label = UIKit.Text(stone, _font, o == 1 ? "<b>내 것</b>" : o == 2 ? "<b>상대</b>" : "", 24, Color.white);
+            UIKit.Stretch(label.rectTransform);
+            label.outlineWidth = 0.25f; label.outlineColor = InkColor;
+        }
+
+        var close = UIKit.Button(panel, _font, "UI/Button", new Vector2(0, -410), new Vector2(260, 96), out var closeLabel);
+        closeLabel.text = "닫기";
+        close.onClick.AddListener(HideReview);
+    }
+
+    private void ReviewCard(RectTransform parent, Sprite sprite, Vector2 pos, float rotation)
+    {
+        var rt = UIKit.Rect("Card", parent);
+        UIKit.Place(rt, pos, new Vector2(74, 108));
+        rt.localRotation = Quaternion.Euler(0, 0, rotation);
+        var img = rt.gameObject.AddComponent<Image>();
+        img.sprite = sprite;
+        img.preserveAspect = true;
+        img.color = sprite != null ? Color.white : new Color(1, 1, 1, 0.2f);
     }
 }

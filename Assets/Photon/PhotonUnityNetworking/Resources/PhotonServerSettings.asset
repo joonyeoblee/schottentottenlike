@@ -55,6 +55,8 @@ MonoBehaviour:
   - RPC_SetReady
   - RPC_PrepareMatch
   - RPC_RematchReady
+  - RPC_ApplySnapshot
+  - RPC_RequestSnapshot
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

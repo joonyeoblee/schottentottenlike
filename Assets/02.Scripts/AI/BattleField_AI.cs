@@ -140,6 +140,7 @@ public class BattleField_AI : Singleton<BattleField_AI>
         ClearAllCardSlots();
         foreach (var round in Rounds) round.ResetStone();
         _hud.HideResult();
+        _hud.HideReview();
         UpdateHud();
         StartCoroutine(GameStartSequence());
     }
@@ -520,7 +521,8 @@ public class BattleField_AI : Singleton<BattleField_AI>
         UpdateHud();
 
         string title = winner == 1 ? "승리" : winner == 2 ? "패배" : "무승부";
-        string sub = DescribeResult(winner) + $"\n<size=26>AI 난이도: {AISettings.DisplayName(_difficulty)}</size>";
+        PlayerStats.RecordAI(_difficulty, winner == 1 ? 1 : winner == 2 ? -1 : 0);
+        string sub = DescribeResult(winner) + $"\n<size=26>{PlayerStats.AISummary(_difficulty)}</size>";
 
         StartCoroutine(ShowResultDelayed(title, winner == 1, sub));
     }
@@ -532,6 +534,7 @@ public class BattleField_AI : Singleton<BattleField_AI>
         _hud.ShowResult(title, isWin, sub,
             "다시 하기", GameStart,
             "로비로", () => SceneManager.LoadScene(_lobbySceneIndex));
+        _hud.SetReviewAction(() => _hud.ShowReview(Rounds, GameManager.Instance.RoundOwners, "나", "AI"));
     }
 
     private string DescribeResult(int winner)

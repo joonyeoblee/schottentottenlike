@@ -42,6 +42,14 @@ public class PhotonServerManager : SingletonPhoton<PhotonServerManager>
         {
             Debug.Log($"플레이어: {player.NickName}, ActorNumber: {player.ActorNumber}");
         }
+        // 재연결로 다시 들어온 경우: 이미 대전 씬이고, 게임판(Field)은 방에 캐시된 생성 이벤트로 자동 복원되므로
+        // 씬을 다시 불러오거나 새 게임판을 만들지 않음 (판 상태는 BattleField가 상대에게 받아서 복원)
+        if (ReconnectManager.IsReconnecting || ReconnectManager.JustRejoined)
+        {
+            Debug.Log("재연결 입장 — 씬/필드 유지");
+            return;
+        }
+
         _shouldSpawnField = true;
         SceneManager.sceneLoaded += OnSceneLoaded;
         PhotonNetwork.LoadLevel(2);
@@ -74,7 +82,8 @@ public class PhotonServerManager : SingletonPhoton<PhotonServerManager>
     {
         Debug.Log($"플레이어 입장: {newPlayer.NickName}");
 
-        if (PhotonNetwork.IsMasterClient)
+        // 끊겼던 상대가 재입장한 경우엔 새 게임을 시작하지 않음 (진행 중인 판을 이어감)
+        if (PhotonNetwork.IsMasterClient && BattleField.Instance != null && !BattleField.Instance.MatchInProgress)
         {
             BattleField.Instance.GameStart();
         }

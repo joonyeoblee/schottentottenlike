@@ -12,7 +12,8 @@ public class PhotonGameSessionManager : SingletonPhoton<PhotonGameSessionManager
 
     private void OnApplicationFocus(bool focus)
     {
-        if (focus && !_isFirstRun && !PhotonNetwork.IsConnected)
+        // 대전 중 재연결은 ReconnectManager가 담당
+        if (focus && !_isFirstRun && !PhotonNetwork.IsConnected && !ReconnectManager.IsReconnecting)
         {
             TryReconnect();
         }

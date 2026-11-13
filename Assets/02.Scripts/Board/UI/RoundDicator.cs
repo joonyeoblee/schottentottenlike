@@ -1,4 +1,3 @@
-using Photon.Pun;
 using UnityEngine;
 
 public class RoundDicator : MonoBehaviour
@@ -13,10 +12,12 @@ public class RoundDicator : MonoBehaviour
 
     public void Turn()
     {
-        bool isMaster = PhotonNetwork.IsMasterClient;
-        ETurn currentTurn = BattleField.Instance.CurrentTurn;
-        bool isMyTurn = isMaster && currentTurn == ETurn.Player1 || !isMaster && currentTurn == ETurn.Player2;
+        // 차례 판정은 BattleField 기준 (방장 교체에도 바뀌지 않는 ActorNumber 기준)
+        var bf = BattleField.Instance;
+        if (bf == null) return;
+        bool isMyTurn = bf.CurrentTurn == bf.MyTurn;
+        IsMyTurn = isMyTurn;
         Vector3 targetRotation = isMyTurn ? MyTurnRotation : EnemyTurnRotaion;
-        transform.localRotation = Quaternion.Euler(targetRotation);    }
-
+        transform.localRotation = Quaternion.Euler(targetRotation);
+    }
 }

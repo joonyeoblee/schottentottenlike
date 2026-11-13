@@ -57,7 +57,7 @@ public class CardDragger : BaseSelectable, IPointerDownHandler, IPointerUpHandle
         // --- 자기 턴인지 확인 ---
         var isMaster = PhotonNetwork.IsMasterClient;
         var currentTurn = BattleField.Instance.CurrentTurn;
-        bool isMyTurn = (isMaster && currentTurn == ETurn.Player1) || (!isMaster && currentTurn == ETurn.Player2);
+        bool isMyTurn = BattleField.Instance != null && BattleField.Instance.IsMyTurn; // 방장 교체에도 안전한 판정
         if (!isMyTurn)
         {
             // 자기 턴이 아니면 배치 불가 → 제자리 복귀

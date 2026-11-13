@@ -98,7 +98,7 @@ public class UI_GameOver : MonoBehaviourPunCallbacks
     private void OnExitButtonClicked()
     {
         photonView.RPC(nameof(RPC_OpponentExit), RpcTarget.Others);
-        PhotonNetwork.LeaveRoom();
+        ReconnectManager.LeaveIntentionally();
     }
 
     private void UpdateReadyToggles()

@@ -29,24 +29,36 @@ public class AutoTestClient : MonoBehaviourPunCallbacks
     private string _logPath;
     private readonly List<RoomInfo> _rooms = new List<RoomInfo>();
 
+    // 장애 시나리오 (첫 판에서만)
+    private int _dropAtMove = -1;   // 이 수를 둔 직후 네트워크 끊김 흉내 → 자동 재연결 검증
+    private int _idleAtTurn = -1;   // 이 번째 내 차례에 아무것도 안 함 → 턴 시간 초과 자동 진행 검증
+    private int _myTurnCount;
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void FromCommandLine()
     {
         var args = System.Environment.GetCommandLineArgs();
         int i = System.Array.IndexOf(args, "-autotest");
-        if (i >= 0) Begin(i + 1 < args.Length ? args[i + 1] : "guest");
+        if (i < 0) return;
+        int Arg(string name, int def) { int k = System.Array.IndexOf(args, name); return k >= 0 && k + 1 < args.Length && int.TryParse(args[k + 1], out var v) ? v : def; }
+        Begin(i + 1 < args.Length ? args[i + 1] : "guest", Arg("-drop", -1), Arg("-idle", -1), Arg("-games", 2));
     }
 
-    public static string Begin(string role)
+    public static string Begin(string role) => Begin(role, -1, -1, 2);
+
+    public static string Begin(string role, int dropAtMove, int idleAtTurn, int games)
     {
         if (Instance != null) return "already running as " + Instance._role;
         var go = new GameObject("AutoTestClient");
         DontDestroyOnLoad(go);
         Instance = go.AddComponent<AutoTestClient>();
         Instance._role = role;
+        Instance._dropAtMove = dropAtMove;
+        Instance._idleAtTurn = idleAtTurn;
+        Instance._gamesToPlay = games;
         Instance._logPath = Path.Combine(Application.persistentDataPath, $"autotest_{role}.log");
         File.WriteAllText(Instance._logPath, "");
-        Instance.Log($"start role={role} unity={Application.unityVersion}");
+        Instance.Log($"start role={role} unity={Application.unityVersion} drop={dropAtMove} idle={idleAtTurn} games={games}");
         Instance.StartCoroutine(Instance.Run());
         return "started " + role + " log=" + Instance._logPath;
     }
@@ -81,7 +93,14 @@ public class AutoTestClient : MonoBehaviourPunCallbacks
         yield return WaitFor(() => SceneManager.GetActiveScene().buildIndex == 1 && PhotonNetwork.InLobby, 60, "lobby");
         Log($"in lobby region={PhotonNetwork.CloudRegion}");
 
-        if (_role == "host")
+        if (_role.StartsWith("quick"))
+        {
+            // 빠른 대전: 양쪽 다 같은 버튼 → 먼저 누른 쪽이 방을 만들고, 나중 쪽이 자동으로 들어옴
+            yield return new WaitForSeconds(_role == "quickB" ? 3f : 0f);
+            FindAnyObjectByType<UI_Lobby>().QuickMatch();
+            Log("quick match requested");
+        }
+        else if (_role == "host")
         {
             var lobby = FindAnyObjectByType<UI_Lobby>();
             lobby.RoomNameInputField.text = "autotest";
@@ -119,25 +138,62 @@ public class AutoTestClient : MonoBehaviourPunCallbacks
     private IEnumerator PlayOneGame()
     {
         _moves = 0;
+        _myTurnCount = 0;
         var gm = GameManager.Instance;
         float idle = 0;
+        ETurn lastTurnSeen = (ETurn)(-1);
         while (!gm.IsGameOver)
         {
             var bf = BattleField.Instance;
-            if (bf == null) { Log("ERROR battlefield destroyed (opponent left?)"); yield break; }
+            if (bf == null)
+            {
+                // 연결 끊김으로 게임판이 사라진 상태 → 재연결을 기다림
+                if (ReconnectManager.ExpectingReconnect)
+                {
+                    yield return new WaitForSeconds(0.5f);
+                    idle += 0.5f;
+                    if (idle > 90f) { Log("ERROR reconnect timeout " + Status()); yield break; }
+                    continue;
+                }
+                Log("ERROR battlefield destroyed (opponent left?)"); yield break;
+            }
 
             if (bf.IsMyTurn && bf.HandCardManagers[0].HandCardSlots.Any(s => s.HasCard))
             {
+                if (bf.CurrentTurn != lastTurnSeen) { _myTurnCount++; lastTurnSeen = bf.CurrentTurn; }
+                bool doIdle = _gamesDone == 0 && _myTurnCount == _idleAtTurn;
+                if (doIdle)
+                {
+                    // 턴 시간 초과 테스트: 아무것도 하지 않고 자동 진행을 기다림
+                    Log($"IDLE turn #{_myTurnCount} — waiting for timeout auto-play ({BattleField.TurnSeconds}s)");
+                    int before = bf.Rounds.Sum(r => r.CountCards(true));
+                    float t0 = Time.time;
+                    while (bf != null && bf.IsMyTurn && Time.time - t0 < BattleField.TurnSeconds + 10) { yield return new WaitForSeconds(0.25f); bf = BattleField.Instance; }
+                    int after = bf != null ? bf.Rounds.Sum(r => r.CountCards(true)) : -1;
+                    Log(after == before + 1 ? $"TIMEOUT-AUTOPLAY ok after {Time.time - t0:F1}s" : $"ERROR timeout autoplay did not happen (before={before} after={after})");
+                    _idleAtTurn = -1;
+                    lastTurnSeen = (ETurn)(-1);
+                    continue;
+                }
+
                 yield return new WaitForSeconds(1.2f); // 연출이 끝날 시간
                 if (gm.IsGameOver || !bf.IsMyTurn) continue;
                 try { MakeMove(bf); }
                 catch (System.Exception e) { Log("ERROR move exception: " + e); yield break; }
+                lastTurnSeen = (ETurn)(-1);
                 idle = 0;
+
+                if (_gamesDone == 0 && _moves == _dropAtMove)
+                {
+                    yield return SimulateDrop();
+                    gm = GameManager.Instance;
+                }
             }
             else
             {
+                if (!bf.IsMyTurn) lastTurnSeen = (ETurn)(-1);
                 idle += 0.25f;
-                if (idle > 90f) { Log("ERROR stuck: no turn change for 90s " + Status()); yield break; }
+                if (idle > 120f) { Log("ERROR stuck: no turn change for 120s " + Status()); yield break; }
             }
             yield return new WaitForSeconds(0.25f);
         }
@@ -146,6 +202,28 @@ public class AutoTestClient : MonoBehaviourPunCallbacks
         var owners = gm.RoundOwners;
         int me = owners.Count(o => o == 1), enemy = owners.Count(o => o == 2);
         Log($"RESULT game={_gamesDone + 1} moves={_moves} owners(local)={string.Join(",", owners)} me={me} enemy={enemy} board={Board(BattleField.Instance)}");
+    }
+
+    /// <summary>
+    /// 네트워크 끊김 흉내: 들어오고 나가는 패킷을 100% 유실 → 클라이언트 타임아웃으로 실제처럼 끊김.
+    /// 끊긴 뒤 유실을 해제하면 ReconnectManager가 자동으로 재연결/재입장하고, BattleField가 판 상태를 복원해야 함.
+    /// </summary>
+    private IEnumerator SimulateDrop()
+    {
+        string before = Board(BattleField.Instance);
+        Log($"DROP simulating connection loss after move #{_moves} board={before}");
+        PhotonNetwork.NetworkingClient.SimulateConnectionLoss(true);
+
+        float t0 = Time.realtimeSinceStartup;
+        // 끊김 감지 = 연결이 끊겼거나, 이미 재연결을 시작했음 (재연결이 너무 빨라 Disconnected 상태를 놓칠 수 있음)
+        yield return WaitFor(() => !PhotonNetwork.IsConnected || PhotonNetwork.NetworkClientState == ClientState.Disconnected || ReconnectManager.IsReconnecting, 40, "disconnect");
+        Log($"DROP disconnected after {Time.realtimeSinceStartup - t0:F1}s reconnecting={ReconnectManager.IsReconnecting} scene={SceneManager.GetActiveScene().name}");
+        yield return new WaitForSecondsRealtime(2f);
+        PhotonNetwork.NetworkingClient.SimulateConnectionLoss(false); // 네트워크 복구
+
+        yield return WaitFor(() => PhotonNetwork.InRoom && BattleField.Instance != null && BattleField.Instance.MatchInProgress && !ReconnectManager.IsReconnecting, 70, "rejoin + restore");
+        yield return new WaitForSeconds(2f); // 스냅샷 적용/로드
+        Log($"REJOINED after {Time.realtimeSinceStartup - t0:F1}s master={PhotonNetwork.IsMasterClient} scene={SceneManager.GetActiveScene().name} board={Board(BattleField.Instance)}");
     }
 
     private void MakeMove(BattleField bf)

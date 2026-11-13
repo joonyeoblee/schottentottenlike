@@ -23,6 +23,9 @@ public class AccountManager : SingletonPhoton<AccountManager>
 
     public override void OnConnectedToMaster()
     {
+        // 대전 중 끊겨서 재접속한 경우: 로비로 가지 않고 원래 방으로 다시 들어감
+        if (ReconnectManager.HandleConnectedToMaster()) return;
+
         Debug.Log("마스터 서버에 연결되었습니다.");
         Debug.Log($"현재 상태: {PhotonNetwork.NetworkClientState}");
         Debug.Log($"로비 참가 여부: {PhotonNetwork.InLobby}");

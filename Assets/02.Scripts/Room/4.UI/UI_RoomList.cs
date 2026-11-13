@@ -9,6 +9,22 @@ public class UI_RoomList : MonoBehaviourPunCallbacks
     public GameObject RoomPrefab;
     public GameObject RoomContainer;
 
+    private TMPro.TextMeshProUGUI _emptyLabel;
+
+    // 열린 방이 없을 때 안내 문구
+    private void SetEmptyVisible(bool empty)
+    {
+        if (_emptyLabel == null)
+        {
+            _emptyLabel = UIKit.Text(transform, UI_MatchHud.FindSceneFont(), "", 40, UI_MatchHud.InkColor);
+            UIKit.Stretch(_emptyLabel.rectTransform, 60, 60, 60, 60);
+            _emptyLabel.text = "<b>열린 방이 없어요</b>\n<size=70%>오른쪽 '빠른 대전'으로 바로 상대를 찾거나\n'방만들기'로 친구를 기다려 보세요</size>";
+        }
+        _emptyLabel.gameObject.SetActive(empty);
+    }
+
+    private void Start() => SetEmptyVisible(RoomContainer == null || RoomContainer.transform.childCount == 0);
+
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
         Debug.Log($"OnRoomListUpdate 호출됨. 방 개수: {roomList.Count}");
@@ -32,6 +48,8 @@ public class UI_RoomList : MonoBehaviourPunCallbacks
             UI_Room roomComp = roomObject.GetComponent<UI_Room>();
             roomComp.Refresh(room);
         }
+        SetEmptyVisible(RoomContainer.transform.childCount == 0 ||
+                        roomList.TrueForAll(i => i.RemovedFromList || !i.IsVisible || !i.IsOpen));
     }
     private void Awake()
     {

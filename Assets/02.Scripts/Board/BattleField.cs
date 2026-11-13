@@ -39,13 +39,26 @@ public class BattleField : SingletonPhoton<BattleField>
     private const int LocalEnemy = 2;
 
     private UI_MatchHud _hud;
-    private int _enemyHandCount;
+    private readonly List<Card> _enemyHand = new List<Card>(); // 상대 손패 (데이터). 재연결 스냅샷/낼 수 있는지 판정용
+    private int _enemyHandCount => _enemyHand.Count;
     private bool _matchStarted;
     private bool _dealt;
+    private bool _opponentAway;      // 상대 연결이 끊겨 재연결을 기다리는 중
+    private float _opponentAwaySince;
     private readonly HashSet<int> _rematchReady = new HashSet<int>();
 
+    // ---- 턴 제한 시간 ----
+    public const float TurnSeconds = 30f;
+    private float _turnDeadline;
+    private bool _autoPlayedThisTurn;
+
+    /// <summary>판이 시작되었는지 (재입장한 상대 때문에 새 판을 시작하지 않도록 PhotonServerManager가 확인)</summary>
+    public bool MatchInProgress => _matchStarted;
+
     /// <summary>
-    /// 지금이 내 차례인지 (마스터 = Player1, 다른 클라이언트 = Player2)
+    /// 지금이 내 차례인지.
+    /// Player1 = 방에서 가장 낮은 ActorNumber(처음 방을 만든 사람). 방장(MasterClient)은 연결이 끊기면 바뀔 수 있어서
+    /// 예전처럼 '방장 = Player1'로 판단하면 방장 교체 후 차례가 뒤바뀌므로 ActorNumber 기준으로 고정합니다.
     /// </summary>
     public bool IsMyTurn
     {
@@ -53,12 +66,22 @@ public class BattleField : SingletonPhoton<BattleField>
         {
             // 첫 패를 다 받기 전(딜 연출 중)에는 카드를 낼 수 없음
             if (GameManager.Instance == null || GameManager.Instance.IsGameOver || !_matchStarted || !_dealt) return false;
-            bool isMaster = PhotonNetwork.IsMasterClient;
-            return (isMaster && CurrentTurn == ETurn.Player1) || (!isMaster && CurrentTurn == ETurn.Player2);
+            return CurrentTurn == MyTurnValue;
         }
     }
 
-    private ETurn MyTurnValue => PhotonNetwork.IsMasterClient ? ETurn.Player1 : ETurn.Player2;
+    private bool IAmPlayer1
+    {
+        get
+        {
+            var room = PhotonNetwork.CurrentRoom;
+            if (room == null || room.Players == null || room.Players.Count == 0) return PhotonNetwork.IsMasterClient;
+            return PhotonNetwork.LocalPlayer.ActorNumber == room.Players.Keys.Min(); // 끊긴(비활성) 플레이어도 포함
+        }
+    }
+
+    private ETurn MyTurnValue => IAmPlayer1 ? ETurn.Player1 : ETurn.Player2;
+    public ETurn MyTurn => MyTurnValue;
 
     // 현재 턴의 다음 턴을 반환하는 헬퍼 프로퍼티
     private ETurn GetNextTurn() => CurrentTurn == ETurn.Player1 ? ETurn.Player2 : ETurn.Player1;
@@ -89,13 +112,25 @@ public class BattleField : SingletonPhoton<BattleField>
         GameManager.OnGameOver += HandleGameOver;
 
         _hud = UI_MatchHud.Create(transform);
+        // 예전 턴 표시 오브젝트는 덱 위에 검은 타원으로 겹쳐 보여서 숨김 (턴 표시는 HUD 배지가 담당)
+        if (RoundDicator != null) RoundDicator.gameObject.SetActive(false);
         // 하스스톤식 손패 배치: 상대 손패는 화면 위에서 뒤집힌 부채꼴로, 내 손패는 화면 아래에서 반쯤 올라오게
         HandDock.Attach(HandCardManagers[1].gameObject, HandDock.Edge.Top, 1.0f, 0.72f, 180f, new Vector2(7.3f, 2.19f), 0.13f);
         HandDock.Attach(HandCardManagers[0].gameObject, HandDock.Edge.Bottom, 1.0f, 0.63f, 0f, new Vector2(9.57f, 3.19f), -0.405f);
         _hud.OnHelp += () => UI_Tutorial.Show(_hud.Font, false, null); // 멀티는 시간 정지 없이
-        _hud.OnBack += () => _hud.ShowConfirm("방을 나갈까요?", "상대에게는 기권으로 처리돼요", "나가기", LeaveToLobby, "계속하기");
+        _hud.OnBack += () => _hud.ShowConfirm("방을 나갈까요?", "진행 중인 대전은 기권패로 처리돼요", "나가기", LeaveToLobby, "계속하기");
         _hud.SetTurn("상대를 기다리는 중", true);
         UpdateScore();
+        ReconnectManager.MarkInMatch(true);
+
+        if (ReconnectManager.JustRejoined)
+        {
+            // 연결이 끊겼다가 다시 들어옴 → 상대에게 진행 중인 판 상태 전체를 요청해서 복원
+            ReconnectManager.JustRejoined = false;
+            _hud.SetTurn("판 상태 복원 중", true);
+            photonView.RPC(nameof(RPC_RequestSnapshot), RpcTarget.Others, PhotonNetwork.LocalPlayer.ActorNumber);
+            return;
+        }
 
         // 첫 플레이가 멀티 대전이라면 여기서 규칙 안내를 한 번 보여줌 (이후엔 '규칙' 버튼으로)
         if (!UI_Tutorial.IsDone) UI_Tutorial.Show(_hud.Font, false, null);
@@ -129,10 +164,13 @@ public class BattleField : SingletonPhoton<BattleField>
         ClearAllCardSlots(); // 모든 슬롯을 깨끗하게 초기화
         foreach (var round in Rounds) round.ResetStone();
         _rematchReady.Clear();
-        _enemyHandCount = 0;
+        _enemyHand.Clear();
         _dealt = false;
         _matchStarted = true;
+        _opponentAway = false;
+        ReconnectManager.MarkInMatch(true);
         _hud.HideResult();
+        _hud.HideReview();
         UpdateScore();
         if (RoundDicator != null) RoundDicator.Turn();
     }
@@ -298,18 +336,19 @@ public class BattleField : SingletonPhoton<BattleField>
             yield return new WaitForSeconds(0.2f);
         }
 
-        _enemyHandCount = 0;
+        _enemyHand.Clear();
         for (int i = 0; i < HandCardManagers[1].HandCardSlots.Length; i++)
         {
             Card card = new Card(enemyNumbers[i], (ECardColor)enemyColors[i]);
             HandCardManagers[1].HandCardSlots[i].Refresh(i, card, false);
-            _enemyHandCount++;
+            _enemyHand.Add(card);
             yield return new WaitForSeconds(0.2f);
         }
 
         PlayEnemyHandAnimation();
         Debug.Log("손패 배분 완료 (로컬 기준)");
         _dealt = true;
+        RestartTurnTimer();
         UpdateTurnHud();
     }
 
@@ -360,7 +399,8 @@ public class BattleField : SingletonPhoton<BattleField>
             slot.gameObject.SetActive(true);
 
         slot.Refresh(card);
-        _enemyHandCount = Mathf.Max(0, _enemyHandCount - 1);
+        int idx = _enemyHand.FindIndex(c => c.CardNumber == card.CardNumber && c.Color == card.Color);
+        if (idx >= 0) _enemyHand.RemoveAt(idx); else if (_enemyHand.Count > 0) _enemyHand.RemoveAt(0);
         // 상대 카드가 놓인 후에도 승패 판정
         GameManager.Instance.RecordStoneCompleted(roundIndex, LocalEnemy, Rounds[roundIndex].CountCards(false));
         JudgeAllRoundsWinner();
@@ -499,12 +539,22 @@ public class BattleField : SingletonPhoton<BattleField>
     // 게임 종료 / 재대결
     // ------------------------------------------------------------------
 
+    private bool _resultRecorded;
+
     private void HandleGameOver(int winner)
     {
         UpdateTurnHud();
+        _hud.HideHint();
         string title = winner == LocalMe ? "승리" : winner == LocalEnemy ? "패배" : "무승부";
         var owners = GameManager.Instance.RoundOwners;
-        string sub = $"경계석 {owners.Count(o => o == LocalMe)} : {owners.Count(o => o == LocalEnemy)}";
+
+        // 전적 기록 (재연결 복원으로 다시 호출돼도 한 번만)
+        if (!_resultRecorded)
+        {
+            _resultRecorded = true;
+            PlayerStats.RecordOnline(winner == LocalMe ? 1 : winner == LocalEnemy ? -1 : 0);
+        }
+        string sub = $"경계석 {owners.Count(o => o == LocalMe)} : {owners.Count(o => o == LocalEnemy)}\n<size=26>{PlayerStats.OnlineSummary()}</size>";
         StartCoroutine(ShowResultDelayed(title, winner == LocalMe, sub));
     }
 
@@ -512,6 +562,7 @@ public class BattleField : SingletonPhoton<BattleField>
     {
         yield return new WaitForSeconds(1.0f);
         _hud.ShowResult(title, isWin, sub, "다시 하기", RequestRematch, "로비로", LeaveToLobby);
+        _hud.SetReviewAction(() => _hud.ShowReview(Rounds, GameManager.Instance.RoundOwners, "나", EnemyNickName()));
         RefreshRematchStatus();
     }
 
@@ -550,17 +601,267 @@ public class BattleField : SingletonPhoton<BattleField>
 
     private void LeaveToLobby()
     {
-        // UI_Meta.OnLeftRoom 에서 로비 씬으로 이동
-        if (PhotonNetwork.InRoom) PhotonNetwork.LeaveRoom();
+        // 진행 중인 대전을 스스로 나가면 기권패
+        if (_matchStarted && !GameManager.Instance.IsGameOver && !_resultRecorded)
+        {
+            _resultRecorded = true;
+            PlayerStats.RecordOnline(-1);
+        }
+        // UI_Meta.OnLeftRoom 에서 로비 씬으로 이동. 자리 보존 없이 나감 (상대가 60초 기다리지 않게)
+        if (PhotonNetwork.InRoom) ReconnectManager.LeaveIntentionally();
         else UnityEngine.SceneManagement.SceneManager.LoadScene(1);
     }
 
+    // ------------------------------------------------------------------
+    // 상대 연결 끊김 / 재입장 / 방장 교체
+    // ------------------------------------------------------------------
+
     public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
     {
+        if (!_initialized) return;
+
+        if (otherPlayer.IsInactive && _matchStarted)
+        {
+            // 연결이 끊김 → 자리가 보존되는 동안 기다림 (타이머 정지)
+            _opponentAway = true;
+            _opponentAwaySince = Time.time;
+            Debug.Log($"상대 연결 끊김: {otherPlayer.NickName} — 재연결 대기");
+            return;
+        }
+
+        // 완전히 나감 (스스로 나갔거나 재연결 대기 시간이 지남)
         StopAllCoroutines();
-        _matchStarted = false;
+        _opponentAway = false;
+        _hud.HideStatus();
         _hud.SetTurn(null, false);
-        _hud.ShowResult("게임 종료", false, "상대가 방을 나갔습니다", null, null, "로비로", LeaveToLobby);
+        bool wasPlaying = _matchStarted && !GameManager.Instance.IsGameOver;
+        _matchStarted = false;
+
+        if (wasPlaying)
+        {
+            if (!_resultRecorded) { _resultRecorded = true; PlayerStats.RecordOnline(1); }
+            _hud.ShowResult("승리", true, $"상대가 대전을 나갔어요 (기권승)\n<size=26>{PlayerStats.OnlineSummary()}</size>", null, null, "로비로", LeaveToLobby);
+        }
+        else
+        {
+            _hud.ShowResult("게임 종료", false, "상대가 방을 나갔습니다", null, null, "로비로", LeaveToLobby);
+        }
+    }
+
+    public override void OnPlayerEnteredRoom(Photon.Realtime.Player newPlayer)
+    {
+        if (!_initialized || !_opponentAway) return;
+        // 끊겼던 상대가 돌아옴 → 상대가 판 상태를 요청해 올 것 (RPC_RequestSnapshot)
+        _opponentAway = false;
+        _hud.HideStatus();
+        _hud.ShowHint("상대가 다시 연결됐어요", 2f);
+        RestartTurnTimer();
+        Debug.Log("상대 재연결: " + newPlayer.NickName);
+    }
+
+    public override void OnMasterClientSwitched(Photon.Realtime.Player newMasterClient)
+    {
+        if (!_initialized || !newMasterClient.IsLocal) return;
+        // 내가 새 방장 → 덱(카드 뽑기)을 이어받음: 같은 셔플 순서에서 이미 나온 카드를 빼고 재구성
+        if (CardDeck.HasOrder) CardDeck.RebuildRemaining(AllDrawnCards());
+        Debug.Log("방장이 되어 덱을 이어받음");
+    }
+
+    /// <summary>지금까지 덱에서 나온 모든 카드 = 필드 + 내 손패 + 상대 손패</summary>
+    private List<Card> AllDrawnCards()
+    {
+        var list = new List<Card>();
+        foreach (var r in Rounds)
+        {
+            list.AddRange(GetCardsFromSlots(r.PlayerCardSlots));
+            list.AddRange(GetCardsFromSlots(r.EnemyCardSlots));
+        }
+        list.AddRange(HandCardManagers[0].HandCardSlots.Where(s => s.HasCard).Select(s => s.Card));
+        list.AddRange(_enemyHand);
+        return list;
+    }
+
+    // ------------------------------------------------------------------
+    // 턴 제한 시간 / 상대 재연결 대기 표시
+    // ------------------------------------------------------------------
+
+    private void RestartTurnTimer()
+    {
+        _turnDeadline = Time.time + TurnSeconds;
+        _autoPlayedThisTurn = false;
+    }
+
+    private void Update()
+    {
+        if (!_initialized || _hud == null) return;
+
+        if (_opponentAway)
+        {
+            int left = Mathf.Max(0, Mathf.CeilToInt(ReconnectManager.RejoinWindowSeconds - (Time.time - _opponentAwaySince)));
+            _hud.ShowStatus($"상대 연결이 끊겼어요 — 재연결 대기 중 {left}초");
+            _turnDeadline += Time.deltaTime; // 기다리는 동안 시간 정지
+            return;
+        }
+
+        if (!_matchStarted || !_dealt || GameManager.Instance.IsGameOver) { _hud.SetTimer(-1); return; }
+
+        float remaining = _turnDeadline - Time.time;
+        _hud.SetTimer(remaining);
+
+        // 내 차례에 시간이 다 되면 자동으로 카드 내기
+        if (remaining <= 0 && IsMyTurn && !_autoPlayedThisTurn)
+        {
+            _autoPlayedThisTurn = true;
+            AutoPlayOnTimeout();
+        }
+    }
+
+    private void AutoPlayOnTimeout()
+    {
+        var gm = GameManager.Instance;
+        bool Same(Card a, Card b) => a.CardNumber == b.CardNumber && a.Color == b.Color;
+        var field = Rounds.SelectMany(r => r.PlayerCardSlots.Concat(r.EnemyCardSlots)).Where(s => s.IsOccupied).Select(s => s.Card).ToList();
+        var fieldUnused = gm.GetAllPossibleCards().Where(c => !field.Any(f => Same(f, c))).ToList();
+        var handSlots = HandCardManagers[0].HandCardSlots;
+        var hand = handSlots.Select(s => s.HasCard ? s.Card : null).ToList();
+        var view = new AIBrain.BoardView
+        {
+            AiCards = Rounds.Select(r => GetCardsFromSlots(r.PlayerCardSlots)).ToArray(),
+            PlayerCards = Rounds.Select(r => GetCardsFromSlots(r.EnemyCardSlots)).ToArray(),
+            Owners = gm.RoundOwners.Select(o => o == 0 ? 0 : (o == LocalMe ? 2 : 1)).ToArray(),
+            Hand = hand,
+            FieldUnused = fieldUnused,
+            Unseen = fieldUnused.Where(c => !hand.Any(h => h != null && Same(h, c))).ToList(),
+            SlotsPerSide = Rounds[0].PlayerCardSlots.Length,
+        };
+        var mv = AIBrain.ChooseMove(view, AIDifficulty.Normal, new System.Random());
+        if (!mv.HasValue) return;
+
+        var handSlot = handSlots[mv.Value.HandIndex];
+        var slot = Rounds[mv.Value.RoundIndex].FirstEmptySlot(true);
+        if (slot == null || !CanPlaceOn(slot)) return;
+        Debug.Log("시간 초과 — 자동으로 카드를 냄");
+        slot.Refresh(handSlot.Card);
+        handSlot.Clear();
+        OnMyCardPlaced(slot);
+        _hud.ShowHint("시간이 다 되어 카드를 자동으로 냈어요", 2.5f);
+    }
+
+    // ------------------------------------------------------------------
+    // 재연결 판 상태 동기화 (스냅샷)
+    // 카드 코드 = 색 * 10 + 숫자 (0 = 빈 칸)
+    // ------------------------------------------------------------------
+
+    private static int Code(Card c) => c == null ? 0 : (int)c.Color * 10 + c.CardNumber;
+    private static Card Decode(int code) => code == 0 ? null : new Card(code % 10, (ECardColor)(code / 10));
+    private static int SwapOwner(int o) => o == LocalMe ? LocalEnemy : o == LocalEnemy ? LocalMe : 0;
+
+    [PunRPC]
+    private void RPC_RequestSnapshot(int requesterActor)
+    {
+        EnsureInitialized();
+        if (!_matchStarted) return; // 판이 시작되기 전이면 일반 시작 흐름을 따름
+        var target = PhotonNetwork.CurrentRoom.GetPlayer(requesterActor);
+        if (target == null) return;
+
+        int slots = Rounds[0].PlayerCardSlots.Length;
+        var boardMine = new int[Rounds.Length * slots];
+        var boardEnemy = new int[Rounds.Length * slots];
+        for (int r = 0; r < Rounds.Length; r++)
+            for (int k = 0; k < slots; k++)
+            {
+                boardMine[r * slots + k] = Code(Rounds[r].PlayerCardSlots[k].Card);
+                boardEnemy[r * slots + k] = Code(Rounds[r].EnemyCardSlots[k].Card);
+            }
+        var handMine = HandCardManagers[0].HandCardSlots.Where(s => s.HasCard).Select(s => Code(s.Card)).ToArray();
+        var handEnemy = _enemyHand.Select(Code).ToArray();
+        CardDeck.GetOrder(out var deckNums, out var deckColors);
+        int winner = 0;
+        if (GameManager.Instance.IsGameOver)
+        {
+            var o = GameManager.Instance.RoundOwners;
+            int me = o.Count(x => x == LocalMe), en = o.Count(x => x == LocalEnemy);
+            winner = me > en ? LocalMe : en > me ? LocalEnemy : 0;
+        }
+
+        Debug.Log($"판 상태 전송 → actor {requesterActor}");
+        photonView.RPC(nameof(RPC_ApplySnapshot), target,
+            boardMine, boardEnemy, handMine, handEnemy,
+            (int[])GameManager.Instance.RoundOwners.Clone(), GameManager.Instance.GetCompletionOrder(),
+            deckNums, deckColors, (int)CurrentTurn, _dealt, GameManager.Instance.IsGameOver, winner);
+    }
+
+    /// <summary>
+    /// 상대가 보낸 판 상태를 내 시점으로 뒤집어서 복원합니다. (상대의 '내 것' = 나의 '상대 것')
+    /// </summary>
+    [PunRPC]
+    private void RPC_ApplySnapshot(int[] theirBoard, int[] myBoard, int[] theirHand, int[] myHand,
+        int[] theirOwners, int[] theirFirsts, int[] deckNums, int[] deckColors,
+        int turn, bool dealt, bool gameOver, int theirWinner)
+    {
+        EnsureInitialized();
+        StopAllCoroutines();
+        Debug.Log("판 상태 복원 시작");
+
+        ClearAllCardSlots();
+        foreach (var round in Rounds) round.ResetStone();
+
+        int slots = Rounds[0].PlayerCardSlots.Length;
+        for (int r = 0; r < Rounds.Length; r++)
+            for (int k = 0; k < slots; k++)
+            {
+                var mine = Decode(myBoard[r * slots + k]);
+                var theirs = Decode(theirBoard[r * slots + k]);
+                if (mine != null) Rounds[r].PlayerCardSlots[k].RestoreCard(mine);
+                if (theirs != null) Rounds[r].EnemyCardSlots[k].RestoreCard(theirs);
+            }
+
+        var myHandSlots = HandCardManagers[0].HandCardSlots;
+        for (int i = 0; i < myHandSlots.Length; i++)
+        {
+            if (i < myHand.Length)
+            {
+                myHandSlots[i].Refresh(i, Decode(myHand[i]), true);
+                if (myHandSlots[i].MyCard?.Rend != null) myHandSlots[i].MyCard.Rend.enabled = true;
+            }
+        }
+
+        _enemyHand.Clear();
+        var enemySlots = HandCardManagers[1].HandCardSlots;
+        for (int i = 0; i < enemySlots.Length; i++)
+        {
+            if (i < theirHand.Length)
+            {
+                var c = Decode(theirHand[i]);
+                _enemyHand.Add(c);
+                enemySlots[i].Refresh(i, c, false);
+                if (enemySlots[i].MyCard?.Rend != null) enemySlots[i].MyCard.Rend.enabled = true;
+            }
+        }
+
+        CardDeck.SetOrder(deckNums, deckColors);
+        if (PhotonNetwork.IsMasterClient) CardDeck.RebuildRemaining(AllDrawnCards());
+
+        GameManager.Instance.RestoreState(theirOwners.Select(SwapOwner).ToArray(), theirFirsts.Select(SwapOwner).ToArray(), gameOver);
+        for (int r = 0; r < Rounds.Length; r++)
+        {
+            int owner = GameManager.Instance.RoundOwners[r];
+            Rounds[r].MoveStoneToOwner(owner);
+            Rounds[r].RefreshSlotVisibility(owner != 0);
+        }
+
+        _matchStarted = true;
+        _dealt = dealt;
+        _opponentAway = false;
+        CurrentTurn = (ETurn)turn;
+        RestartTurnTimer();
+        _hud.HideResult();
+        UpdateScore();
+        UpdateTurnHud();
+        _hud.ShowHint("다시 연결됐어요! 대전을 이어갑니다", 2.5f);
+        Debug.Log($"판 상태 복원 완료: 내 손패 {myHand.Length}장, 상대 손패 {theirHand.Length}장, 차례={CurrentTurn} (나={MyTurnValue})");
+
+        if (gameOver) HandleGameOver(SwapOwner(theirWinner));
     }
 
     private List<Card> GetPlayerCards(int roundIndex)
@@ -639,6 +940,7 @@ public class BattleField : SingletonPhoton<BattleField>
         CurrentTurn = (ETurn)turn;
         Debug.Log($"턴이 {CurrentTurn}으로 변경됨");
         if (RoundDicator != null) RoundDicator.Turn();
+        RestartTurnTimer();
         UpdateTurnHud();
 
         if (GameManager.Instance.IsGameOver || !_dealt)
@@ -694,7 +996,7 @@ public class BattleField : SingletonPhoton<BattleField>
         }
         else
         {
-            _enemyHandCount++;
+            _enemyHand.Add(card);
             if(slot.MyCard?.Rend != null)
             {
                 slot.MyCard.Rend.enabled = true;

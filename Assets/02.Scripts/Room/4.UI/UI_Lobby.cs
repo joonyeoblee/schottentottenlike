@@ -54,13 +54,8 @@ public class UI_Lobby : MonoBehaviourPunCallbacks
         string roomName = RoomNameInputField.text + "_" + (int)Time.time;
         Debug.Log($"방 이름: {roomName}");
 
-        RoomOptions options = new RoomOptions
-        {
-            MaxPlayers = 2,
-            IsVisible = true, // 반드시 명시적으로 true로 설정
-            IsOpen = true,
-            CleanupCacheOnLeave = true // 반드시 명시적으로 true로 설정
-        };
+        // 공통 방 옵션 (끊긴 플레이어 자리 60초 보존 → 재연결 가능)
+        RoomOptions options = ReconnectManager.CreateRoomOptions();
         bool result = PhotonNetwork.CreateRoom(roomName,
             options, TypedLobby.Default);
 
@@ -107,5 +102,68 @@ public class UI_Lobby : MonoBehaviourPunCallbacks
         rt.anchoredPosition = new Vector2(-36, -30);
         label.text = "게임 규칙";
         btn.onClick.AddListener(() => UI_Tutorial.Show(font, false, null));
+
+        // ---- 빠른 대전 (자동 매칭) ----
+        var quick = UIKit.Button(safe, font, "UI/Button", Vector2.zero, new Vector2(560, 150), out var quickLabel);
+        var qrt = (RectTransform)quick.transform;
+        qrt.anchorMin = qrt.anchorMax = qrt.pivot = new Vector2(1f, 0.5f);
+        qrt.anchoredPosition = new Vector2(-90, -10);
+        quickLabel.text = "빠른 대전";
+        quickLabel.fontSize = 52;
+        _quickLabel = quickLabel;
+        quick.onClick.AddListener(QuickMatch);
+
+        // ---- 전적 패널 ----
+        var stats = UIKit.Rect("Stats", safe);
+        stats.anchorMin = stats.anchorMax = stats.pivot = new Vector2(1f, 1f);
+        stats.anchoredPosition = new Vector2(-90, -225);
+        stats.sizeDelta = new Vector2(560, 205);
+        UIKit.SlicedImage(stats.gameObject, "UI/Panel", Color.white).raycastTarget = false;
+        var title = UIKit.Text(stats, font, "<b>내 전적</b>", 30, UI_MatchHud.InkColor);
+        UIKit.Place(title.rectTransform, new Vector2(0, 70), new Vector2(500, 40));
+        var body = UIKit.Text(stats, font, StatsText(), 23, UI_MatchHud.InkColor);
+        UIKit.Place(body.rectTransform, new Vector2(0, -18), new Vector2(510, 140));
+        body.alignment = TextAlignmentOptions.Left;
+        body.lineSpacing = 6;
+    }
+
+    private TextMeshProUGUI _quickLabel;
+
+    private static string StatsText()
+    {
+        string Line(string name, PlayerStats.Record r) =>
+            r.Games == 0 ? $"{name}  <color=#888>기록 없음</color>"
+                         : $"{name}  {r.Wins}승 {r.Losses}패  <size=85%>(승률 {r.WinRate}%, 최고 {r.BestStreak}연승)</size>";
+        return Line("온라인", PlayerStats.GetOnline()) + "\n" +
+               Line("AI 쉬움", PlayerStats.GetAI(AIDifficulty.Easy)) + "\n" +
+               Line("AI 보통", PlayerStats.GetAI(AIDifficulty.Normal)) + "\n" +
+               Line("AI 어려움", PlayerStats.GetAI(AIDifficulty.Hard));
+    }
+
+    /// <summary>
+    /// 빠른 대전: 빈자리가 있는 방에 자동으로 들어가고, 없으면 새 방을 만들어 상대를 기다립니다.
+    /// (방 이름/목록을 고를 필요 없음 — 모바일에서 버튼 하나로 대전)
+    /// </summary>
+    public void QuickMatch()
+    {
+        if (!PhotonNetwork.IsConnectedAndReady)
+        {
+            Debug.LogWarning("빠른 대전: 서버에 연결되지 않음");
+            return;
+        }
+        if (_quickLabel != null) _quickLabel.text = "상대 찾는 중...";
+        PhotonNetwork.JoinRandomOrCreateRoom(
+            expectedMaxPlayers: 2,
+            matchingType: MatchmakingMode.FillRoom,
+            typedLobby: TypedLobby.Default,
+            roomName: "quick_" + System.DateTime.Now.Ticks % 100000,
+            roomOptions: ReconnectManager.CreateRoomOptions());
+        // 방에 들어가면 PhotonServerManager.OnJoinedRoom이 대전 씬으로 이동 (상대가 오면 자동 시작)
+    }
+
+    public override void OnJoinRandomFailed(short returnCode, string message)
+    {
+        Debug.LogWarning($"빠른 대전 실패: {returnCode} {message}");
+        if (_quickLabel != null) _quickLabel.text = "빠른 대전";
     }
 }
