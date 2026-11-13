@@ -96,6 +96,9 @@ public class BattleField : SingletonPhoton<BattleField>
         _hud.OnBack += () => _hud.ShowConfirm("방을 나갈까요?", "상대에게는 기권으로 처리돼요", "나가기", LeaveToLobby, "계속하기");
         _hud.SetTurn("상대를 기다리는 중", true);
         UpdateScore();
+
+        // 첫 플레이가 멀티 대전이라면 여기서 규칙 안내를 한 번 보여줌 (이후엔 '규칙' 버튼으로)
+        if (!UI_Tutorial.IsDone) UI_Tutorial.Show(_hud.Font, false, null);
     }
 
     private void OnDestroy()

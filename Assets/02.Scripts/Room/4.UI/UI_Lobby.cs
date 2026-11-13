@@ -15,6 +15,7 @@ public class UI_Lobby : MonoBehaviourPunCallbacks
     private void Start()
     {
         NickNameTextUI.text = AccountManager.Instance.CurrentAccount.Nickname;
+        CreateRulesButton();
     }
 
     public void OpenRoomPanel()
@@ -77,6 +78,34 @@ public class UI_Lobby : MonoBehaviourPunCallbacks
 
     public void CreatAIRoom()
     {
-        SceneManager.LoadScene(3);
+        // 난이도(쉬움/보통/어려움)를 고른 뒤 AI 대전 시작
+        UI_DifficultyPopup.Show(_ => SceneManager.LoadScene(3));
+    }
+
+    /// <summary>로비 우상단 '게임 규칙' 버튼 (런타임 생성) — 튜토리얼을 언제든 다시 보기</summary>
+    private void CreateRulesButton()
+    {
+        UI_MatchHud.EnsureEventSystem();
+        var go = new GameObject("UI_LobbyRules", typeof(RectTransform));
+        var canvas = go.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 100;
+        var scaler = go.AddComponent<UnityEngine.UI.CanvasScaler>();
+        scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(2280, 1080);
+        scaler.matchWidthOrHeight = 1f;
+        go.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+
+        var safe = UIKit.Rect("SafeArea", go.transform);
+        UIKit.Stretch(safe);
+        safe.gameObject.AddComponent<SafeAreaFitter>();
+
+        var font = UI_MatchHud.FindSceneFont(go);
+        var btn = UIKit.Button(safe, font, "UI/ButtonGreen", Vector2.zero, new Vector2(260, 100), out var label);
+        var rt = (RectTransform)btn.transform;
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(1f, 1f);
+        rt.anchoredPosition = new Vector2(-36, -30);
+        label.text = "게임 규칙";
+        btn.onClick.AddListener(() => UI_Tutorial.Show(font, false, null));
     }
 }

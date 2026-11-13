@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -49,10 +50,21 @@ public static class AIBrain
         return rank * 100 + x + y + z;
     }
 
-    public static Move? ChooseMove(BoardView board)
+    private static readonly System.Random SharedRng = new System.Random();
+
+    /// <summary>가장 강한 수 (어려움 난이도와 동일)</summary>
+    public static Move? ChooseMove(BoardView board) => ChooseMove(board, AIDifficulty.Hard, SharedRng);
+
+    /// <summary>
+    /// 난이도별 수 선택
+    /// - 어려움: 위협(상대의 연속 3개/5개 직전)까지 고려한 점수로 항상 최선의 수
+    /// - 보통: 기본 점수 상위 3개 중에서 확률적으로 선택 (60% / 25% / 15%)
+    /// - 쉬움: 30%는 아무 수나, 나머지는 상위 5개 중 무작위
+    /// </summary>
+    public static Move? ChooseMove(BoardView board, AIDifficulty difficulty, System.Random rng)
     {
-        Move? best = null;
-        var tieBreak = new System.Random();
+        bool threatAware = difficulty == AIDifficulty.Hard;
+        var moves = new List<Move>();
 
         for (int h = 0; h < board.Hand.Count; h++)
         {
@@ -64,17 +76,56 @@ public static class AIBrain
                 if (board.Owners[r] != 0) continue;
                 if (board.AiCards[r].Count >= board.SlotsPerSide) continue;
 
-                float score = ScorePlacement(board, h, r);
-                score += (float)tieBreak.NextDouble() * 0.5f; // 동점일 때 약간의 무작위성
-
-                if (best == null || score > best.Value.Score)
-                    best = new Move { HandIndex = h, RoundIndex = r, Score = score };
+                float score = ScorePlacement(board, h, r, threatAware);
+                score += (float)rng.NextDouble() * 0.5f; // 동점일 때 약간의 무작위성
+                moves.Add(new Move { HandIndex = h, RoundIndex = r, Score = score });
             }
         }
-        return best;
+        if (moves.Count == 0) return null;
+        moves.Sort((a, b) => b.Score.CompareTo(a.Score));
+
+        switch (difficulty)
+        {
+            case AIDifficulty.Easy:
+                if (rng.NextDouble() < 0.3) return moves[rng.Next(moves.Count)];
+                return moves[rng.Next(Math.Min(5, moves.Count))];
+
+            case AIDifficulty.Normal:
+            {
+                double roll = rng.NextDouble();
+                int pick = roll < 0.6 ? 0 : roll < 0.85 ? 1 : 2;
+                return moves[Math.Min(pick, moves.Count - 1)];
+            }
+
+            default:
+                return moves[0];
+        }
     }
 
-    private static float ScorePlacement(BoardView board, int handIndex, int round)
+    /// <summary>
+    /// 이 경계석의 '중요도'. 0 = 평범, 1 = 승부처.
+    /// 상대가 이 칸 하나로 이웃한 3개 / 5개를 완성할 수 있거나, 내가 이 칸으로 완성할 수 있으면 승부처입니다.
+    /// (Owners: 1 = 상대(플레이어), 2 = 나(AI))
+    /// </summary>
+    private static float Criticality(int[] owners, int round)
+    {
+        float crit = 0;
+        int oppTotal = 0, myTotal = 0;
+        foreach (var o in owners) { if (o == 1) oppTotal++; else if (o == 2) myTotal++; }
+        if (oppTotal >= 4 || myTotal >= 4) crit = Math.Max(crit, 0.8f);
+
+        for (int start = round - 2; start <= round; start++)
+        {
+            if (start < 0 || start + 2 >= owners.Length) continue;
+            int opp = 0, mine = 0;
+            for (int i = start; i < start + 3; i++) { if (owners[i] == 1) opp++; else if (owners[i] == 2) mine++; }
+            if (opp == 2 && mine == 0) crit = 1f;               // 막지 않으면 짐
+            else if (mine == 2 && opp == 0) crit = Math.Max(crit, 0.9f); // 이기면 끝
+        }
+        return crit;
+    }
+
+    private static float ScorePlacement(BoardView board, int handIndex, int round, bool threatAware)
     {
         var card = board.Hand[handIndex];
         var mine = new List<Card>(board.AiCards[round]) { card };
@@ -126,6 +177,14 @@ public static class AIBrain
 
         // 경계석 위치 가중치: 연속 3개 / 상대의 연속 3개 저지
         score += AdjacencyBonus(board.Owners, round);
+
+        // (어려움) 승부처에서는 좋은 수를 더 높이, 약한 카드로 버리는 수는 더 낮게 평가
+        // → 강한 조합은 승부처에 집중하고, 약한 카드는 덜 중요한 경계석에 버림
+        if (threatAware)
+        {
+            float crit = Criticality(board.Owners, round);
+            if (crit > 0) score += crit * (score - 250f) * 0.6f;
+        }
 
         return score;
     }

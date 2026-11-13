@@ -171,7 +171,7 @@ public class UI_Tutorial : MonoBehaviour
             {
                 Title = "준비 완료!",
                 Body = "차지한 경계석은 <color=#C9A040><b>금빛</b></color>, 상대가 차지한 경계석은 <color=#C74C42><b>붉은빛</b></color>으로 변해요.\n" +
-                       "규칙은 화면 위 <b>?</b> 버튼으로 언제든 다시 볼 수 있어요. 행운을 빌어요!",
+                       "이 안내는 처음 한 번만 나와요. 게임 중 오른쪽 위 <b>규칙</b> 버튼이나 로비의 <b>게임 규칙</b>에서 다시 볼 수 있어요.",
                 Art = ArtReady
             },
         };

@@ -126,16 +126,18 @@ public class UI_MatchHud : MonoBehaviour
         _scoreText = UIKit.Text(score, _font, "", 26, InkColor);
         UIKit.Stretch(_scoreText.rectTransform);
 
-        // ---- 도움말 버튼 (우상단, 기존 일시정지 버튼 왼쪽) ----
-        var help = UIKit.Rect("HelpButton", safe);
+        // ---- 규칙 버튼 (우상단, 기존 나가기 버튼 왼쪽) — 튜토리얼은 첫 플레이에만 자동으로 뜨고, 이후엔 여기서 다시 봄 ----
+        var help = UIKit.Rect("RulesButton", safe);
         help.anchorMin = help.anchorMax = new Vector2(1f, 1f);
         help.pivot = new Vector2(1f, 1f);
-        help.anchoredPosition = new Vector2(-250, -28);
-        help.sizeDelta = new Vector2(96, 96);
-        UIKit.SlicedImage(help.gameObject, "UI/RoundButton", Color.white, false);
+        help.anchoredPosition = new Vector2(-230, -26);
+        help.sizeDelta = new Vector2(150, 84);
+        var helpImg = UIKit.SlicedImage(help.gameObject, "UI/Panel", Color.white);
         var helpBtn = help.gameObject.AddComponent<Button>();
+        helpBtn.targetGraphic = helpImg;
         helpBtn.onClick.AddListener(() => OnHelp?.Invoke());
-        var q = UIKit.Text(help, _font, "?", 54, InkColor);
+        help.gameObject.AddComponent<ButtonPress>();
+        var q = UIKit.Text(help, _font, "규칙", 34, InkColor);
         UIKit.Stretch(q.rectTransform);
         q.fontStyle = FontStyles.Bold;
 
@@ -168,10 +170,10 @@ public class UI_MatchHud : MonoBehaviour
         _resultTitle.outlineColor = InkColor;
 
         _resultSub = UIKit.Text(_resultPanel, _font, "", 34, InkColor);
-        UIKit.Place(_resultSub.rectTransform, new Vector2(0, 30), new Vector2(780, 60));
+        UIKit.Place(_resultSub.rectTransform, new Vector2(0, 20), new Vector2(780, 100));
 
         _resultStatus = UIKit.Text(_resultPanel, _font, "", 28, new Color(InkColor.r, InkColor.g, InkColor.b, 0.7f));
-        UIKit.Place(_resultStatus.rectTransform, new Vector2(0, -40), new Vector2(780, 44));
+        UIKit.Place(_resultStatus.rectTransform, new Vector2(0, -62), new Vector2(780, 44));
 
         _primaryButton = UIKit.Button(_resultPanel, _font, "UI/ButtonGreen", new Vector2(-180, -170), new Vector2(320, 120), out _primaryLabel);
         _primaryButton.onClick.AddListener(() => _onPrimary?.Invoke());

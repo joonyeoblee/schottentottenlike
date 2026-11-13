@@ -18,7 +18,8 @@ public class BattleField_AI : Singleton<BattleField_AI>
     public ETurn CurrentTurn;
 
     [Header("AI 설정")]
-    [SerializeField] private float _aiThinkDelay = 0.8f;
+    private AIDifficulty _difficulty;                    // 로비에서 고른 난이도 (AISettings)
+    private readonly System.Random _aiRng = new System.Random();
     [SerializeField] private int _lobbySceneIndex = 1;
 
     private bool _isShuffled;
@@ -58,6 +59,16 @@ public class BattleField_AI : Singleton<BattleField_AI>
         // 씬에 배치된 AI 정보 패널의 "획득 돌" 텍스트 (있으면 갱신)
         var scoreGo = GameObject.Find("AIScoreText");
         if (scoreGo != null) _aiScoreText = scoreGo.GetComponent<TMPro.TMP_Text>();
+
+        // 난이도 표시 (상대 정보 패널)
+        _difficulty = AISettings.Difficulty;
+        var nameGo = GameObject.Find("AINameText");
+        if (nameGo != null)
+        {
+            var nameText = nameGo.GetComponent<TMPro.TMP_Text>();
+            nameText.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
+            nameText.text = $"AI ({AISettings.DisplayName(_difficulty)})";
+        }
 
         // 처음 플레이하면 규칙 튜토리얼을 먼저 보여주고, 첫 판은 안내 힌트와 함께 진행
         _coachMoves = PlayerPrefs.GetInt(CoachKey, 0) == 1 ? 0 : 3;
@@ -391,13 +402,13 @@ public class BattleField_AI : Singleton<BattleField_AI>
 
     private IEnumerator AITurnRoutine()
     {
-        yield return new WaitForSeconds(_aiThinkDelay);
+        yield return new WaitForSeconds(AISettings.ThinkDelay(_difficulty));
         if (IsGameOver) yield break;
 
         var handManager = HandCardManagers[1];
         var handSlots = handManager.HandCardSlots;
 
-        var move = AIBrain.ChooseMove(BuildBoardView());
+        var move = AIBrain.ChooseMove(BuildBoardView(), _difficulty, _aiRng);
 
         if (move.HasValue)
         {
@@ -509,7 +520,7 @@ public class BattleField_AI : Singleton<BattleField_AI>
         UpdateHud();
 
         string title = winner == 1 ? "승리" : winner == 2 ? "패배" : "무승부";
-        string sub = DescribeResult(winner);
+        string sub = DescribeResult(winner) + $"\n<size=26>AI 난이도: {AISettings.DisplayName(_difficulty)}</size>";
 
         StartCoroutine(ShowResultDelayed(title, winner == 1, sub));
     }
