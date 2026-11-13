@@ -31,13 +31,23 @@ namespace Borodar.RainbowFolders
 
         static RainbowFoldersGUI()
         {
+            // Unity 6.3+ changed the internal Project window API this plugin reflects on.
+            // If the adapter can't initialize, disable the plugin instead of throwing every editor tick.
+            try
+            {
+                var target = typeof(RainbowFoldersGUI);
+                const string method = nameof(DrawIconInObjectList);
+                ProjectWindowAdapter.AddPostAssetIconDrawCallback(target, method);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[RainbowFolders] Disabled: incompatible with this Unity version. " + e.GetBaseException().Message);
+                return;
+            }
+
             EditorApplication.projectWindowItemOnGUI += DrawRowShading;
             EditorApplication.projectWindowItemOnGUI += DrawEditIcon;
             EditorApplication.update += Update;
-
-            var target = typeof(RainbowFoldersGUI);
-            const string method = nameof(DrawIconInObjectList);
-            ProjectWindowAdapter.AddPostAssetIconDrawCallback(target, method);
         }
 
         //---------------------------------------------------------------------
