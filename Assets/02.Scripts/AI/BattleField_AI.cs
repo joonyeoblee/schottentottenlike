@@ -49,12 +49,63 @@ public class BattleField_AI : Singleton<BattleField_AI>
         GameManager.OnGameOver += HandleGameOver;
 
         _hud = UI_MatchHud.Create(transform);
+        _hud.OnHelp += () => UI_Tutorial.Show(_hud.Font, true, null);
+        _hud.OnBack += ConfirmExit;
 
         // 씬에 배치된 AI 정보 패널의 "획득 돌" 텍스트 (있으면 갱신)
         var scoreGo = GameObject.Find("AIScoreText");
         if (scoreGo != null) _aiScoreText = scoreGo.GetComponent<TMPro.TMP_Text>();
 
-        GameStart();
+        // 처음 플레이하면 규칙 튜토리얼을 먼저 보여주고, 첫 판은 안내 힌트와 함께 진행
+        _coachMoves = PlayerPrefs.GetInt(CoachKey, 0) == 1 ? 0 : 3;
+        if (!UI_Tutorial.IsDone)
+            UI_Tutorial.Show(_hud.Font, false, GameStart);
+        else
+            GameStart();
+    }
+
+    private void ConfirmExit()
+    {
+        _hud.ShowConfirm("게임을 나갈까요?", "진행 중인 판은 저장되지 않아요", "나가기",
+            () => SceneManager.LoadScene(_lobbySceneIndex), "계속하기");
+    }
+
+    // ---- 첫 판 안내 (코치) ----
+    private const string CoachKey = "coach_done_v1";
+    private int _coachMoves;      // 남은 안내 횟수
+    private bool _claimHintShown;
+
+    private void CoachOnPlayerTurn()
+    {
+        if (_coachMoves <= 0 || IsGameOver) return;
+        _hud.ShowHint("손패의 카드를 끌어서 <color=#B8862F><b>빛나는 칸</b></color>에 놓으세요");
+        DropHighlight.Coach(true);
+    }
+
+    private void CoachOnPlaced()
+    {
+        if (_coachMoves <= 0) return;
+        DropHighlight.Coach(false);
+        _coachMoves--;
+        if (_coachMoves == 0)
+        {
+            PlayerPrefs.SetInt(CoachKey, 1);
+            PlayerPrefs.Save();
+            _hud.ShowHint("좋아요! 같은 색이나 연속 숫자를 모아 강한 조합을 만들어 보세요", 3.5f);
+        }
+        else
+        {
+            _hud.ShowHint("좋아요! 이제 AI 차례예요", 2f);
+        }
+    }
+
+    private void CoachOnClaim(int owner)
+    {
+        if (_claimHintShown) return;
+        _claimHintShown = true;
+        _hud.ShowHint(owner == 1
+            ? "경계석을 차지했어요! <b>이웃한 3개</b> 또는 <b>5개</b>를 모으면 승리!"
+            : "AI가 경계석을 차지했어요. 이웃한 3개를 내주지 않게 조심하세요!", 4f);
     }
 
     private void OnDestroy()
@@ -226,6 +277,7 @@ public class BattleField_AI : Singleton<BattleField_AI>
 
         // 턴을 즉시 넘겨서 연출 중에 다른 카드를 또 내지 못하게 함
         CurrentTurn = ETurn.Player2;
+        CoachOnPlaced();
 
         JudgeAllRoundsWinner();
         StartCoroutine(HandleCardPlacedSequence());
@@ -285,10 +337,14 @@ public class BattleField_AI : Singleton<BattleField_AI>
         if (CurrentTurn == ETurn.Player1 && !playerCan)
         {
             Debug.Log("플레이어가 낼 수 있는 카드가 없어 턴을 넘깁니다.");
+            _hud.ShowHint("낼 수 있는 칸이 없어 차례를 넘겨요", 2f);
             CurrentTurn = ETurn.Player2;
             UpdateHud();
             StartAITurn();
+            return;
         }
+
+        if (CurrentTurn == ETurn.Player1) CoachOnPlayerTurn();
     }
 
     private bool HasLegalMove(bool player)
@@ -412,6 +468,8 @@ public class BattleField_AI : Singleton<BattleField_AI>
                 {
                     string who = judgeResult.Winner == 1 ? "플레이어" : "AI";
                     Debug.Log($"경계석 {roundIndex}: {who} 점령 ({judgeResult.Player1Rank} vs {judgeResult.Player2Rank})");
+                    if (GameManager.Instance.RoundOwners[roundIndex] == judgeResult.Winner)
+                        CoachOnClaim(judgeResult.Winner);
                 }
             }
 
@@ -443,6 +501,8 @@ public class BattleField_AI : Singleton<BattleField_AI>
     private void HandleGameOver(int winner)
     {
         StopAllCoroutines();
+        DropHighlight.Coach(false);
+        _hud.HideHint();
         UpdateHud();
 
         string title = winner == 1 ? "승리" : winner == 2 ? "패배" : "무승부";

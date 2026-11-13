@@ -73,6 +73,8 @@ public class BattleField : SingletonPhoton<BattleField>
         GameManager.OnGameOver += HandleGameOver;
 
         _hud = UI_MatchHud.Create(transform);
+        _hud.OnHelp += () => UI_Tutorial.Show(_hud.Font, false, null); // 멀티는 시간 정지 없이
+        _hud.OnBack += () => _hud.ShowConfirm("방을 나갈까요?", "상대에게는 기권으로 처리돼요", "나가기", LeaveToLobby, "계속하기");
         _hud.SetTurn("상대를 기다리는 중", true);
         UpdateScore();
     }

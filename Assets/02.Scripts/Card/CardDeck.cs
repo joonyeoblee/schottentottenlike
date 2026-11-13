@@ -70,7 +70,7 @@ public class CardDeck : MonoBehaviour
         Debug.Log($"cards.Count: {cards.Count}");
         if (cards.Count == 0)
         {
-            Debug.LogWarning("더 이상 나올 카드가 없습니다!");
+            Debug.Log("덱이 비었습니다."); // 덱 소진은 정상 진행이므로 경고가 아닌 로그
             return null;
         }
 

@@ -53,6 +53,8 @@ MonoBehaviour:
   - RPC_MoveStone
   - RPC_OpponentExit
   - RPC_SetReady
+  - RPC_PrepareMatch
+  - RPC_RematchReady
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

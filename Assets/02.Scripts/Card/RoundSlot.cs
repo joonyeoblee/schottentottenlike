@@ -33,8 +33,21 @@ public class RoundSlot : MonoBehaviour
         else
             _currentOwner = 0;
 
+        TintStone(_currentOwner);
         StopAllCoroutines();
         StartCoroutine(MoveStoneCoroutine(targetPos));
+    }
+
+    // 경계석 색: 중립(원래 돌 색) / 내 것(금빛) / 상대 것(붉은빛)
+    public static readonly Color NeutralStone = Color.white;
+    public static readonly Color MyStone = new Color(1f, 0.84f, 0.42f);
+    public static readonly Color EnemyStone = new Color(1f, 0.5f, 0.45f);
+
+    private void TintStone(int owner)
+    {
+        if (Stone == null) return;
+        var sr = Stone.GetComponent<SpriteRenderer>();
+        if (sr != null) sr.color = owner == 1 ? MyStone : owner == 2 ? EnemyStone : NeutralStone;
     }
 
     /// <summary>
@@ -46,8 +59,15 @@ public class RoundSlot : MonoBehaviour
         _currentOwner = 0;
         _lastStoneTargetPos = Vector3.zero;
         if (Stone != null)
+        {
             Stone.localPosition = Vector3.zero;
+            if (_stoneScale == Vector3.zero) _stoneScale = Stone.localScale;
+            Stone.localScale = _stoneScale;
+        }
+        TintStone(0);
     }
+
+    private Vector3 _stoneScale;
 
     public int CountCards(bool mine)
     {
@@ -102,13 +122,17 @@ public class RoundSlot : MonoBehaviour
     {
         float t = 0;
         Vector3 start = Stone.localPosition;
+        if (_stoneScale == Vector3.zero) _stoneScale = Stone.localScale;
         while (t < 1f)
         {
             t += Time.deltaTime * 3f;
-            Stone.localPosition = Vector3.Lerp(start, target, t);
+            float e = 1f - Mathf.Pow(1f - Mathf.Clamp01(t), 3f); // ease-out
+            Stone.localPosition = Vector3.Lerp(start, target, e);
+            Stone.localScale = _stoneScale * (1f + 0.25f * Mathf.Sin(Mathf.Clamp01(t) * Mathf.PI)); // 점령 시 '쿵' 하고 커졌다 돌아옴
             yield return null;
         }
         Stone.localPosition = target;
+        Stone.localScale = _stoneScale;
     }
     public UI_Round UI_Round;
 }

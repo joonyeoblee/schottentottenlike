@@ -44,50 +44,69 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         _outlinable = GetComponent<Outlinable>();
     }
 
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        _isDragging = true;
+    // 터치 시 카드를 손가락 위로 띄워서 손가락에 가려지지 않게 합니다. (월드 단위)
+    private const float TouchLift = 1.1f;
+    private const float DragScale = 1.15f;
 
+    /// <summary>
+    /// 마우스/터치 공통 포인터 위치 → 월드 좌표. (eventData.position은 마우스와 터치 모두에서 동작)
+    /// </summary>
+    private Vector3 PointerWorld(PointerEventData eventData)
+    {
         if (_mainCamera == null)
             _mainCamera = Camera.main;
 
-#if UNITY_EDITOR || UNITY_STANDALONE
-        Vector2 mousePos = Mouse.current != null
-            ? Mouse.current.position.ReadValue()
-            : eventData.position; // fallback
-        Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, _mainCamera.nearClipPlane));
-#elif UNITY_ANDROID || UNITY_IOS
-        Vector2 touchPos = Touchscreen.current.primaryTouch.position.ReadValue();
-        Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(touchPos.x, touchPos.y, _mainCamera.nearClipPlane));
-#endif
+        Vector2 screen = eventData != null ? eventData.position
+            : (Pointer.current != null ? Pointer.current.position.ReadValue() : Vector2.zero);
+        return _mainCamera.ScreenToWorldPoint(new Vector3(screen.x, screen.y, _mainCamera.nearClipPlane));
+    }
 
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        // 카드가 없는 슬롯이거나 다른 손가락이 이미 드래그 중이면 무시 (멀티터치 방지)
+        // 상대 손패 카드에도 같은 컴포넌트가 붙어 있으므로 내 카드만 허용
+        if (_handCardSlot == null || !_handCardSlot.IsMine || !_handCardSlot.HasCard || (_activeDragger != null && _activeDragger != this)) return;
+
+        _isDragging = true;
+        _activeDragger = this;
+
+        Vector3 worldPos = PointerWorld(eventData);
         _dragOffset = transform.position - worldPos;
+
+        // 터치: 카드를 손가락 위로 들어 올림
+        bool touch = eventData != null && eventData.pointerId >= 0 && Touchscreen.current != null;
+        if (touch) _dragOffset = new Vector3(0, TouchLift, _dragOffset.z);
+
+        transform.localScale = _originalScale * DragScale;
+        if (_outlinable != null) _outlinable.enabled = true;
+        DropHighlight.Show(true);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         if (!_isDragging) return;
+        transform.position = PointerWorld(eventData) + _dragOffset;
+    }
 
-        if (_mainCamera == null)
-            _mainCamera = Camera.main;
+    private static UI_CardDragger _activeDragger;
 
-#if UNITY_EDITOR || UNITY_STANDALONE
-        Vector2 mousePos = Mouse.current != null
-            ? Mouse.current.position.ReadValue()
-            : eventData.position;
-        Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, _mainCamera.nearClipPlane));
-#elif UNITY_ANDROID || UNITY_IOS
-        Vector2 touchPos = Touchscreen.current.primaryTouch.position.ReadValue();
-        Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(touchPos.x, touchPos.y, _mainCamera.nearClipPlane));
-#endif
-
-        transform.position = worldPos + _dragOffset;
+    private void OnDisable()
+    {
+        if (_activeDragger == this)
+        {
+            _activeDragger = null;
+            DropHighlight.Show(false);
+        }
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
         if (!_isDragging) return;
         _isDragging = false;
+        _activeDragger = null;
+        DropHighlight.Show(false);
+        transform.localScale = _originalScale;
+        if (_outlinable != null) _outlinable.enabled = false;
 
         if (_handArranger != null)
         {
@@ -161,7 +180,8 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (_isDragging) return;
+        // 터치에는 '호버'가 없으므로 마우스일 때만 확대 연출
+        if (_isDragging || (eventData != null && eventData.pointerId >= 0)) return;
 
         // <<< 변경: Outlinable 컴포넌트 활성화
         if (_outlinable != null)
@@ -174,7 +194,7 @@ public class UI_CardDragger : MonoBehaviour, IPointerDownHandler, IPointerUpHand
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (_isDragging) return;
+        if (_isDragging || (eventData != null && eventData.pointerId >= 0)) return;
 
         if (_outlinable != null)
         {

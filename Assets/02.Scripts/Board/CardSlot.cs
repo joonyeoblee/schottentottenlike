@@ -150,6 +150,20 @@ public class CardSlot : MonoBehaviour
 
     }
 
+    private static readonly Color EmptyColor = new Color(1f, 1f, 1f, 122f / 255f);
+    private static readonly Color HighlightColor = new Color(1f, 0.92f, 0.55f, 1f);
+
+    /// <summary>
+    /// 빈 칸 강조 표시 (카드를 놓을 수 있는 칸). k: 0~1 깜빡임 강도
+    /// </summary>
+    public void SetHighlight(bool on, float k)
+    {
+        Init();
+        if (_cardSprite == null || IsOccupied) return;
+        _cardSprite.color = on ? Color.Lerp(EmptyColor, HighlightColor, k) : EmptyColor;
+        transform.localScale = on ? Vector3.one * (1f + 0.04f * k) : Vector3.one;
+    }
+
     public void Clear()
     {
         _card = null;
